@@ -1,0 +1,61 @@
+.confirmation {
+  text-align: center;
+  padding: 40px 0;
+}
+
+.check-badge {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--dfc-success);
+  color: white;
+  font-size: 32px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+h2 {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 4px;
+}
+
+.order-no {
+  font-weight: 700;
+  color: var(--dfc-amber-600);
+  margin: 0 0 12px;
+}
+
+.sub-text {
+  color: var(--dfc-gray-500);
+  font-size: 13.5px;
+  max-width: 380px;
+  margin: 0 auto 20px;
+}
+
+.recap-card {
+  background: var(--dfc-white);
+  border: 1.5px solid var(--dfc-gray-200);
+  border-radius: var(--dfc-radius-md);
+  padding: 14px;
+  max-width: 380px;
+  margin: 0 auto 24px;
+  text-align: left;
+}
+
+.recap-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 4px 0;
+}
+
+.recap-row.total {
+  border-top: 1px solid var(--dfc-gray-200);
+  margin-top: 6px;
+  padding-top: 10px;
+  font-weight: 800;
+}

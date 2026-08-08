@@ -1,0 +1,90 @@
+.count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--dfc-radius-pill);
+  background: var(--dfc-amber-100);
+  color: var(--dfc-amber-700);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* ================= ADD / EDIT PANEL (mirrors My Menu / Deals slide-over) ================= */
+.menu-form-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 18, 32, 0.45);
+  z-index: 90;
+}
+
+.menu-form-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 380px;
+  max-width: 92vw;
+  background: var(--dfc-surface);
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.2);
+  z-index: 91;
+  display: flex;
+  flex-direction: column;
+  animation: slide-in 200ms ease;
+}
+
+@keyframes slide-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+.menu-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--dfc-border);
+  flex-shrink: 0;
+}
+
+.menu-form-header h3 {
+  font-family: var(--dfc-font-display);
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--dfc-gray-900);
+}
+
+.menu-form-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: var(--dfc-gray-100);
+  color: var(--dfc-gray-600);
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-form-close:hover {
+  background: var(--dfc-danger-bg);
+  color: var(--dfc-danger);
+}
+
+.menu-form-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.menu-form-save {
+  width: 100%;
+  height: 46px;
+  margin-top: 12px;
+}

@@ -1,0 +1,232 @@
+<div class="report-container">
+
+  <h2>📊 Daily Business Report</h2>
+
+  <!-- DATE FILTER -->
+  <div class="filter-box">
+    <label>Select Date</label>
+    <input type="date" [ngModel]="date()" (ngModelChange)="date.set($event)" />
+    <button (click)="loadReport()">Generate Report</button>
+  </div>
+
+  <!-- LOADING -->
+  @if(loading()) {
+    <div class="loading">
+      Loading Report...
+    </div>
+  }
+
+  @if(report()) {
+
+  <div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="grid">
+      <div class="card sales">
+        <h3>Total Sales</h3>
+        <p>Rs {{ report()?.sales }}</p>
+      </div>
+
+      <div class="card purchase">
+        <h3>Purchase Orders Cost</h3>
+        <p>Rs {{ report()?.purchaseOrdersCost }}</p>
+      </div>
+
+      <div class="card kitchen">
+        <h3>Kitchen Cost</h3>
+        <p>Rs {{ report()?.kitchenCost }}</p>
+      </div>
+
+      <div class="card waste">
+        <h3>Waste Cost</h3>
+        <p>Rs {{ report()?.wasteCost }}</p>
+      </div>
+
+      <div class="card salary">
+        <h3>Salary Paid</h3>
+        <p>Rs {{ report()?.salaryPaid }}</p>
+      </div>
+
+      <div class="card vendor">
+        <h3>Vendor Payments</h3>
+        <p>Rs {{ report()?.vendorPayments }}</p>
+      </div>
+
+      <div class="card profit">
+        <h3>Profit</h3>
+        <p>Rs {{ report()?.profit }}</p>
+      </div>
+    </div>
+
+    <!-- ORDERS TABLE -->
+    <h3>📜 Order History</h3>
+
+   @if(orders().length === 0) {
+      <p>No orders found for selected date</p>
+    }
+
+    <table border="1" width="100%" class="orders-table">
+      <thead>
+        <tr>
+          <th>Order Id</th>
+          <th>Total Amount</th>
+          <th>Total Quantity</th>
+          <th>Date</th>
+          <th>Waiter</th>
+          <th>Cashier</th>
+          <th>Status</th>
+          <th>Cancelled By</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for(order of orders(); track order.id) {
+          <tr class="order-row"
+              (click)="toggleExpand(order)"
+              [class.expanded]="order.expanded">
+
+            <td>{{ order.id }}</td>
+            <td>Rs {{ order.totalAmount }}</td>
+            <td>{{ order.totalQuantity }}</td>
+            <td>{{ order.createdAt | date:'medium' }}</td>
+            <td>{{ order.takenByEmployeeName || '-' }}</td>
+            <td>{{ order.cashierName || '-' }}</td>
+            <td>{{ order.paid ? 'Paid' : 'Unpaid' }}</td>
+            <td>{{ order.cancelledByEmployeeName || '-' }}</td>
+          </tr>
+
+          @if(order.expanded) {
+            <tr class="details-row">
+              <td colspan="8">
+                <table border="1" width="100%">
+                  <thead>
+                    <tr>
+                      <th>Item / Deal</th>
+                      <th>Price</th>
+                      <th>Qty</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for(item of order.items; track item) {
+                      <tr>
+                        <td>{{ item.menuItemName }}</td>
+                        <td>Rs {{ item.unitPrice }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>Rs {{ item.unitPrice * item.quantity }}</td>
+                      </tr>
+                    }
+                    @for(deal of order.deals || []; track deal) {
+                      <tr>
+                        <td>{{ deal.dealName }}</td>
+                        <td>Rs {{ deal.dealPrice }}</td>
+                        <td>{{ deal.quantity }}</td>
+                        <td>Rs {{ deal.dealPrice * deal.quantity }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+
+    <!-- PURCHASE ORDERS -->
+    @if(purchaseOrders().length > 0) {
+      <h2 class="title">Purchase Orders</h2>
+
+      <table class="po-table">
+        <tbody>
+          @for(o of purchaseOrders(); track o.id) {
+            <tr>
+              <td>{{ o.billNo }}</td>
+              <td>{{ o.vendorName }}</td>
+              <td>{{ o.purchaseDate | date:'medium' }}</td>
+              <td>Rs {{ o.totalAmount }}</td>
+              <td>
+                <button (click)="toggleDetails(o.id); $event.stopPropagation()">
+                  {{ expandedOrderId() === o.id ? 'Hide' : 'View' }}
+                </button>
+              </td>
+            </tr>
+
+            @if(expandedOrderId() === o.id) {
+              <tr>
+                <td colspan="5">
+                  <table>
+                    <tbody>
+                      @for(item of o.items; track item) {
+                        <tr>
+                          <td>{{ item.rawItemName }}</td>
+                          <td>{{ item.quantity }}</td>
+                          <td>Rs {{ item.unitPrice }}</td>
+                          <td>Rs {{ item.totalPrice }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    }
+
+    <!-- KITCHEN OUT -->
+    @if(kitchenOuts().length > 0) {
+      <h2 class="title">Kitchen Out History</h2>
+
+      <table class="po-table">
+        <tbody>
+          @for(k of kitchenOuts(); track k.id) {
+            <tr>
+              <td>{{ k.issuedAt | date:'short' }}</td>
+              <td>
+                <button (click)="toggleKitchenDetails(k.id); $event.stopPropagation()">
+                  {{ expandedKitchenId() === k.id ? 'Hide' : 'View' }}
+                </button>
+              </td>
+            </tr>
+
+            @if(expandedKitchenId() === k.id) {
+              <tr>
+                <td colspan="2">
+                  <table>
+                    <tbody>
+                      @for(i of k.items; track i) {
+                        <tr>
+                          <td>{{ i.rawItemName }}</td>
+                          <td>{{ i.quantity }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    }
+
+    <!-- WASTE -->
+    @if((report()?.wastes ?? []).length > 0) {
+      <h3>Waste Items</h3>
+
+      <table>
+        <tbody>
+          @for(w of report().wastes; track w.id) {
+            <tr>
+              <td>{{ w.id }}</td>
+              <td>{{ w.createdAt | date:'short' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+
+  </div>
+  }
+</div>

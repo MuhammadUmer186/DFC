@@ -1,0 +1,27 @@
+<h2>Raw Items</h2>
+
+<button routerLink="/rawitem/add">Add Raw Item</button>
+
+<table border="1" width="100%">
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th>Unit</th>
+      <th>Opening Stock</th>
+      <th></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    @for (r of rawItems; track r) {
+      <tr>
+        <td>{{ r.itemName }}</td>
+        <td>{{ r.unit }}</td>
+        <td>
+          <button (click)="edit(r)">Edit</button>
+          <button (click)="delete(r.id)">Delete</button>
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>

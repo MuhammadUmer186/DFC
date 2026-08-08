@@ -1,0 +1,11 @@
+bin
+obj
+.git
+.vs
+.vscode
+.claude
+.config
+NewFolder
+RMS-DFC-PROJECT-angular-frontend
+wwwroot/uploads
+*.user

@@ -1,0 +1,9 @@
+.main{
+  display: flex;
+}
+
+.content{
+  flex: 1;
+  padding: 20px;
+  background: #f1f5f9;
+}

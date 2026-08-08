@@ -1,0 +1,255 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-chart-bar"></i> Business Report</h2>
+      <p class="dfc-page-subtitle">Full financial and operational breakdown for the selected period</p>
+    </div>
+  </div>
+
+  <!-- DATE RANGE FILTER -->
+  <app-date-range-filter (rangeChange)="onRangeChange($event)"></app-date-range-filter>
+
+  <!-- LOADING -->
+  @if(loading()) {
+    <div class="dfc-loading"><i class="pi pi-spin pi-spinner"></i> Loading Report...</div>
+  }
+
+  @if(report()) {
+
+  <div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-success">
+        <div class="kpi-card-head"><span class="kpi-icon"><i class="pi pi-money-bill"></i></span><h4>Total Sales</h4></div>
+        <div class="kpi-row"><span>Amount</span><strong>Rs {{ report()?.sales }}</strong></div>
+      </div>
+
+      <div class="kpi-card kpi-info">
+        <div class="kpi-card-head"><span class="kpi-icon"><i class="pi pi-truck"></i></span><h4>Purchase Orders Cost</h4></div>
+        <div class="kpi-row"><span>Amount</span><strong>Rs {{ report()?.purchaseOrdersCost }}</strong></div>
+      </div>
+
+      <div class="kpi-card kpi-info">
+        <div class="kpi-card-head"><span class="kpi-icon"><i class="pi pi-box"></i></span><h4>Kitchen Cost</h4></div>
+        <div class="kpi-row"><span>Amount</span><strong>Rs {{ report()?.kitchenCost }}</strong></div>
+      </div>
+
+      <div class="kpi-card kpi-danger">
+        <div class="kpi-card-head"><span class="kpi-icon"><i class="pi pi-trash"></i></span><h4>Waste Cost</h4></div>
+        <div class="kpi-row"><span>Amount</span><strong>Rs {{ report()?.wasteCost }}</strong></div>
+      </div>
+
+      <div class="kpi-card kpi-info">
+        <div class="kpi-card-head"><span class="kpi-icon"><i class="pi pi-dollar"></i></span><h4>Salary Paid</h4></div>
+        <div class="kpi-row"><span>Amount</span><strong>Rs {{ report()?.salaryPaid }}</strong></div>
+      </div>
+
+      <div class="kpi-card kpi-info">
+        <div class="kpi-card-head"><span class="kpi-icon"><i class="pi pi-building"></i></span><h4>Vendor Payments</h4></div>
+        <div class="kpi-row"><span>Amount</span><strong>Rs {{ report()?.vendorPayments }}</strong></div>
+      </div>
+
+      <div class="kpi-card kpi-profit">
+        <div class="kpi-card-head"><span class="kpi-icon"><i class="pi pi-chart-line"></i></span><h4>Profit</h4></div>
+        <div class="kpi-row"><span>Amount</span><strong>Rs {{ report()?.profit }}</strong></div>
+      </div>
+    </div>
+
+    <!-- ORDERS TABLE -->
+    <h3 class="dfc-section-title">Order History</h3>
+
+    @if(orders().length === 0) {
+      <div class="dfc-empty">
+        <i class="pi pi-inbox"></i>
+        <span>No orders found for selected date</span>
+      </div>
+    }
+
+    @if (orders().length > 0) {
+      <div class="dfc-table-wrap" style="margin-bottom: 20px;">
+        <table class="dfc-table">
+          <thead>
+            <tr>
+              <th>Order Id</th>
+              <th>Total Amount</th>
+              <th>Total Quantity</th>
+              <th>Date</th>
+              <th>Waiter</th>
+              <th>Cashier</th>
+              <th>Status</th>
+              <th>Cancelled By</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for(order of orders(); track order.id) {
+              <tr class="order-row" (click)="toggleExpand(order)" [class.expanded]="order.expanded">
+                <td>{{ order.id }}</td>
+                <td>Rs {{ order.totalAmount }}</td>
+                <td>{{ order.totalQuantity }}</td>
+                <td>{{ order.createdAt | date:'medium' }}</td>
+                <td>{{ order.takenByEmployeeName || '-' }}</td>
+                <td>{{ order.cashierName || '-' }}</td>
+                <td>
+                  @if (order.paid) {
+                    <span class="dfc-badge dfc-badge-success">Paid</span>
+                  } @else {
+                    <span class="dfc-badge dfc-badge-danger">Unpaid</span>
+                  }
+                </td>
+                <td>{{ order.cancelledByEmployeeName || '-' }}</td>
+              </tr>
+
+              @if(order.expanded) {
+                <tr class="details-row">
+                  <td colspan="8">
+                    <div class="details-container">
+                      <table class="dfc-table">
+                        <thead>
+                          <tr>
+                            <th>Item / Deal</th>
+                            <th>Price</th>
+                            <th>Qty</th>
+                            <th>Total</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for(item of order.items; track item) {
+                            <tr>
+                              <td>{{ item.menuItemName }}</td>
+                              <td>Rs {{ item.unitPrice }}</td>
+                              <td>{{ item.quantity }}</td>
+                              <td>Rs {{ item.unitPrice * item.quantity }}</td>
+                            </tr>
+                          }
+                          @for(deal of order.deals || []; track deal) {
+                            <tr>
+                              <td>{{ deal.dealName }}</td>
+                              <td>Rs {{ deal.dealPrice }}</td>
+                              <td>{{ deal.quantity }}</td>
+                              <td>Rs {{ deal.dealPrice * deal.quantity }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- PURCHASE ORDERS -->
+    @if(purchaseOrders().length > 0) {
+      <h3 class="dfc-section-title">Purchase Orders</h3>
+
+      <div class="dfc-table-wrap" style="margin-bottom: 20px;">
+        <table class="dfc-table">
+          <tbody>
+            @for(o of purchaseOrders(); track o.id) {
+              <tr>
+                <td>{{ o.billNo }}</td>
+                <td>{{ o.vendorName }}</td>
+                <td>{{ o.purchaseDate | date:'medium' }}</td>
+                <td>Rs {{ o.totalAmount }}</td>
+                <td>
+                  <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" (click)="toggleDetails(o.id); $event.stopPropagation()">
+                    <i class="pi" [ngClass]="expandedOrderId() === o.id ? 'pi-chevron-up' : 'pi-eye'"></i>
+                    {{ expandedOrderId() === o.id ? 'Hide' : 'View' }}
+                  </button>
+                </td>
+              </tr>
+
+              @if(expandedOrderId() === o.id) {
+                <tr>
+                  <td colspan="5" class="details">
+                    <div class="inner-table-wrap">
+                      <table class="dfc-table">
+                        <tbody>
+                          @for(item of o.items; track item) {
+                            <tr>
+                              <td>{{ item.rawItemName }}</td>
+                              <td>{{ item.quantity }}</td>
+                              <td>Rs {{ item.unitPrice }}</td>
+                              <td>Rs {{ item.totalPrice }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- KITCHEN OUT -->
+    @if(kitchenOuts().length > 0) {
+      <h3 class="dfc-section-title">Kitchen Out History</h3>
+
+      <div class="dfc-table-wrap" style="margin-bottom: 20px;">
+        <table class="dfc-table">
+          <tbody>
+            @for(k of kitchenOuts(); track k.id) {
+              <tr>
+                <td>{{ k.issuedAt | date:'short' }}</td>
+                <td>
+                  <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" (click)="toggleKitchenDetails(k.id); $event.stopPropagation()">
+                    <i class="pi" [ngClass]="expandedKitchenId() === k.id ? 'pi-chevron-up' : 'pi-eye'"></i>
+                    {{ expandedKitchenId() === k.id ? 'Hide' : 'View' }}
+                  </button>
+                </td>
+              </tr>
+
+              @if(expandedKitchenId() === k.id) {
+                <tr>
+                  <td colspan="2" class="details">
+                    <div class="inner-table-wrap">
+                      <table class="dfc-table">
+                        <tbody>
+                          @for(i of k.items; track i) {
+                            <tr>
+                              <td>{{ i.rawItemName }}</td>
+                              <td>{{ i.quantity }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- WASTE -->
+    @if((report()?.wastes ?? []).length > 0) {
+      <h3 class="dfc-section-title">Waste Items</h3>
+
+      <div class="dfc-table-wrap">
+        <table class="dfc-table">
+          <tbody>
+            @for(w of report().wastes; track w.id) {
+              <tr>
+                <td>{{ w.id }}</td>
+                <td>{{ w.createdAt | date:'short' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+  </div>
+  }
+</div>

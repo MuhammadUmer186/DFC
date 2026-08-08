@@ -1,0 +1,30 @@
+<div class="dfc-page">
+  <div class="dfc-form-card">
+    <h2><i class="pi pi-pencil" style="color: var(--dfc-amber-600); margin-right: 8px;"></i>Update Menu Item</h2>
+
+    <form [formGroup]="form" (ngSubmit)="update()">
+      <div class="dfc-field">
+        <label>Name</label>
+        <input class="dfc-input" formControlName="name">
+      </div>
+
+      <div class="dfc-field">
+        <label>Price</label>
+        <input class="dfc-input" type="number" formControlName="price">
+      </div>
+
+      <div class="dfc-field">
+        <label>Category</label>
+        <select formControlName="categoryId">
+          @for (c of categories(); track c) {
+            <option [value]="c.id">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+
+      <button type="submit" class="dfc-btn dfc-btn-primary">
+        <i class="pi pi-check"></i> Update
+      </button>
+    </form>
+  </div>
+</div>

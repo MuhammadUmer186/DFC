@@ -1,0 +1,32 @@
+.signup-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--dfc-gray-100);
+  padding: 24px;
+}
+
+.signup-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--dfc-surface);
+  border: 1px solid var(--dfc-border);
+  border-radius: var(--dfc-radius-lg);
+  box-shadow: var(--dfc-shadow-md);
+  padding: 28px 30px;
+}
+
+.signup-card h2 {
+  font-family: var(--dfc-font-display);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--dfc-gray-900);
+  margin-bottom: 4px;
+}
+
+.signup-subtitle {
+  font-size: 13px;
+  color: var(--dfc-text-muted);
+  margin: 0 0 20px;
+}

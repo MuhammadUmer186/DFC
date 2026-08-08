@@ -1,0 +1,157 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-book"></i> My Menu <span class="count-badge">{{ totalItemCount() }}</span></h2>
+      <p class="dfc-page-subtitle">All menu items across every category — add, edit and add photos here</p>
+    </div>
+    <div class="dfc-page-actions">
+      <button class="dfc-btn dfc-btn-ghost" routerLink="/category-list">
+        <i class="pi pi-tags"></i> Manage Categories
+      </button>
+      <button class="dfc-btn dfc-btn-primary" (click)="openAddForm()">
+        <i class="pi pi-plus"></i> Add Item
+      </button>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="dfc-toolbar">
+    <input
+      type="text"
+      class="dfc-input"
+      placeholder="Search menu items..."
+      [value]="searchTerm()"
+      (input)="searchTerm.set($any($event.target).value)"
+    />
+
+    <div class="category-chips">
+      <button
+        class="category-chip"
+        [class.active]="activeCategoryId() === 'all'"
+        (click)="activeCategoryId.set('all')">
+        All
+      </button>
+      @for (c of categories(); track c.id) {
+        <button
+          class="category-chip"
+          [class.active]="activeCategoryId() === c.id"
+          (click)="activeCategoryId.set(c.id)">
+          {{ c.name }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  @if (loading()) {
+    <div class="dfc-loading"><i class="pi pi-spin pi-spinner"></i> Loading menu...</div>
+  }
+
+  <!-- EMPTY -->
+  @if (!loading() && visibleCategories().length === 0) {
+    <div class="dfc-empty">
+      <i class="pi pi-inbox"></i>
+      <span>No menu items match your filters</span>
+    </div>
+  }
+
+  <!-- MENU GROUPED BY CATEGORY -->
+  @if (!loading()) {
+    @for (cat of visibleCategories(); track cat.id) {
+      @if (cat.items.length > 0) {
+        <div class="menu-section">
+          <h3 class="dfc-section-title">{{ cat.name }} <span class="count-badge">{{ cat.items.length }}</span></h3>
+
+          <div class="menu-item-grid">
+            @for (item of cat.items; track item.id) {
+              <div class="menu-item-card">
+                <div class="menu-item-photo">
+                  @if (item.imageUrl) {
+                    <img [src]="fullImageUrl(item.imageUrl)" alt="{{ item.name }}">
+                  } @else {
+                    <span class="menu-item-photo-placeholder"><i class="pi pi-image"></i></span>
+                  }
+                </div>
+
+                <div class="menu-item-body">
+                  <div class="menu-item-name">{{ item.name }}</div>
+                  @if (item.description) {
+                    <div class="menu-item-description">{{ item.description }}</div>
+                  }
+                  <div class="menu-item-price">Rs {{ item.price }}</div>
+                </div>
+
+                <div class="menu-item-actions">
+                  <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" (click)="openEditForm(item)"><i class="pi pi-pencil"></i> Edit</button>
+                  <button class="dfc-btn dfc-btn-danger dfc-btn-sm" (click)="delete(item)"><i class="pi pi-trash"></i></button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
+  }
+
+</div>
+
+<!-- ================= ADD / EDIT PANEL ================= -->
+@if (showForm()) {
+  <div class="menu-form-backdrop" (click)="closeForm()"></div>
+
+  <div class="menu-form-panel">
+    <div class="menu-form-header">
+      <h3>{{ editingItem() ? 'Edit Item' : 'Add Item' }}</h3>
+      <button class="menu-form-close" (click)="closeForm()"><i class="pi pi-times"></i></button>
+    </div>
+
+    <div class="menu-form-body">
+
+      <div class="menu-form-photo">
+        @if (formImagePreview()) {
+          <img [src]="formImagePreview()" alt="Preview">
+        } @else {
+          <span class="menu-item-photo-placeholder large"><i class="pi pi-image"></i></span>
+        }
+
+        <label class="dfc-btn dfc-btn-ghost dfc-btn-sm menu-form-upload-btn">
+          <i class="pi pi-upload"></i> {{ formImagePreview() ? 'Change Photo' : 'Add Photo' }}
+          <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden (change)="onImageSelected($event)">
+        </label>
+      </div>
+
+      <div class="dfc-field">
+        <label>Item Name</label>
+        <input class="dfc-input" type="text" [value]="formName()" (input)="formName.set($any($event.target).value)" placeholder="e.g. Zinger Burger">
+      </div>
+
+      <div class="dfc-field">
+        <label>Price (Rs)</label>
+        <input class="dfc-input" type="number" min="0" [value]="formPrice()" (input)="formPrice.set($any($event.target).value ? +$any($event.target).value : null)" placeholder="0">
+      </div>
+
+      <div class="dfc-field">
+        <label>Category</label>
+        <select [ngModel]="formCategoryId()" (ngModelChange)="formCategoryId.set($event)">
+          @for (c of categories(); track c.id) {
+            <option [ngValue]="c.id">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="dfc-field">
+        <label>Description <span class="dfc-field-optional">(shown on the online menu)</span></label>
+        <textarea class="dfc-input" rows="3" [value]="formDescription()" (input)="formDescription.set($any($event.target).value)" placeholder="e.g. Crispy golden fries with a perfect crunch."></textarea>
+      </div>
+
+      <button class="dfc-btn dfc-btn-primary menu-form-save" [disabled]="saving()" (click)="save()">
+        @if (saving()) {
+          <i class="pi pi-spin pi-spinner"></i> Saving...
+        } @else {
+          <i class="pi pi-check"></i> {{ editingItem() ? 'Save Changes' : 'Create Item' }}
+        }
+      </button>
+    </div>
+  </div>
+}

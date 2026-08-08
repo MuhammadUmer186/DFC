@@ -1,0 +1,134 @@
+/* ---------- PAGE TITLE ---------- */
+h2 {
+  text-align: center;
+  font-size: 22px;
+  margin-bottom: 12px;
+  letter-spacing: .5px;
+}
+
+/* ---------- FORM CONTAINER ---------- */
+form {
+  max-width: 750px;
+  margin: auto;
+  padding: 18px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  box-shadow: 0 5px 20px rgba(0,0,0,.08);
+  animation: fadeIn .4s ease;
+}
+
+/* ---------- LABELS ---------- */
+label {
+  display: block;
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ---------- INPUTS & SELECT ---------- */
+input, select {
+  width: 100%;
+  padding: 8px 10px;
+  margin-top: 4px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  outline: none;
+  transition: .2s;
+  background: #fafafa;
+}
+
+input:focus, select:focus {
+  border-color: #2b7cff;
+  background: white;
+  box-shadow: 0 0 5px rgba(43,124,255,.4);
+  transform: scale(.99);
+}
+
+/* ---------- HR ---------- */
+hr {
+  margin: 14px 0;
+}
+
+/* ---------- SECTION TITLE ---------- */
+h3 {
+  margin-top: 5px;
+  font-size: 18px;
+}
+
+/* ---------- ITEM ROW ---------- */
+.item-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background: #f7f9ff;
+  transition: .2s ease;
+}
+
+.item-row:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 10px rgba(0,0,0,.1);
+  border-color: #2b7cff;
+}
+
+/* ---------- REMOVE BUTTON ---------- */
+.item-row button {
+  background: #ff4d4d;
+  color: white;
+  border: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.item-row button:hover {
+  background: #d93636;
+  transform: scale(.9);
+}
+
+/* ---------- ADD ROW BUTTON ---------- */
+button[type="button"] {
+  background: #2b7cff;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: .2s;
+}
+
+button[type="button"]:hover {
+  background: #1b5bd3;
+  transform: scale(.97);
+}
+
+/* ---------- SAVE BUTTON ---------- */
+button[type="submit"] {
+  background: #28a745;
+  color: white;
+  padding: 10px 18px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: .2s;
+}
+
+button[type="submit"]:hover {
+  background: #1f7a34;
+  transform: scale(.97);
+}
+
+/* ---------- ANIMATION ---------- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

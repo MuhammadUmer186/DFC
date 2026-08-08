@@ -1,0 +1,270 @@
+.cart-panel {
+  background: var(--dfc-white);
+  color: var(--dfc-navy-900);
+  border: 1px solid var(--dfc-gray-200);
+  border-radius: var(--dfc-radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cart-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cart-panel-header h3 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.cart-count-badge {
+  background: var(--dfc-amber-500);
+  color: var(--dfc-navy-950);
+  font-size: 13px;
+  font-weight: 800;
+  border-radius: 999px;
+  min-width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+}
+
+.clear-btn {
+  align-self: flex-end;
+  background: transparent;
+  border: none;
+  color: var(--dfc-gray-500);
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: -8px;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-cart {
+  text-align: center;
+  padding: 8px 0 4px;
+}
+
+.empty-illustration {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: var(--dfc-gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.basket-ic {
+  position: relative;
+  z-index: 1;
+}
+
+.floating-ic {
+  position: absolute;
+  opacity: 0.9;
+}
+
+.ic-fries { top: 6px; left: 8px; }
+.ic-cup { top: 2px; right: 10px; }
+.ic-box { bottom: 10px; right: 4px; }
+
+.empty-title {
+  font-weight: 800;
+  font-size: 16px;
+  margin: 0 0 4px;
+  color: var(--dfc-navy-900);
+}
+
+.empty-subtitle {
+  font-size: 13px;
+  color: var(--dfc-gray-500);
+  margin: 0 0 16px;
+}
+
+.browse-btn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  text-decoration: none;
+  padding: 12px 0;
+  font-size: 14px;
+}
+
+/* ===== CART LINES (non-empty) ===== */
+.cart-panel-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.cart-panel-line {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  background: var(--dfc-gray-50);
+  border-radius: var(--dfc-radius-sm);
+  padding: 8px;
+}
+
+.line-photo {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.line-photo.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--dfc-gray-100);
+  font-size: 18px;
+}
+
+.line-name {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.line-price {
+  font-size: 11.5px;
+  color: var(--dfc-gray-500);
+  margin-bottom: 4px;
+}
+
+.qty-stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qty-stepper button {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: var(--dfc-gray-200);
+  color: var(--dfc-navy-900);
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.qty-stepper span {
+  font-size: 12.5px;
+  font-weight: 700;
+  min-width: 14px;
+  text-align: center;
+}
+
+.remove-btn {
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  opacity: 0.7;
+  align-self: start;
+}
+
+.add-more-link {
+  text-align: center;
+  padding: 8px;
+  border: 1.5px dashed var(--dfc-gray-200);
+  border-radius: var(--dfc-radius-sm);
+  color: var(--dfc-gray-500);
+  text-decoration: none;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.cart-fees {
+  border-top: 1px solid var(--dfc-gray-200);
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fee-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: var(--dfc-gray-500);
+}
+
+.cart-total-row {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 800;
+  font-size: 17px;
+  padding-top: 6px;
+  border-top: 1px solid var(--dfc-gray-200);
+}
+
+.cart-total-row span:last-child {
+  color: var(--dfc-amber-600);
+}
+
+.checkout-btn {
+  width: 100%;
+  padding: 12px 0;
+  text-decoration: none;
+  font-size: 14px;
+  text-align: center;
+  display: block;
+}
+
+/* ===== SECURITY BOX ===== */
+.security-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--dfc-gray-50);
+  border-radius: var(--dfc-radius-sm);
+  padding: 14px;
+}
+
+.security-ic {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.security-title {
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--dfc-navy-900);
+}
+
+.security-sub {
+  font-size: 11.5px;
+  color: var(--dfc-gray-500);
+  margin-top: 2px;
+}
+
+/* ===== PAYMENT ICONS ===== */
+.payment-icons-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.pay-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--dfc-gray-700);
+  background: var(--dfc-gray-100);
+  border-radius: 999px;
+  padding: 6px 14px;
+}

@@ -1,0 +1,258 @@
+<ul class="sidebar" [class.closed]="closed">
+
+  <!-- ================= MAIN ADMIN ================= -->
+  @if (role === 'MainAdmin') {
+
+    <li routerLink="/dashboard">Dashboard</li>
+    <li routerLink="/report">Reports</li>
+    <li routerLink="/menu-item-report">Menu Item Report</li>
+    
+
+    <!-- Orders -->
+    <li class="parent" (click)="toggleMenu('orders')">
+      Orders {{ openMenu === 'orders' ? '▼' : '▶' }}
+    </li>
+    @if (openMenu === 'orders') {
+      <ul class="submenu">
+        <li routerLink="/ORDERCREATE">Order Creation</li>
+        <li routerLink="/Orderhistory">Order History</li>
+        <li routerLink="/Queue">Order Queue</li>
+      </ul>
+    }
+
+    <!-- Purchase -->
+    <li class="parent" (click)="toggleMenu('purchase')">
+      Purchase {{ openMenu === 'purchase' ? '▼' : '▶' }}
+    </li>
+    @if (openMenu === 'purchase') {
+      <ul class="submenu">
+        <li routerLink="/MainPO">Purchase Order</li>
+        <li routerLink="/purchaseorder-list">Purchase Order List</li>
+      </ul>
+    }
+
+    <!-- Kitchen -->
+    <li class="parent" (click)="toggleMenu('kitchen')">
+      Kitchen {{ openMenu === 'kitchen' ? '▼' : '▶' }}
+    </li>
+    @if (openMenu === 'kitchen') {
+      <ul class="submenu">
+        <li routerLink="/MainKO">Kitchen Out</li>
+        <li routerLink="/kitchenout-list">Kitchen Out List</li>
+      </ul>
+    }
+
+    <!-- Inventory -->
+    <li class="parent" (click)="toggleMenu('inventory')">
+      Inventory {{ openMenu === 'inventory' ? '▼' : '▶' }}
+    </li>
+    @if (openMenu === 'inventory') {
+      <ul class="submenu">
+        <li routerLink="/MainWM">Waste Management</li>
+        <li routerLink="/WM-list">Waste Management List</li>
+        <li routerLink="/stock-summary">Stock Summary</li>
+      </ul>
+    }
+
+    <!-- Menu -->
+    <li class="parent" (click)="toggleMenu('menu')">
+      Menu {{ openMenu === 'menu' ? '▼' : '▶' }}
+    </li>
+    @if (openMenu === 'menu') {
+      <ul class="submenu">
+        <li routerLink="/menu-create">New Menu Create</li>
+        <li routerLink="/update-menu">Menu Update</li>
+        <li routerLink="/Delete-menu">Menu Delete</li>
+      </ul>
+    }
+
+    <!-- Categories -->
+     <li routerLink="/category-list">All Categories</li>
+    
+
+    <!-- Vendors -->
+    <li class="parent" (click)="toggleMenu('vendors')">
+      Vendors {{ openMenu === 'vendors' ? '▼' : '▶' }}
+    </li>
+    @if (openMenu === 'vendors') {
+      <ul class="submenu">
+        <li routerLink="/VendorLedger">Vendor Management</li>
+        <li routerLink="/vendor-list">Vendor List</li>
+        <li routerLink="/vendor-update">Vendor Update</li>
+        <li routerLink="/vendor-create">Vendor Create</li>
+      </ul>
+    }
+    <li class="parent" (click)="toggleMenu('Employee')">
+      Employee {{ openMenu === 'Employee' ? '▼' : '▶' }}
+    </li>
+    @if (openMenu === 'Employee') {
+      <ul class="submenu">
+        <li routerLink="/emp-list">Employee List</li>
+        <li routerLink="/emp-create">Employee Create</li>
+        <li routerLink="/emp-edit">Employee Edit</li>
+        <li routerLink="/salary-pay">Salary Pay</li>
+        
+      </ul>
+    }
+
+    <!-- Utilities -->
+    <li class="parent" (click)="toggleMenu('utilities')">
+      Utilities {{ openMenu === 'utilities' ? '▼' : '▶' }}
+    </li>
+    @if (openMenu === 'utilities') {
+      <ul class="submenu">
+        <li routerLink="/UB-create">Utility Bills Create</li>
+        <li routerLink="/UB-searchbill">Utility Bills</li>
+      </ul>
+    }
+    
+    <!-- Raw Items -->
+    <li class="parent" (click)="toggleMenu('rawitems')">
+      Raw Items {{ openMenu === 'rawitems' ? '▼' : '▶' }}
+    </li>
+    @if (openMenu === 'rawitems') {
+      <ul class="submenu">
+        <li routerLink="/rawitem-list">Rawitem List</li>
+        <li routerLink="/rawitem-update">Update RawItem</li>
+        <li routerLink="/rawitem-create">Create RawItem</li>
+      </ul>
+    }
+    <li routerLink="/signup">Register</li>
+  }
+
+  <!-- ================= ADMIN ================= -->
+  @if (role === 'Admin') {
+
+    <li routerLink="/dashboard">Dashboard</li>
+    <li routerLink="/report">Reports</li>
+    <li routerLink="/menu-item-report">Menu Item Report</li>
+    
+    <!-- Orders -->
+    <li class="parent" (click)="toggleMenu('orders')">
+      Orders {{ openMenu === 'orders' ? '▼' : '▶' }}
+    </li>
+    @if (openMenu === 'orders') {
+      <ul class="submenu">
+        <li routerLink="/ORDERCREATE">Order Creation</li>
+        <li routerLink="/Orderhistory">Order History</li>
+        <li routerLink="/Queue">Order Queue</li>
+      </ul>
+    }
+
+    <!-- Purchase -->
+    <li class="parent" (click)="toggleMenu('purchase')">
+      Purchase {{ openMenu === 'purchase' ? '▼' : '▶' }}
+    </li>
+    @if (openMenu === 'purchase') {
+      <ul class="submenu">
+        <li routerLink="/MainPO">Purchase Order</li>
+        <li routerLink="/purchaseorder-list">Purchase Order List</li>
+      </ul>
+    }
+
+    <!-- Kitchen -->
+    <li class="parent" (click)="toggleMenu('kitchen')">
+      Kitchen {{ openMenu === 'kitchen' ? '▼' : '▶' }}
+    </li>
+    @if (openMenu === 'kitchen') {
+      <ul class="submenu">
+        <li routerLink="/MainKO">Kitchen Out</li>
+        <li routerLink="/kitchenout-list">Kitchen Out List</li>
+      </ul>
+    }
+
+    <!-- Inventory -->
+    <li class="parent" (click)="toggleMenu('inventory')">
+      Inventory {{ openMenu === 'inventory' ? '▼' : '▶' }}
+    </li>
+    @if (openMenu === 'inventory') {
+      <ul class="submenu">
+        <li routerLink="/MainWM">Waste Management</li>
+        <li routerLink="/WM-list">Waste Management List</li>
+        <li routerLink="/stock-summary">Stock Summary</li>
+      </ul>
+    }
+
+    <!-- Vendors -->
+    <li class="parent" (click)="toggleMenu('vendors')">
+      Vendors {{ openMenu === 'vendors' ? '▼' : '▶' }}
+    </li>
+    @if (openMenu === 'vendors') {
+      <ul class="submenu">
+        <li routerLink="/VendorLedger">Vendor Management</li>
+        <li routerLink="/vendor-create">Vendor Create</li>
+      </ul>
+    }
+    <li class="parent" (click)="toggleMenu('Employee')">
+      Employee {{ openMenu === 'Employee' ? '▼' : '▶' }}
+    </li>
+    @if (openMenu === 'Employee') {
+      <ul class="submenu">
+        <li routerLink="/emp-list">Employee List</li>
+        <li routerLink="/emp-create">Employee Create</li>
+        <li routerLink="/emp-edit">Employee Edit</li>
+        <li routerLink="/salary-pay">Salary Pay</li>
+        
+      </ul>
+    }
+
+    <!-- Utilities -->
+    <li class="parent" (click)="toggleMenu('utilities')">
+      Utilities {{ openMenu === 'utilities' ? '▼' : '▶' }}
+    </li>
+    @if (openMenu === 'utilities') {
+      <ul class="submenu">
+        <li routerLink="/UB-create">Utility Bills Create</li>
+        <li routerLink="/UB-searchbill">Utility Bills</li>
+      </ul>
+    }
+    <li routerLink="/rawitem-create">Create RawItem</li>
+    <li routerLink="/signup">Register</li>
+  }
+
+  <!-- ================= CASHIER ================= -->
+  @if (role === 'Cashier') {
+
+    <li class="parent" (click)="toggleMenu('orders')">
+      Orders {{ openMenu === 'orders' ? '▼' : '▶' }}
+    </li>
+    @if (openMenu === 'orders') {
+      <ul class="submenu">
+        <li routerLink="/ORDERCREATE">Order Creation</li>
+        <li routerLink="/Orderhistory">Order History</li>
+        <li routerLink="/Queue">Order Queue</li>
+      </ul>
+    }
+    <li routerLink="/VendorLedger">Vendor Management</li>
+  }
+   <!-- ================= WAITER ================= -->
+  @if (role === 'Waiter') {
+
+    <li class="parent" (click)="toggleMenu('orders')">
+      Orders {{ openMenu === 'orders' ? '▼' : '▶' }}
+    </li>
+    @if (openMenu === 'orders') {
+      <ul class="submenu">
+        <li routerLink="/ORDERCREATE">Order Creation</li>
+        
+      </ul>
+    }
+  }
+
+  <!-- ================= STORE KEEPER ================= -->
+  @if (role === 'StoreKeeper') {
+
+    <li class="parent" (click)="toggleMenu('store')">
+      Store {{ openMenu === 'store' ? '▼' : '▶' }}
+    </li>
+    @if (openMenu === 'store') {
+      <ul class="submenu">
+        <li routerLink="/MainPO">Purchase Order</li>
+        <li routerLink="/MainKO">Kitchen Out</li>
+        <li routerLink="/stock-summary">Stock Summary</li>
+        <li routerLink="/VendorLedger">Vendor Management</li>
+      </ul>
+    }
+  }
+
+</ul>

@@ -1,0 +1,31 @@
+<div class="dfc-page">
+  <div class="dfc-form-card">
+    <h2><i class="pi pi-pencil" style="color: var(--dfc-amber-600); margin-right: 8px;"></i>Update Kitchen Out</h2>
+
+    <form [formGroup]="form" (ngSubmit)="update()">
+      <div class="dfc-field">
+        <label>Item Name</label>
+        <input class="dfc-input" formControlName="itemName">
+      </div>
+
+      <div class="dfc-field">
+        <label>Quantity</label>
+        <input class="dfc-input" type="number" formControlName="quantity">
+      </div>
+
+      <div class="dfc-field">
+        <label>Unit</label>
+        <input class="dfc-input" formControlName="unit">
+      </div>
+
+      <div class="dfc-field">
+        <label>Date</label>
+        <input class="dfc-input" type="date" formControlName="date">
+      </div>
+
+      <button type="submit" class="dfc-btn dfc-btn-primary">
+        <i class="pi pi-check"></i> Update
+      </button>
+    </form>
+  </div>
+</div>

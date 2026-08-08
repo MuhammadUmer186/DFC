@@ -1,0 +1,60 @@
+<h2>Restaurant Menu Management</h2>
+
+<!-- CATEGORY DROPDOWN -->
+<select (change)="selectCategory($event)">
+  <option value="">Select Category</option>
+  @for (c of categories; track c) {
+    <option [value]="c.id">
+      {{ c.name }}
+    </option>
+  }
+</select>
+
+<!-- MENU TABLE -->
+@if (selectedCategory) {
+  <table>
+    <thead>
+      <tr>
+        <th>Item Name</th>
+        <th>Price</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of selectedCategory.items; track item) {
+        <tr>
+          <td>{{ item.name }}</td>
+          <td>{{ item.price | currency }}</td>
+          <td>
+            <button (click)="edit(item)">Edit</button>
+            <button class="delete" (click)="delete(item.id)">Delete</button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}
+
+<hr>
+
+  <!-- CREATE / UPDATE FORM
+  <form [formGroup]="menuForm" (ngSubmit)="submit()">
+    <h3>{{ editMode ? 'Update' : 'Add' }} Menu Item</h3>
+
+    <input type="text" placeholder="Item Name" formControlName="name">
+
+    <input type="number" placeholder="Price" formControlName="price">
+
+    <select formControlName="categoryId">
+      <option value="">Select Category</option>
+      <option *ngFor="let c of categories" [value]="c.id">
+        {{ c.name }}
+      </option>
+    </select>
+
+    <button type="submit">
+      {{ editMode ? 'Update' : 'Create' }}
+    </button>
+
+    <button type="button" (click)="resetForm()">Clear</button>
+  </form>..!>-->

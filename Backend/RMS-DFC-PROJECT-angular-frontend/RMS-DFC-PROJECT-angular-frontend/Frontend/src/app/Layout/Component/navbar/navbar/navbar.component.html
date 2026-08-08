@@ -1,0 +1,20 @@
+<nav class="navbar">
+  <div class="left">
+    <button class="menu-btn" (click)="toggle()">☰</button>
+
+    <!-- Logo image -->
+    <div class="logo">
+      <img src="assets/DFC.jpg" alt="DFC Logo" class="logo-img" />
+    </div>
+  </div>
+
+  <!-- Title image stretched at center -->
+  <div class="title">
+    <img src="assets/DFC_NAV.jpg" alt="DFC Title" class="title-img" />
+  </div>
+
+  <div class="actions">
+    <span class="user">{{ auth.getRole() }}</span>
+    <button (click)="logout()">Logout</button>
+  </div>
+</nav>

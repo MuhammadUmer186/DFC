@@ -1,0 +1,156 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-tag"></i> Deals <span class="count-badge">{{ deals().length }}</span></h2>
+      <p class="dfc-page-subtitle">Create item combinations, set a discount, and activate/deactivate any time</p>
+    </div>
+    <div class="dfc-page-actions">
+      <button class="dfc-btn dfc-btn-primary" (click)="openAddForm()">
+        <i class="pi pi-plus"></i> Add Deal
+      </button>
+    </div>
+  </div>
+
+  <div class="dfc-toolbar">
+    <input
+      type="text"
+      class="dfc-input"
+      placeholder="Search deals..."
+      [value]="searchTerm()"
+      (input)="searchTerm.set($any($event.target).value)"
+    />
+  </div>
+
+  @if (loading()) {
+    <div class="dfc-loading"><i class="pi pi-spin pi-spinner"></i> Loading deals...</div>
+  }
+
+  @if (!loading() && visibleDeals().length === 0) {
+    <div class="dfc-empty">
+      <i class="pi pi-inbox"></i>
+      <span>No deals match your search</span>
+    </div>
+  }
+
+  @if (!loading()) {
+    <div class="deal-grid">
+      @for (deal of visibleDeals(); track deal.id) {
+        <div class="deal-card" [class.inactive]="!deal.isActive">
+          <div class="deal-photo">
+            @if (deal.imageUrl) {
+              <img [src]="fullImageUrl(deal.imageUrl)" alt="{{ deal.dealName }}">
+            } @else {
+              <span class="deal-photo-placeholder"><i class="pi pi-image"></i></span>
+            }
+            <span class="deal-status-badge" [class.active]="deal.isActive">
+              {{ deal.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+
+          <div class="deal-body">
+            <div class="deal-name">{{ deal.dealName }}</div>
+            <div class="deal-combo-summary">
+              @for (item of deal.items; track item.menuItemId) {
+                <span class="combo-chip">{{ item.name }} × {{ item.quantity }}</span>
+              }
+            </div>
+            <div class="deal-price-row">
+              @if (deal.discountAmount > 0) {
+                <span class="deal-original-price">Rs {{ deal.originalPrice }}</span>
+              }
+              <span class="deal-final-price">Rs {{ deal.finalPrice }}</span>
+            </div>
+          </div>
+
+          <div class="deal-actions">
+            <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" (click)="openEditForm(deal)"><i class="pi pi-pencil"></i> Edit</button>
+            <button class="dfc-btn dfc-btn-sm" [class.dfc-btn-success]="!deal.isActive" [class.dfc-btn-ghost]="deal.isActive" (click)="toggleActive(deal)">
+              <i class="pi" [class.pi-eye]="!deal.isActive" [class.pi-eye-slash]="deal.isActive"></i>
+              {{ deal.isActive ? 'Deactivate' : 'Activate' }}
+            </button>
+            <button class="dfc-btn dfc-btn-danger dfc-btn-sm" (click)="delete(deal)"><i class="pi pi-trash"></i></button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+<!-- ================= ADD / EDIT PANEL ================= -->
+@if (showForm()) {
+  <div class="menu-form-backdrop" (click)="closeForm()"></div>
+
+  <div class="menu-form-panel">
+    <div class="menu-form-header">
+      <h3>{{ editingDeal() ? 'Edit Deal' : 'Add Deal' }}</h3>
+      <button class="menu-form-close" (click)="closeForm()"><i class="pi pi-times"></i></button>
+    </div>
+
+    <div class="menu-form-body">
+
+      <div class="menu-form-photo">
+        @if (formImagePreview()) {
+          <img [src]="formImagePreview()" alt="Preview">
+        } @else {
+          <span class="menu-item-photo-placeholder large"><i class="pi pi-image"></i></span>
+        }
+
+        <label class="dfc-btn dfc-btn-ghost dfc-btn-sm menu-form-upload-btn">
+          <i class="pi pi-upload"></i> {{ formImagePreview() ? 'Change Photo' : 'Add Photo' }}
+          <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden (change)="onImageSelected($event)">
+        </label>
+      </div>
+
+      <div class="dfc-field">
+        <label>Deal Name</label>
+        <input class="dfc-input" type="text" [value]="formName()" (input)="formName.set($any($event.target).value)" placeholder="e.g. Fries + Drink Combo">
+      </div>
+
+      <div class="dfc-field">
+        <label>Discount Amount (Rs)</label>
+        <input class="dfc-input" type="number" min="0" [value]="formDiscountAmount()" (input)="formDiscountAmount.set($any($event.target).value ? +$any($event.target).value : 0)" placeholder="0">
+      </div>
+
+      <div class="dfc-field">
+        <label>Combo Items</label>
+        <div class="item-picker-row">
+          <select [ngModel]="pickerMenuItemId()" (ngModelChange)="pickerMenuItemId.set($event)">
+            @for (item of allMenuItems(); track item.id) {
+              <option [ngValue]="item.id">{{ item.name }} (Rs {{ item.price }})</option>
+            }
+          </select>
+          <input type="number" min="1" class="qty-input" [ngModel]="pickerQuantity()" (ngModelChange)="pickerQuantity.set($event)">
+          <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" (click)="addItemToCombo()"><i class="pi pi-plus"></i></button>
+        </div>
+
+        @if (formItems().length > 0) {
+          <div class="combo-items-list">
+            @for (item of formItems(); track item.menuItemId) {
+              <div class="combo-item-row">
+                <span>{{ item.name }} × {{ item.quantity }}</span>
+                <span class="combo-item-price">Rs {{ item.price * item.quantity }}</span>
+                <button class="remove-btn" (click)="removeItemFromCombo(item.menuItemId)"><i class="pi pi-times"></i></button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="combo-preview">
+        <div class="preview-row"><span>Combo Value</span><span>Rs {{ comboValue() }}</span></div>
+        <div class="preview-row"><span>Discount</span><span>− Rs {{ formDiscountAmount() || 0 }}</span></div>
+        <div class="preview-row total"><span>Final Price</span><span>Rs {{ finalPricePreview() }}</span></div>
+      </div>
+
+      <button class="dfc-btn dfc-btn-primary menu-form-save" [disabled]="saving()" (click)="save()">
+        @if (saving()) {
+          <i class="pi pi-spin pi-spinner"></i> Saving...
+        } @else {
+          <i class="pi pi-check"></i> {{ editingDeal() ? 'Save Changes' : 'Create Deal' }}
+        }
+      </button>
+    </div>
+  </div>
+}

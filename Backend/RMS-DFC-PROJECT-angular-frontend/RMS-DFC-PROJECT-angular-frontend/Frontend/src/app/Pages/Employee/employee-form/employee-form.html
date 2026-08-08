@@ -1,0 +1,60 @@
+<div class="form-card">
+  <h2>Add Employee</h2>
+
+  <form [formGroup]="form" (ngSubmit)="save()">
+
+    <!-- Name -->
+    <div class="form-group">
+      <label for="name">Name</label>
+      <input id="name" type="text" formControlName="name" placeholder="Enter name">
+    </div>
+
+    <!-- Mobile Number -->
+    <div class="form-group">
+      <label for="mobileNumber">Phone</label>
+      <input id="mobileNumber" type="text" formControlName="mobileNumber" placeholder="Enter phone number">
+    </div>
+    <div class="form-group">
+      <label for="designation">Role</label>
+      <input id="designation" type="text" formControlName="designation" placeholder="Enter Role">
+    </div>
+
+    <!-- CNIC / National ID -->
+    <div class="form-group">
+      <label for="nationalId">CNIC</label>
+      <input id="nationalId" type="text" formControlName="nationalId" placeholder="Enter CNIC">
+    </div>
+
+    <!-- Address -->
+    <div class="form-group">
+      <label for="address">Address</label>
+      <input id="address" type="text" formControlName="address" placeholder="Enter Address">
+    </div>
+
+    <!-- Salary Type -->
+    <div class="form-group">
+  <label for="salaryType">Salary Type</label>
+  <select id="salaryType" formControlName="salaryType">
+    <option [ngValue]="1">Daily</option>
+    <option [ngValue]="2">Monthly</option>
+  </select>
+</div>
+
+
+    <!-- Salary Amount -->
+    <div class="form-group">
+      <label for="salaryAmount">Salary Amount</label>
+      <input id="salaryAmount" type="number" formControlName="salaryAmount" placeholder="Enter Salary Amount">
+    </div>
+
+    <!-- Is Active -->
+    <div class="form-group">
+      <label for="isActive">Active?</label>
+      <input id="isActive" type="checkbox" formControlName="isActive">
+    </div>
+
+    <!-- Submit -->
+    <button type="submit" class="submit-btn">Save</button>
+
+  </form>
+</div>

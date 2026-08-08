@@ -1,0 +1,63 @@
+<div class="recipe-container">
+
+  <h2>🍽 Menu Recipe Management</h2>
+
+  <div class="menu-select">
+    <label>Select Menu Item:</label>
+    <select bind="selectedMenuItemId" change="loadRecipe()">
+      <option [value]="null">-- Select Menu Item --</option>
+      @for(item of menuItems(); track item) {
+        <option [value]="item.id">{{ item.name }}</option>
+      }
+    </select>
+  </div>
+
+  @if (loading()) {
+    <div class="loading">Loading recipe...</div>
+  }
+
+  @if (selectedMenuItemId() && !loading()) {
+    <button click="addRecipeItem()">Add Raw Item</button>
+    <button click="saveRecipe()">Save Recipe</button>
+    <button click="deleteRecipe()">Delete Recipe</button>
+
+    @if (recipeItems().length > 0) {
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Raw Item</th>
+            <th>Quantity Required</th>
+            <th>Unit</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for(r of recipeItems(); track r; let i = $index) {
+            <tr>
+              <td>{{ i + 1 }}</td>
+              <td>
+                <select bind="r.rawItemId">
+                  <option [value]="0">--Select--</option>
+                  @for(raw of rawItems(); track raw) {
+                    <option [value]="raw.id">{{ raw.name }}</option>
+                  }
+                </select>
+              </td>
+              <td>
+                <input type="number" bind="r.quantityRequired" />
+              </td>
+              <td>{{ getUnit(r.rawItemId) }}</td>
+              <td>
+                <button click="removeRecipeItem(i)">Remove</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    } @else {
+      <div>No recipe items assigned yet.</div>
+    }
+  }
+
+</div>

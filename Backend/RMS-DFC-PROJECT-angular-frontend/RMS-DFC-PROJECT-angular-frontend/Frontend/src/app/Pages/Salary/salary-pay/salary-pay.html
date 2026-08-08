@@ -1,0 +1,50 @@
+<div class="salary-card">
+  <h2>Salary Status</h2>
+
+  <div class="form-group">
+    <label>Select Date</label>
+    <input type="date" [(ngModel)]="selectedDate">
+    <button class="btn" (click)="loadSalaries()">Load</button>
+  </div>
+
+  @if (loading()) {
+    <p>Loading...</p>
+  }
+
+  @if (!loading() && salaries().length === 0) {
+    <p>No salary records found.</p>
+  }
+
+  @if (salaries().length > 0) {
+    <table class="salary-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Mobile</th>
+          <th>Type</th>
+          <th>Amount</th>
+          <th>Paid</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of salaries(); track s.employeeId) {
+          <tr>
+            <td>{{ s.employeeName }}</td>
+            <td>{{ s.mobileNumber }}</td>
+            <td>{{ s.salaryType === 1 ? 'Daily' : 'Monthly' }}</td>
+            <td>{{ s.salaryAmount | currency:'PKR':'symbol':'1.0-0' }}</td>
+            <td>{{ s.isPaid ? 'Yes' : 'No' }}</td>
+            <td>
+              @if (!s.isPaid) {
+                <button class="btn btn-pay" (click)="paySalary(s)">
+                  Pay Salary
+                </button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

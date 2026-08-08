@@ -1,0 +1,45 @@
+<h2>Employees</h2>
+
+<button (click)="load()" class="btn">Reload</button>
+
+<div class="table-container">
+  <table class="employee-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Mobile</th>
+        <th>Role</th>
+        <th>Type</th>
+        <th>Salary</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (e of employee(); track $index) {
+        <tr>
+          <td>{{ e.id }}</td>
+          <td>{{ e.name }}</td>
+          <td>{{ e.mobileNumber }}</td>
+          <td>{{ e.designation}}</td>
+          <!-- Salary Type -->
+          <td>
+            @if(e.salaryType === 1) {
+              Daily
+            } @else {
+              Monthly
+            }
+          </td>
+
+          <!-- Salary Amount -->
+          <td>{{ e.salaryAmount | currency:'PKR':'symbol':'1.0-0' }}</td>
+
+          <!-- Actions -->
+          <td>
+            <button (click)="delete(e.id)" class="btn btn-delete">Delete</button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

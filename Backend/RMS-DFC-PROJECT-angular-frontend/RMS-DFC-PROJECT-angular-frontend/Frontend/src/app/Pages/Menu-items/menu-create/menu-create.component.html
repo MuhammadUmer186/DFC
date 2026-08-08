@@ -1,0 +1,20 @@
+<h2>Create Menu Item</h2>
+
+<form [formGroup]="form" (ngSubmit)="save()">
+
+  <input placeholder="Name" formControlName="name">
+
+  <input type="number" placeholder="Price" formControlName="price">
+
+  <select formControlName="categoryId">
+    <option value="">Select Category</option>
+    @for (c of categories(); track c) {
+      <option [value]="c.name">
+        {{ c.name }}
+      </option>
+    }
+  </select>
+
+  <button type="submit">Save</button>
+
+</form>

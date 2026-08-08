@@ -1,0 +1,73 @@
+<h2 class="title">Purchase Orders</h2>
+
+@if (loading()) {
+  <div class="loading">
+    Loading purchase orders...
+  </div>
+}
+
+@if (!loading() && orders().length === 0) {
+  <div class="no-data">
+    No Purchase Orders Found
+  </div>
+}
+
+@if (orders().length > 0) {
+  <table class="po-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Bill No</th>
+        <th>Vendor</th>
+        <th>Date</th>
+        <th>Total Amount</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (o of orders(); track o; let i = $index) {
+        <tr>
+          <td>{{ i + 1 }}</td>
+          <td>{{ o.billNo }}</td>
+          <td>{{ o.vendorName }}</td>
+          <td>{{ o.purchaseDate | date:'medium' }}</td>
+          <td>Rs {{ o.totalAmount }}</td>
+          <td>
+            <button class="view-btn" (click)="toggleDetails(o.id)">
+              {{ expandedOrderId() === o.id ? 'Hide' : 'View' }}
+            </button>
+          </td>
+        </tr>
+
+        <!-- Expanded Row -->
+        @if (expandedOrderId() === o.id) {
+          <tr>
+            <td colspan="6" class="details">
+              <h4>Items</h4>
+              <table class="inner-table">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Qty</th>
+                    <th>Unit Price</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of o.items; track item) {
+                    <tr>
+                      <td>{{ item.rawItemName }}</td>
+                      <td>{{ item.quantity }}</td>
+                      <td>{{ item.unitPrice }}</td>
+                      <td>{{ item.totalPrice }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </td>
+          </tr>
+        }
+      }
+    </tbody>
+  </table>
+}

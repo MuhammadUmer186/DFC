@@ -1,0 +1,381 @@
+<aside class="sidebar" [class.closed]="closed">
+
+  <!-- ================= BRAND ================= -->
+  <div class="brand">
+    <img src="assets/DFC.jpg" alt="DFC" class="brand-logo" />
+    <div class="brand-text">
+      <span class="brand-title">DFC</span>
+      <span class="brand-subtitle">Restaurant System</span>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <ul class="nav-list">
+
+      <!-- ================= SUPER ADMIN ================= -->
+      @if (role === 'SuperAdmin') {
+
+        <li routerLink="/dashboard" routerLinkActive="active" class="nav-item"><i class="pi pi-home nav-icon"></i><span class="label">Dashboard</span></li>
+        <li routerLink="/report" routerLinkActive="active" class="nav-item"><i class="pi pi-chart-bar nav-icon"></i><span class="label">Reports</span></li>
+        <li routerLink="/menu-item-report" routerLinkActive="active" class="nav-item"><i class="pi pi-list nav-icon"></i><span class="label">Menu Item Report</span></li>
+
+        <li class="nav-parent" [class.open]="openMenu === 'orders'" (click)="toggleMenu('orders')">
+          <i class="pi pi-shopping-cart nav-icon"></i><span class="label">Orders</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'orders') {
+          <ul class="submenu">
+            <li routerLink="/ORDERCREATE" routerLinkActive="active"><i class="pi pi-plus-circle"></i><span class="label">Order Creation</span></li>
+            <li routerLink="/Orderhistory" routerLinkActive="active"><i class="pi pi-history"></i><span class="label">Order History</span></li>
+            <li routerLink="/Queue" routerLinkActive="active"><i class="pi pi-clock"></i><span class="label">Order Queue</span></li>
+            <li routerLink="/online-orders" routerLinkActive="active"><i class="pi pi-globe"></i><span class="label">Online Orders</span></li>
+          </ul>
+        }
+
+        <li class="nav-parent" [class.open]="openMenu === 'purchase'" (click)="toggleMenu('purchase')">
+          <i class="pi pi-truck nav-icon"></i><span class="label">Purchase</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'purchase') {
+          <ul class="submenu">
+            <li routerLink="/MainPO" routerLinkActive="active"><i class="pi pi-file-plus"></i><span class="label">Purchase Order</span></li>
+            <li routerLink="/purchaseorder-list" routerLinkActive="active"><i class="pi pi-list"></i><span class="label">Purchase Order List</span></li>
+          </ul>
+        }
+
+        <li class="nav-parent" [class.open]="openMenu === 'kitchen'" (click)="toggleMenu('kitchen')">
+          <i class="pi pi-box nav-icon"></i><span class="label">Kitchen</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'kitchen') {
+          <ul class="submenu">
+            <li routerLink="/MainKO" routerLinkActive="active"><i class="pi pi-sign-out"></i><span class="label">Kitchen Out</span></li>
+            <li routerLink="/kitchenout-list" routerLinkActive="active"><i class="pi pi-list"></i><span class="label">Kitchen Out List</span></li>
+          </ul>
+        }
+
+        <li class="nav-parent" [class.open]="openMenu === 'inventory'" (click)="toggleMenu('inventory')">
+          <i class="pi pi-database nav-icon"></i><span class="label">Inventory</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'inventory') {
+          <ul class="submenu">
+            <li routerLink="/MainWM" routerLinkActive="active"><i class="pi pi-trash"></i><span class="label">Waste Management</span></li>
+            <li routerLink="/WM-list" routerLinkActive="active"><i class="pi pi-list"></i><span class="label">Waste Management List</span></li>
+            <li routerLink="/stock-summary" routerLinkActive="active"><i class="pi pi-chart-line"></i><span class="label">Stock Summary</span></li>
+          </ul>
+        }
+
+        <li class="nav-parent" [class.open]="openMenu === 'menu'" (click)="toggleMenu('menu')">
+          <i class="pi pi-book nav-icon"></i><span class="label">Menu</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'menu') {
+          <ul class="submenu">
+            <li routerLink="/my-menu" routerLinkActive="active"><i class="pi pi-star"></i><span class="label">My Menu</span></li>
+            <li routerLink="/deals" routerLinkActive="active"><i class="pi pi-tag"></i><span class="label">Deals</span></li>
+          </ul>
+        }
+
+        <li routerLink="/category-list" routerLinkActive="active" class="nav-item"><i class="pi pi-tags nav-icon"></i><span class="label">All Categories</span></li>
+
+        <li class="nav-parent" [class.open]="openMenu === 'vendors'" (click)="toggleMenu('vendors')">
+          <i class="pi pi-building nav-icon"></i><span class="label">Vendors</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'vendors') {
+          <ul class="submenu">
+            <li routerLink="/VendorLedger" routerLinkActive="active"><i class="pi pi-wallet"></i><span class="label">Vendor Management</span></li>
+            <li routerLink="/vendor-list" routerLinkActive="active"><i class="pi pi-list"></i><span class="label">Vendors</span></li>
+          </ul>
+        }
+
+        <li class="nav-parent" [class.open]="openMenu === 'Employee'" (click)="toggleMenu('Employee')">
+          <i class="pi pi-users nav-icon"></i><span class="label">Employee</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'Employee') {
+          <ul class="submenu">
+            <li routerLink="/emp-list" routerLinkActive="active"><i class="pi pi-list"></i><span class="label">Employee List</span></li>
+            <li routerLink="/emp-create" routerLinkActive="active"><i class="pi pi-user-plus"></i><span class="label">Employee Create</span></li>
+            <li routerLink="/emp-edit" routerLinkActive="active"><i class="pi pi-pencil"></i><span class="label">Employee Edit</span></li>
+            <li routerLink="/salary-pay" routerLinkActive="active"><i class="pi pi-dollar"></i><span class="label">Salary Pay</span></li>
+          </ul>
+        }
+
+        <li class="nav-parent" [class.open]="openMenu === 'utilities'" (click)="toggleMenu('utilities')">
+          <i class="pi pi-bolt nav-icon"></i><span class="label">Utilities</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'utilities') {
+          <ul class="submenu">
+            <li routerLink="/UB-create" routerLinkActive="active"><i class="pi pi-plus"></i><span class="label">Utility Bills Create</span></li>
+            <li routerLink="/UB-searchbill" routerLinkActive="active"><i class="pi pi-search"></i><span class="label">Utility Bills</span></li>
+          </ul>
+        }
+
+        <li class="nav-parent" [class.open]="openMenu === 'rawitems'" (click)="toggleMenu('rawitems')">
+          <i class="pi pi-inbox nav-icon"></i><span class="label">Raw Items</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'rawitems') {
+          <ul class="submenu">
+            <li routerLink="/rawitem-list" routerLinkActive="active"><i class="pi pi-list"></i><span class="label">Rawitem List</span></li>
+            <li routerLink="/rawitem-update" routerLinkActive="active"><i class="pi pi-pencil"></i><span class="label">Update RawItem</span></li>
+            <li routerLink="/rawitem-create" routerLinkActive="active"><i class="pi pi-plus"></i><span class="label">Create RawItem</span></li>
+          </ul>
+        }
+
+        <li routerLink="/service-time-settings" routerLinkActive="active" class="nav-item"><i class="pi pi-cog nav-icon"></i><span class="label">Site Settings</span></li>
+        <li routerLink="/riders-list" routerLinkActive="active" class="nav-item"><i class="pi pi-car nav-icon"></i><span class="label">Riders</span></li>
+        <li routerLink="/areas" routerLinkActive="active" class="nav-item"><i class="pi pi-map nav-icon"></i><span class="label">Delivery Areas</span></li>
+        <li routerLink="/signup" routerLinkActive="active" class="nav-item"><i class="pi pi-user-plus nav-icon"></i><span class="label">Register</span></li>
+      }
+
+      <!-- ================= MAIN ADMIN ================= -->
+      @if (role === 'MainAdmin') {
+
+        <li routerLink="/dashboard" routerLinkActive="active" class="nav-item"><i class="pi pi-home nav-icon"></i><span class="label">Dashboard</span></li>
+        <li routerLink="/report" routerLinkActive="active" class="nav-item"><i class="pi pi-chart-bar nav-icon"></i><span class="label">Reports</span></li>
+        <li routerLink="/menu-item-report" routerLinkActive="active" class="nav-item"><i class="pi pi-list nav-icon"></i><span class="label">Menu Item Report</span></li>
+
+        <li class="nav-parent" [class.open]="openMenu === 'orders'" (click)="toggleMenu('orders')">
+          <i class="pi pi-shopping-cart nav-icon"></i><span class="label">Orders</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'orders') {
+          <ul class="submenu">
+            <li routerLink="/ORDERCREATE" routerLinkActive="active"><i class="pi pi-plus-circle"></i><span class="label">Order Creation</span></li>
+            <li routerLink="/Orderhistory" routerLinkActive="active"><i class="pi pi-history"></i><span class="label">Order History</span></li>
+            <li routerLink="/Queue" routerLinkActive="active"><i class="pi pi-clock"></i><span class="label">Order Queue</span></li>
+            <li routerLink="/online-orders" routerLinkActive="active"><i class="pi pi-globe"></i><span class="label">Online Orders</span></li>
+          </ul>
+        }
+
+        <li class="nav-parent" [class.open]="openMenu === 'purchase'" (click)="toggleMenu('purchase')">
+          <i class="pi pi-truck nav-icon"></i><span class="label">Purchase</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'purchase') {
+          <ul class="submenu">
+            <li routerLink="/MainPO" routerLinkActive="active"><i class="pi pi-file-plus"></i><span class="label">Purchase Order</span></li>
+            <li routerLink="/purchaseorder-list" routerLinkActive="active"><i class="pi pi-list"></i><span class="label">Purchase Order List</span></li>
+          </ul>
+        }
+
+        <li class="nav-parent" [class.open]="openMenu === 'kitchen'" (click)="toggleMenu('kitchen')">
+          <i class="pi pi-box nav-icon"></i><span class="label">Kitchen</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'kitchen') {
+          <ul class="submenu">
+            <li routerLink="/MainKO" routerLinkActive="active"><i class="pi pi-sign-out"></i><span class="label">Kitchen Out</span></li>
+            <li routerLink="/kitchenout-list" routerLinkActive="active"><i class="pi pi-list"></i><span class="label">Kitchen Out List</span></li>
+          </ul>
+        }
+
+        <li class="nav-parent" [class.open]="openMenu === 'inventory'" (click)="toggleMenu('inventory')">
+          <i class="pi pi-database nav-icon"></i><span class="label">Inventory</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'inventory') {
+          <ul class="submenu">
+            <li routerLink="/MainWM" routerLinkActive="active"><i class="pi pi-trash"></i><span class="label">Waste Management</span></li>
+            <li routerLink="/WM-list" routerLinkActive="active"><i class="pi pi-list"></i><span class="label">Waste Management List</span></li>
+            <li routerLink="/stock-summary" routerLinkActive="active"><i class="pi pi-chart-line"></i><span class="label">Stock Summary</span></li>
+          </ul>
+        }
+
+        <li class="nav-parent" [class.open]="openMenu === 'menu'" (click)="toggleMenu('menu')">
+          <i class="pi pi-book nav-icon"></i><span class="label">Menu</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'menu') {
+          <ul class="submenu">
+            <li routerLink="/my-menu" routerLinkActive="active"><i class="pi pi-star"></i><span class="label">My Menu</span></li>
+            <li routerLink="/deals" routerLinkActive="active"><i class="pi pi-tag"></i><span class="label">Deals</span></li>
+          </ul>
+        }
+
+        <li routerLink="/category-list" routerLinkActive="active" class="nav-item"><i class="pi pi-tags nav-icon"></i><span class="label">All Categories</span></li>
+
+        <li class="nav-parent" [class.open]="openMenu === 'vendors'" (click)="toggleMenu('vendors')">
+          <i class="pi pi-building nav-icon"></i><span class="label">Vendors</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'vendors') {
+          <ul class="submenu">
+            <li routerLink="/VendorLedger" routerLinkActive="active"><i class="pi pi-wallet"></i><span class="label">Vendor Management</span></li>
+            <li routerLink="/vendor-list" routerLinkActive="active"><i class="pi pi-list"></i><span class="label">Vendors</span></li>
+          </ul>
+        }
+
+        <li class="nav-parent" [class.open]="openMenu === 'Employee'" (click)="toggleMenu('Employee')">
+          <i class="pi pi-users nav-icon"></i><span class="label">Employee</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'Employee') {
+          <ul class="submenu">
+            <li routerLink="/emp-list" routerLinkActive="active"><i class="pi pi-list"></i><span class="label">Employee List</span></li>
+            <li routerLink="/emp-create" routerLinkActive="active"><i class="pi pi-user-plus"></i><span class="label">Employee Create</span></li>
+            <li routerLink="/emp-edit" routerLinkActive="active"><i class="pi pi-pencil"></i><span class="label">Employee Edit</span></li>
+            <li routerLink="/salary-pay" routerLinkActive="active"><i class="pi pi-dollar"></i><span class="label">Salary Pay</span></li>
+          </ul>
+        }
+
+        <li class="nav-parent" [class.open]="openMenu === 'utilities'" (click)="toggleMenu('utilities')">
+          <i class="pi pi-bolt nav-icon"></i><span class="label">Utilities</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'utilities') {
+          <ul class="submenu">
+            <li routerLink="/UB-create" routerLinkActive="active"><i class="pi pi-plus"></i><span class="label">Utility Bills Create</span></li>
+            <li routerLink="/UB-searchbill" routerLinkActive="active"><i class="pi pi-search"></i><span class="label">Utility Bills</span></li>
+          </ul>
+        }
+
+        <li class="nav-parent" [class.open]="openMenu === 'rawitems'" (click)="toggleMenu('rawitems')">
+          <i class="pi pi-inbox nav-icon"></i><span class="label">Raw Items</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'rawitems') {
+          <ul class="submenu">
+            <li routerLink="/rawitem-list" routerLinkActive="active"><i class="pi pi-list"></i><span class="label">Rawitem List</span></li>
+            <li routerLink="/rawitem-update" routerLinkActive="active"><i class="pi pi-pencil"></i><span class="label">Update RawItem</span></li>
+            <li routerLink="/rawitem-create" routerLinkActive="active"><i class="pi pi-plus"></i><span class="label">Create RawItem</span></li>
+          </ul>
+        }
+
+      }
+
+      <!-- ================= ADMIN ================= -->
+      @if (role === 'Admin') {
+
+        <li routerLink="/dashboard" routerLinkActive="active" class="nav-item"><i class="pi pi-home nav-icon"></i><span class="label">Dashboard</span></li>
+        <li routerLink="/report" routerLinkActive="active" class="nav-item"><i class="pi pi-chart-bar nav-icon"></i><span class="label">Reports</span></li>
+        <li routerLink="/menu-item-report" routerLinkActive="active" class="nav-item"><i class="pi pi-list nav-icon"></i><span class="label">Menu Item Report</span></li>
+
+        <li class="nav-parent" [class.open]="openMenu === 'orders'" (click)="toggleMenu('orders')">
+          <i class="pi pi-shopping-cart nav-icon"></i><span class="label">Orders</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'orders') {
+          <ul class="submenu">
+            <li routerLink="/ORDERCREATE" routerLinkActive="active"><i class="pi pi-plus-circle"></i><span class="label">Order Creation</span></li>
+            <li routerLink="/Orderhistory" routerLinkActive="active"><i class="pi pi-history"></i><span class="label">Order History</span></li>
+            <li routerLink="/Queue" routerLinkActive="active"><i class="pi pi-clock"></i><span class="label">Order Queue</span></li>
+            <li routerLink="/online-orders" routerLinkActive="active"><i class="pi pi-globe"></i><span class="label">Online Orders</span></li>
+          </ul>
+        }
+
+        <li class="nav-parent" [class.open]="openMenu === 'purchase'" (click)="toggleMenu('purchase')">
+          <i class="pi pi-truck nav-icon"></i><span class="label">Purchase</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'purchase') {
+          <ul class="submenu">
+            <li routerLink="/MainPO" routerLinkActive="active"><i class="pi pi-file-plus"></i><span class="label">Purchase Order</span></li>
+            <li routerLink="/purchaseorder-list" routerLinkActive="active"><i class="pi pi-list"></i><span class="label">Purchase Order List</span></li>
+          </ul>
+        }
+
+        <li class="nav-parent" [class.open]="openMenu === 'kitchen'" (click)="toggleMenu('kitchen')">
+          <i class="pi pi-box nav-icon"></i><span class="label">Kitchen</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'kitchen') {
+          <ul class="submenu">
+            <li routerLink="/MainKO" routerLinkActive="active"><i class="pi pi-sign-out"></i><span class="label">Kitchen Out</span></li>
+            <li routerLink="/kitchenout-list" routerLinkActive="active"><i class="pi pi-list"></i><span class="label">Kitchen Out List</span></li>
+          </ul>
+        }
+
+        <li class="nav-parent" [class.open]="openMenu === 'inventory'" (click)="toggleMenu('inventory')">
+          <i class="pi pi-database nav-icon"></i><span class="label">Inventory</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'inventory') {
+          <ul class="submenu">
+            <li routerLink="/MainWM" routerLinkActive="active"><i class="pi pi-trash"></i><span class="label">Waste Management</span></li>
+            <li routerLink="/WM-list" routerLinkActive="active"><i class="pi pi-list"></i><span class="label">Waste Management List</span></li>
+            <li routerLink="/stock-summary" routerLinkActive="active"><i class="pi pi-chart-line"></i><span class="label">Stock Summary</span></li>
+          </ul>
+        }
+
+        <li class="nav-parent" [class.open]="openMenu === 'vendors'" (click)="toggleMenu('vendors')">
+          <i class="pi pi-building nav-icon"></i><span class="label">Vendors</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'vendors') {
+          <ul class="submenu">
+            <li routerLink="/VendorLedger" routerLinkActive="active"><i class="pi pi-wallet"></i><span class="label">Vendor Management</span></li>
+          </ul>
+        }
+
+        <li class="nav-parent" [class.open]="openMenu === 'Employee'" (click)="toggleMenu('Employee')">
+          <i class="pi pi-users nav-icon"></i><span class="label">Employee</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'Employee') {
+          <ul class="submenu">
+            <li routerLink="/emp-list" routerLinkActive="active"><i class="pi pi-list"></i><span class="label">Employee List</span></li>
+            <li routerLink="/emp-create" routerLinkActive="active"><i class="pi pi-user-plus"></i><span class="label">Employee Create</span></li>
+            <li routerLink="/emp-edit" routerLinkActive="active"><i class="pi pi-pencil"></i><span class="label">Employee Edit</span></li>
+            <li routerLink="/salary-pay" routerLinkActive="active"><i class="pi pi-dollar"></i><span class="label">Salary Pay</span></li>
+          </ul>
+        }
+
+        <li class="nav-parent" [class.open]="openMenu === 'utilities'" (click)="toggleMenu('utilities')">
+          <i class="pi pi-bolt nav-icon"></i><span class="label">Utilities</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'utilities') {
+          <ul class="submenu">
+            <li routerLink="/UB-create" routerLinkActive="active"><i class="pi pi-plus"></i><span class="label">Utility Bills Create</span></li>
+            <li routerLink="/UB-searchbill" routerLinkActive="active"><i class="pi pi-search"></i><span class="label">Utility Bills</span></li>
+          </ul>
+        }
+
+        <li routerLink="/rawitem-create" routerLinkActive="active" class="nav-item"><i class="pi pi-inbox nav-icon"></i><span class="label">Create RawItem</span></li>
+      }
+
+      <!-- ================= CASHIER ================= -->
+      @if (role === 'Cashier') {
+
+        <li class="nav-parent" [class.open]="openMenu === 'orders'" (click)="toggleMenu('orders')">
+          <i class="pi pi-shopping-cart nav-icon"></i><span class="label">Orders</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'orders') {
+          <ul class="submenu">
+            <li routerLink="/ORDERCREATE" routerLinkActive="active"><i class="pi pi-plus-circle"></i><span class="label">Order Creation</span></li>
+            <li routerLink="/Orderhistory" routerLinkActive="active"><i class="pi pi-history"></i><span class="label">Order History</span></li>
+            <li routerLink="/Queue" routerLinkActive="active"><i class="pi pi-clock"></i><span class="label">Order Queue</span></li>
+            <li routerLink="/online-orders" routerLinkActive="active"><i class="pi pi-globe"></i><span class="label">Online Orders</span></li>
+          </ul>
+        }
+        <li routerLink="/VendorLedger" routerLinkActive="active" class="nav-item"><i class="pi pi-wallet nav-icon"></i><span class="label">Vendor Management</span></li>
+      }
+
+      <!-- ================= WAITER ================= -->
+      @if (role === 'Waiter') {
+
+        <li class="nav-parent" [class.open]="openMenu === 'orders'" (click)="toggleMenu('orders')">
+          <i class="pi pi-shopping-cart nav-icon"></i><span class="label">Orders</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'orders') {
+          <ul class="submenu">
+            <li routerLink="/ORDERCREATE" routerLinkActive="active"><i class="pi pi-plus-circle"></i><span class="label">Order Creation</span></li>
+          </ul>
+        }
+      }
+
+      <!-- ================= RIDER ================= -->
+      @if (role === 'Rider') {
+        <li routerLink="/my-deliveries" routerLinkActive="active" class="nav-item"><i class="pi pi-car nav-icon"></i><span class="label">My Deliveries</span></li>
+      }
+
+      <!-- ================= STORE KEEPER ================= -->
+      @if (role === 'StoreKeeper') {
+
+        <li class="nav-parent" [class.open]="openMenu === 'store'" (click)="toggleMenu('store')">
+          <i class="pi pi-warehouse nav-icon"></i><span class="label">Store</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'store') {
+          <ul class="submenu">
+            <li routerLink="/MainPO" routerLinkActive="active"><i class="pi pi-file-plus"></i><span class="label">Purchase Order</span></li>
+            <li routerLink="/MainKO" routerLinkActive="active"><i class="pi pi-sign-out"></i><span class="label">Kitchen Out</span></li>
+            <li routerLink="/stock-summary" routerLinkActive="active"><i class="pi pi-chart-line"></i><span class="label">Stock Summary</span></li>
+            <li routerLink="/VendorLedger" routerLinkActive="active"><i class="pi pi-wallet"></i><span class="label">Vendor Management</span></li>
+          </ul>
+        }
+      }
+
+    </ul>
+  </nav>
+
+  @if (todaySummary(); as summary) {
+    <div class="sidebar-footer">
+      <div class="sidebar-footer-title">Today's Summary</div>
+      <div class="sidebar-footer-row"><span>Orders</span><strong>{{ summary.orders }}</strong></div>
+      <div class="sidebar-footer-row"><span>Sales</span><strong>Rs {{ summary.sales | number:'1.0-0' }}</strong></div>
+      <div class="sidebar-footer-row"><span>Avg. Order Value</span><strong>Rs {{ summary.avgOrderValue | number:'1.0-0' }}</strong></div>
+    </div>
+  }
+
+  <div class="sidebar-copyright">© {{ currentYear }} OrbionixRMS</div>
+</aside>

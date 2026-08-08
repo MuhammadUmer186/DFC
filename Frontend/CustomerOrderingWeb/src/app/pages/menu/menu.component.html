@@ -1,0 +1,131 @@
+<div class="menu-page-layout">
+
+  <div class="menu-content">
+
+    @if (loading()) {
+      <div class="state-msg">Loading menu…</div>
+    }
+
+    @if (error()) {
+      <div class="state-msg error">Couldn't load the menu. Please refresh the page.</div>
+    }
+
+    @if (menu() && !loading()) {
+
+      <!-- TOP CONTROLS: search / filters -->
+      <div class="top-controls">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Search for burgers, shawarma, fries..."
+            [value]="searchTerm()"
+            (input)="searchTerm.set($any($event.target).value)">
+        </div>
+
+        <button class="filters-btn">
+          <svg class="filters-ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="4" y1="6" x2="20" y2="6"></line>
+            <circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"></circle>
+            <line x1="4" y1="12" x2="20" y2="12"></line>
+            <circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"></circle>
+            <line x1="4" y1="18" x2="20" y2="18"></line>
+            <circle cx="11" cy="18" r="2" fill="currentColor" stroke="none"></circle>
+          </svg>
+          Filters
+        </button>
+      </div>
+
+      <!-- HERO BANNER -->
+      @if (siteSettings.heroImageUrl()) {
+        <section class="hero-banner hero-banner-image-only" (click)="scrollToItems()">
+          <img [src]="siteSettings.heroImageUrl()" alt="Crave More. Get DFC. — Order Now" class="hero-banner-img">
+        </section>
+      } @else {
+        <section class="hero-banner">
+          <div class="hero-text">
+            <span class="hero-tag">🔥 HOT &amp; CRISPY</span>
+            <h1>Crave More.<br>Get <span class="accent">DFC</span>.</h1>
+            <p>Freshly made favorites, delivered hot.</p>
+            <button class="btn btn-primary hero-btn" (click)="scrollToItems()">Order Now →</button>
+          </div>
+          <div class="hero-visual">
+            <span class="hero-visual-fallback">🍟🍔🌯🍕🥤</span>
+          </div>
+        </section>
+      }
+
+      @if (menu()!.deals.length > 0) {
+        <section class="deals-strip" id="offers">
+          @for (deal of menu()!.deals; track deal.id) {
+            <div class="deal-card" (click)="addDeal(deal)">
+              <span class="deal-ribbon">DEAL</span>
+              @if (deal.imageUrl) {
+                <img [src]="menuService.fullImageUrl(deal.imageUrl)" [alt]="deal.dealName" class="deal-photo">
+              }
+              <div class="deal-name">{{ deal.dealName }}</div>
+              <div class="deal-price">Rs {{ deal.price }}</div>
+            </div>
+          }
+        </section>
+      }
+
+      <nav class="category-chips">
+        @for (cat of menu()!.categories; track cat.id) {
+          <button
+            class="chip"
+            [class.active]="activeCategoryId() === cat.id && !searchTerm()"
+            (click)="selectCategory(cat.id)">
+            <span class="chip-icon">{{ categoryIcon(cat.name) }}</span>
+            <span>{{ cat.name }}</span>
+          </button>
+        }
+      </nav>
+
+      <section class="item-grid" id="menu-items">
+        @for (item of visibleItems(); track item.id) {
+          <div class="item-card">
+            <div class="item-photo-wrap">
+              @if (item.imageUrl) {
+                <img [src]="menuService.fullImageUrl(item.imageUrl)" [alt]="item.name" class="item-photo">
+              } @else {
+                <div class="item-photo placeholder">🍽️</div>
+              }
+              <button class="fav-btn" [class.active]="isFavorite(item.id)" (click)="toggleFavorite(item.id, $event)">
+                {{ isFavorite(item.id) ? '❤️' : '🤍' }}
+              </button>
+            </div>
+            <div class="item-body">
+              <div class="item-name">{{ item.name }}</div>
+              @if (item.description) {
+                <div class="item-description">{{ item.description }}</div>
+              }
+              <div class="item-price">Rs {{ item.price }}</div>
+            </div>
+            <button class="add-btn" [class.added]="addedFlash().has(item.id)" (click)="addItem(item)">
+              @if (itemQuantity(item.id) > 0) {
+                {{ itemQuantity(item.id) }} in cart
+              } @else {
+                Add to Cart
+              }
+              <span class="add-plus">+</span>
+            </button>
+          </div>
+        }
+      </section>
+
+      <section class="trust-strip">
+        <div class="trust-item"><span class="trust-ic">🚚</span><div><strong>Fast Delivery</strong><small>Hot food, on time</small></div></div>
+        <div class="trust-item"><span class="trust-ic">🏷️</span><div><strong>Best Offers</strong><small>Exciting deals everyday</small></div></div>
+        <div class="trust-item"><span class="trust-ic">🛡️</span><div><strong>Secure Payments</strong><small>100% safe &amp; secure</small></div></div>
+        <div class="trust-item"><span class="trust-ic">🎧</span><div><strong>24/7 Support</strong><small>We're here to help</small></div></div>
+      </section>
+
+    }
+  </div>
+
+  <aside class="menu-cart-sidebar">
+    <app-cart-panel></app-cart-panel>
+  </aside>
+
+</div>

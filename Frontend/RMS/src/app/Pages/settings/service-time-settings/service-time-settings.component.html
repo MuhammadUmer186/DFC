@@ -1,0 +1,114 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-cog"></i> Customer Site Settings</h2>
+      <p class="dfc-page-subtitle">Control what customers see on the ordering website</p>
+    </div>
+  </div>
+
+  @if (loadError()) {
+    <div class="dfc-empty" style="color: #dc2626;">
+      <i class="pi pi-exclamation-triangle"></i>
+      <span>{{ loadError() }}</span>
+    </div>
+  }
+
+  <!-- HERO BANNER IMAGE -->
+  <div class="dfc-page-header" style="margin-top: 8px;">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title" style="font-size: 16px;"><i class="pi pi-image"></i> Hero Banner Image</h2>
+      <p class="dfc-page-subtitle">
+        Upload your <strong>complete banner design</strong> — this replaces the entire hero section, so include the badge, headline
+        and "Order Now" button in the image itself (it becomes clickable automatically). Recommended size:
+        <strong>1800 × 440 px</strong> (~4:1 aspect ratio), JPG or PNG, under 15 MB.
+      </p>
+    </div>
+  </div>
+
+  <div class="dfc-toolbar" style="align-items: flex-start;">
+    @if (fullHeroImageUrl()) {
+      <img [src]="fullHeroImageUrl()" alt="Hero banner preview" style="width: 360px; height: 88px; object-fit: cover; background: #0f172a; border-radius: 8px;">
+    } @else {
+      <div style="width: 360px; height: 88px; display: flex; align-items: center; justify-content: center; background: #f1f5f9; border-radius: 8px; color: #94a3b8; font-size: 12px;">
+        No image uploaded yet
+      </div>
+    }
+
+    <label class="dfc-btn dfc-btn-primary dfc-btn-sm">
+      @if (uploadingHero()) {
+        <i class="pi pi-spin pi-spinner"></i> Uploading…
+      } @else {
+        <i class="pi pi-upload"></i> {{ heroImageUrl() ? 'Replace Image' : 'Upload Image' }}
+      }
+      <input type="file" accept="image/png,image/jpeg,image/webp" hidden (change)="onHeroFileSelected($event)">
+    </label>
+  </div>
+
+  <div class="dfc-page-header" style="margin-top: 24px;">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title" style="font-size: 16px;"><i class="pi pi-clock"></i> Estimated Times</h2>
+      <p class="dfc-page-subtitle">Set the estimated prep/delivery time shown to customers for each service type</p>
+    </div>
+  </div>
+
+  @if (settings().length === 0) {
+    <div class="dfc-empty">
+      <i class="pi pi-inbox"></i>
+      <span>No settings found</span>
+    </div>
+  }
+
+  @if (settings().length > 0) {
+    <div class="dfc-table-wrap">
+      <table class="dfc-table">
+        <thead>
+          <tr>
+            <th>Service Type</th>
+            <th>Min Minutes</th>
+            <th>Max Minutes</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of settings(); track s.id) {
+            <tr>
+              <td>{{ label(s.serviceType) }}</td>
+              <td>
+                <input
+                  type="number"
+                  min="0"
+                  class="dfc-input"
+                  style="width: 90px"
+                  [value]="getMin(s.serviceType)"
+                  (input)="setMin(s.serviceType, $any($event.target).value)"
+                />
+              </td>
+              <td>
+                <input
+                  type="number"
+                  min="0"
+                  class="dfc-input"
+                  style="width: 90px"
+                  [value]="getMax(s.serviceType)"
+                  (input)="setMax(s.serviceType, $any($event.target).value)"
+                />
+              </td>
+              <td class="actions">
+                <button class="dfc-btn dfc-btn-primary dfc-btn-sm" [disabled]="savingType() === s.serviceType" (click)="save(s)">
+                  @if (savingType() === s.serviceType) {
+                    <i class="pi pi-spin pi-spinner"></i>
+                  } @else {
+                    <i class="pi pi-check"></i>
+                  }
+                  Save
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+</div>

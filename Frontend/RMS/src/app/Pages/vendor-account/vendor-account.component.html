@@ -1,0 +1,124 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-wallet"></i> Vendor Account Management</h2>
+      <p class="dfc-page-subtitle">Review vendor balances and record payments</p>
+    </div>
+  </div>
+
+  <!-- Select Vendor -->
+  <div class="dfc-toolbar">
+    <select [(ngModel)]="vendorId" class="dfc-input" style="max-width: 280px;" (change)="loadVendorAccount()">
+      <option value="">-- Select Vendor --</option>
+      @for (v of vendors(); track v) {
+        <option [value]="v.id">{{ v.name }}</option>
+      }
+    </select>
+
+    <button class="dfc-btn dfc-btn-primary" (click)="loadVendorAccount()">
+      <i class="pi pi-search"></i> Load
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="dfc-loading"><i class="pi pi-spin pi-spinner"></i> Loading vendor account...</div>
+  }
+
+  @if (vendor()) {
+    <div class="dfc-form-card dfc-form-card-wide">
+      <h3>{{ vendor().vendorName }}</h3>
+
+      <div class="kpi-strip">
+        <div class="kpi-pill">
+          <span>Total Purchased</span>
+          <strong>{{ vendor().totalPurchased }}</strong>
+        </div>
+        <div class="kpi-pill">
+          <span>Total Paid</span>
+          <strong>{{ vendor().totalPaid }}</strong>
+        </div>
+        <div class="kpi-pill unpaid">
+          <span>Unpaid</span>
+          <strong>{{ vendor().unPaid }}</strong>
+        </div>
+      </div>
+
+      <button class="dfc-btn dfc-btn-success" (click)="openPaymentForm()">
+        <i class="pi pi-money-bill"></i> Pay Vendor
+      </button>
+
+      <!-- Payment Form -->
+      @if (showPaymentForm()) {
+        <div class="dfc-form-card" style="margin-top: 16px; max-width: none; background: var(--dfc-gray-50);">
+          <h3 style="font-size: 15px;">Pay Vendor</h3>
+          <form [formGroup]="paymentForm" (ngSubmit)="submitPayment()">
+            <input type="hidden" formControlName="vendorId">
+            <div class="dfc-field">
+              <label>Amount To Pay</label>
+              <input type="number" class="dfc-input" formControlName="amountPaid">
+            </div>
+            <button class="dfc-btn dfc-btn-primary" type="submit">
+              <i class="pi pi-check"></i> Submit Payment
+            </button>
+          </form>
+        </div>
+      }
+    </div>
+
+    <!-- Purchase Orders -->
+    <div>
+      <h3 class="dfc-section-title">Purchase Orders</h3>
+      <div class="dfc-table-wrap">
+        <table class="dfc-table">
+          <thead>
+            <tr>
+              <th>PO Id</th>
+              <th>Bill No</th>
+              <th>Total Amount</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of vendor().purchaseOrders; track p) {
+              <tr>
+                <td>{{ p.id }}</td>
+                <td>{{ p.billNo }}</td>
+                <td>{{ p.totalAmount }}</td>
+                <td>{{ p.createdAt | date:'short' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Payments Table -->
+    <div>
+      <h3 class="dfc-section-title">Payments History</h3>
+      <div class="dfc-table-wrap">
+        <table class="dfc-table">
+          <thead>
+            <tr>
+              <th>Payment Id</th>
+              <th>Amount Paid</th>
+              <th>Paid By</th>
+              <th>Paid On</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of vendor().payments; track p) {
+              <tr>
+                <td>{{ p.id }}</td>
+                <td>{{ p.amountPaid }}</td>
+                <td><strong>{{ p.paidByUser }}</strong></td>
+                <td>{{ p.paidOn | date:'short' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+</div>

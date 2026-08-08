@@ -1,0 +1,30 @@
+<header class="site-header">
+  <a routerLink="/" class="brand">
+    <img src="assets/DFC.jpg" alt="DFC" class="brand-badge">
+    <span class="brand-text">
+      <span class="brand-name">Data Finger Chips</span>
+      <span class="brand-tagline">Crunchy. Flavorful. Irresistible.</span>
+    </span>
+  </a>
+
+  <nav class="site-nav">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"><i class="nav-ic">📖</i> Menu</a>
+    <a routerLink="/track-order" routerLinkActive="active"><i class="nav-ic">🚚</i> Track Order</a>
+  </nav>
+
+  <div class="header-actions">
+    <a routerLink="/cart" class="icon-btn cart-link">
+      <span class="pi-cart">🛒</span>
+      @if (cart.totalQuantity() > 0) {
+        <span class="cart-badge">{{ cart.totalQuantity() }}</span>
+      }
+    </a>
+    <span class="icon-btn profile-btn" title="Guest — no account needed to order">👤</span>
+  </div>
+</header>
+
+<main class="site-main">
+  <router-outlet></router-outlet>
+</main>
+
+<app-location-picker-modal></app-location-picker-modal>

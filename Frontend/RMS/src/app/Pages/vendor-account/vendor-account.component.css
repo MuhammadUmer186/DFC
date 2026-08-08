@@ -1,0 +1,40 @@
+/* Page-specific bits only — everything else comes from the shared design system (src/styles.css) */
+
+.kpi-strip {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 16px 0 20px;
+}
+
+.kpi-pill {
+  flex: 1;
+  min-width: 160px;
+  background: var(--dfc-gray-50);
+  border: 1px solid var(--dfc-border);
+  border-radius: var(--dfc-radius-md);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kpi-pill span {
+  font-size: 12px;
+  color: var(--dfc-text-muted);
+  font-weight: 600;
+}
+
+.kpi-pill strong {
+  font-size: 18px;
+  color: var(--dfc-gray-900);
+}
+
+.kpi-pill.unpaid {
+  background: var(--dfc-danger-bg);
+  border-color: var(--dfc-danger-border);
+}
+
+.kpi-pill.unpaid strong {
+  color: var(--dfc-danger);
+}

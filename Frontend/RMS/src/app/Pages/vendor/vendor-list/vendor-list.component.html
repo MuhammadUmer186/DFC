@@ -1,0 +1,102 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-building"></i> Vendors <span class="count-badge">{{ vendors().length }}</span></h2>
+      <p class="dfc-page-subtitle">All registered suppliers and vendors</p>
+    </div>
+    <div class="dfc-page-actions">
+      <button class="dfc-btn dfc-btn-primary" (click)="openAddForm()">
+        <i class="pi pi-plus"></i> Add Vendor
+      </button>
+    </div>
+  </div>
+
+  <div class="dfc-toolbar">
+    <input
+      type="text"
+      class="dfc-input"
+      placeholder="Search vendors..."
+      [value]="searchTerm()"
+      (input)="searchTerm.set($any($event.target).value)"
+    />
+  </div>
+
+  @if (loading()) {
+    <div class="dfc-loading"><i class="pi pi-spin pi-spinner"></i> Loading vendors...</div>
+  }
+
+  @if (!loading() && visibleVendors().length === 0) {
+    <div class="dfc-empty">
+      <i class="pi pi-inbox"></i>
+      <span>No vendors found</span>
+    </div>
+  }
+
+  @if (!loading() && visibleVendors().length > 0) {
+    <div class="dfc-table-wrap">
+      <table class="dfc-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Address</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (v of visibleVendors(); track v.id) {
+            <tr>
+              <td>{{ v.name }}</td>
+              <td>{{ v.phone }}</td>
+              <td>{{ v.address }}</td>
+              <td class="actions">
+                <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" (click)="openEditForm(v)"><i class="pi pi-pencil"></i> Edit</button>
+                <button class="dfc-btn dfc-btn-danger dfc-btn-sm" (click)="delete(v)"><i class="pi pi-trash"></i> Delete</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+</div>
+
+<!-- ================= ADD / EDIT PANEL ================= -->
+@if (showForm()) {
+  <div class="menu-form-backdrop" (click)="closeForm()"></div>
+
+  <div class="menu-form-panel">
+    <div class="menu-form-header">
+      <h3>{{ editingVendor() ? 'Edit Vendor' : 'Add Vendor' }}</h3>
+      <button class="menu-form-close" (click)="closeForm()"><i class="pi pi-times"></i></button>
+    </div>
+
+    <div class="menu-form-body">
+
+      <div class="dfc-field">
+        <label>Vendor Name</label>
+        <input class="dfc-input" type="text" [value]="formName()" (input)="formName.set($any($event.target).value)" placeholder="e.g. Big Bull Enterprises">
+      </div>
+
+      <div class="dfc-field">
+        <label>Phone</label>
+        <input class="dfc-input" type="text" [value]="formPhone()" (input)="formPhone.set($any($event.target).value)" placeholder="e.g. 03001234567">
+      </div>
+
+      <div class="dfc-field">
+        <label>Address</label>
+        <textarea class="dfc-input" rows="3" [value]="formAddress()" (input)="formAddress.set($any($event.target).value)" placeholder="Vendor address"></textarea>
+      </div>
+
+      <button class="dfc-btn dfc-btn-primary menu-form-save" [disabled]="saving()" (click)="save()">
+        @if (saving()) {
+          <i class="pi pi-spin pi-spinner"></i> Saving...
+        } @else {
+          <i class="pi pi-check"></i> {{ editingVendor() ? 'Save Changes' : 'Create Vendor' }}
+        }
+      </button>
+    </div>
+  </div>
+}

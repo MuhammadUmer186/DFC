@@ -1,0 +1,67 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-dollar"></i> Salary Status</h2>
+      <p class="dfc-page-subtitle">Check who's been paid for a given day and settle the rest</p>
+    </div>
+  </div>
+
+  <div class="dfc-toolbar">
+    <label style="font-size: 13px; font-weight: 700; color: var(--dfc-gray-700);">Select Date</label>
+    <input type="date" class="dfc-input" style="max-width: 200px;" [(ngModel)]="selectedDate">
+    <button class="dfc-btn dfc-btn-primary" (click)="loadSalaries()"><i class="pi pi-search"></i> Load</button>
+  </div>
+
+  @if (loading()) {
+    <div class="dfc-loading"><i class="pi pi-spin pi-spinner"></i> Loading…</div>
+  }
+
+  @if (!loading() && salaries().length === 0) {
+    <div class="dfc-empty">
+      <i class="pi pi-inbox"></i>
+      <span>No salary records found</span>
+    </div>
+  }
+
+  @if (salaries().length > 0) {
+    <div class="dfc-table-wrap">
+      <table class="dfc-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Mobile</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Paid</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of salaries(); track s.employeeId) {
+            <tr>
+              <td>{{ s.employeeName }}</td>
+              <td>{{ s.mobileNumber }}</td>
+              <td>{{ s.salaryType === 1 ? 'Daily' : 'Monthly' }}</td>
+              <td>{{ s.salaryAmount | currency:'PKR':'symbol':'1.0-0' }}</td>
+              <td>
+                @if (s.isPaid) {
+                  <span class="dfc-badge dfc-badge-success">Paid</span>
+                } @else {
+                  <span class="dfc-badge dfc-badge-danger">Unpaid</span>
+                }
+              </td>
+              <td>
+                @if (!s.isPaid) {
+                  <button class="dfc-btn dfc-btn-success dfc-btn-sm" (click)="paySalary(s)">
+                    <i class="pi pi-money-bill"></i> Pay Salary
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

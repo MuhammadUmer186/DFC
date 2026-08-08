@@ -1,0 +1,61 @@
+.delivery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.delivery-card {
+  background: var(--dfc-surface);
+  border: 1.5px solid var(--dfc-border);
+  border-radius: var(--dfc-radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dc-order-no {
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--dfc-navy-900);
+}
+
+.dc-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--dfc-gray-700);
+}
+
+.dc-row i {
+  color: var(--dfc-amber-600);
+  margin-top: 2px;
+}
+
+.dc-row a {
+  color: var(--dfc-info);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.dc-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--dfc-gray-200);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.dc-cost {
+  color: var(--dfc-amber-700);
+}

@@ -1,0 +1,107 @@
+<h2>Queued Orders</h2>
+
+<div style="margin-bottom: 15px; display:flex; gap:15px; align-items:center;">
+  <label>
+    Payment Method:
+    <select [ngModel]="paymentMethod()" (ngModelChange)="paymentMethod.set($event)">
+      <option value="Cash">Cash</option>
+      <option value="Card">Card</option>
+      <option value="Mobile">Mobile</option>
+    </select>
+  </label>
+
+  <label>
+    Customer Printer:
+    <select [ngModel]="customerPrinter()" (ngModelChange)="customerPrinter.set($event)">
+      <option value="usb1">USB 1</option>
+      <option value="usb2">USB 2</option>
+      <option value="ethernet">Ethernet</option>
+      <option value="bluetooth">Bluetooth</option>
+    </select>
+  </label>
+
+  <label>
+    Kitchen Printer:
+    <select [ngModel]="kitchenPrinter()" (ngModelChange)="kitchenPrinter.set($event)">
+      <option value="usb1">USB 1</option>
+      <option value="usb2">USB 2</option>
+      <option value="ethernet">Ethernet</option>
+      <option value="bluetooth">Bluetooth</option>
+    </select>
+  </label>
+</div>
+
+@if(loading()) {
+  <div>Loading queued orders...</div>
+}
+
+@if(!loading()) {
+  <div class="orders-container">
+    <table border="1" width="100%" class="orders-table">
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Total Amount</th>
+          <th>Quantity</th>
+          <th>Waiter</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for(order of queuedOrders(); track $index) {
+          <tr (click)="toggleExpand(order)" [class.expanded]="order.expanded">
+            <td>{{ order.id }}</td>
+            <td>Rs {{ order.totalAmount }}</td>
+            <td>{{ order.totalQuantity }}</td>
+            <td>{{ order.takenByEmployeeName }}</td>
+            <td>{{ order.paid ? 'Paid' : 'Queued' }}</td>
+            <td>
+              @if(!order.paid) {
+                <button (click)="confirmPay(order); $event.stopPropagation()">Pay & Print</button>
+                <button (click)="cancelOrder(order); $event.stopPropagation()">Cancel</button>
+              }
+            </td>
+          </tr>
+
+          @if(order.expanded) {
+            <tr class="details-row">
+              <td colspan="6">
+                <div class="details-container">
+                  <table border="1" width="100%">
+                    <thead>
+                      <tr>
+                        <th>Item / Deal</th>
+                        <th>Price</th>
+                        <th>Qty</th>
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for(item of order.items; track $index) {
+                        <tr>
+                          <td>{{ item.menuItemName }}</td>
+                          <td>Rs {{ item.unitPrice }}</td>
+                          <td>{{ item.quantity }}</td>
+                          <td>Rs {{ item.unitPrice * item.quantity }}</td>
+                        </tr>
+                      }
+                      @for(deal of order.deals; track $index) {
+                        <tr>
+                          <td>{{ deal.dealName }}</td>
+                          <td>Rs {{ deal.dealPrice }}</td>
+                          <td>{{ deal.quantity }}</td>
+                          <td>Rs {{ deal.dealPrice * deal.quantity }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+}

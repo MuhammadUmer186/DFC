@@ -1,0 +1,50 @@
+<div class="dfc-page">
+  <div class="dfc-form-card">
+    <h2><i class="pi pi-bolt" style="color: var(--dfc-amber-600); margin-right: 8px;"></i>Add Utility Bill</h2>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="dfc-field">
+        <label>Bill Type *</label>
+        <select formControlName="billType">
+          <option value="">-- Select Bill Type --</option>
+          <option>Electricity</option>
+          <option>Gas</option>
+          <option>Internet</option>
+          <option>Water</option>
+          <option>Misc</option>
+        </select>
+      </div>
+
+      <div class="dfc-field">
+        <label>Amount *</label>
+        <input class="dfc-input" type="number" formControlName="amount">
+      </div>
+
+      <div class="dfc-field">
+        <label>Bill Date *</label>
+        <input class="dfc-input" type="date" formControlName="billDate">
+      </div>
+
+      <div class="dfc-field">
+        <label>Due Date</label>
+        <input class="dfc-input" type="date" formControlName="dueDate">
+      </div>
+
+      <div class="dfc-field">
+        <label>Notes</label>
+        <textarea rows="3" formControlName="notes"></textarea>
+      </div>
+
+      <button class="dfc-btn dfc-btn-primary" [disabled]="loading">
+        <i class="pi pi-check"></i> Save Bill
+      </button>
+    </form>
+
+    @if (successMessage) {
+      <p class="dfc-field-error" style="color: var(--dfc-success); margin-top: 12px;">{{successMessage}}</p>
+    }
+    @if (errorMessage) {
+      <p class="dfc-field-error" style="margin-top: 12px;">{{errorMessage}}</p>
+    }
+  </div>
+</div>

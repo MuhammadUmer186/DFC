@@ -1,0 +1,51 @@
+<p>kitchenoutdata works!</p>
+<div class="container">
+  <h1>Kitchen Out</h1>
+
+  <div class="top-info" [formGroup]="kitchenOutForm">
+    <label>Out No:
+      <input type="text" formControlName="outNo">
+    </label>
+    <label>Date:
+      <input type="date" formControlName="outDate">
+    </label>
+  </div>
+
+  <form [formGroup]="kitchenOutForm">
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Unit</th>
+          <th>Quantity</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody formArrayName="kitchenItems">
+        @for (item of kitchenItems.controls; track item; let i = $index) {
+          <tr [formGroupName]="i">
+            <td>
+              <select formControlName="item" (change)="onItemChange(i)">
+                <option value="">Select Item</option>
+                @for (it of items; track it) {
+                  <option [value]="it.name">{{ it.name }}</option>
+                }
+              </select>
+            </td>
+            <td><input type="text" formControlName="unit" readonly></td>
+            <td><input type="number" formControlName="quantity"></td>
+            <td>
+              <button type="button" class="btn-remove" (click)="removeItem(i)">Remove</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="buttons">
+      <button type="button" class="btn-add" (click)="addItem()">Add Item</button>
+      <button type="button" class="btn-submit" (click)="submitKitchenOut()">Submit</button>
+    </div>
+  </form>
+</div>
+<router-outlet></router-outlet>

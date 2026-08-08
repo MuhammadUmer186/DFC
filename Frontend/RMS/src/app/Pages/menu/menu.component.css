@@ -1,0 +1,212 @@
+.menu-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: var(--dfc-font-sans);
+}
+
+h1 {
+  text-align: center;
+  color: var(--dfc-gray-900);
+  font-family: var(--dfc-font-display);
+  margin-bottom: 30px;
+}
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 40px;
+}
+
+.menu-card {
+  background: var(--dfc-surface);
+  border: 1px solid var(--dfc-border);
+  border-radius: var(--dfc-radius-md);
+  padding: 10px;
+  text-align: center;
+  box-shadow: var(--dfc-shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.menu-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--dfc-shadow-md);
+}
+
+.dish-image {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: var(--dfc-radius-sm);
+  margin-bottom: 10px;
+  background: var(--dfc-gray-100);
+}
+
+.menu-card h4 {
+  color: var(--dfc-gray-900);
+  margin: 4px 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.description {
+  font-size: 11px;
+  color: var(--dfc-text-muted);
+  margin: 2px 0;
+}
+
+.price {
+  font-size: 16px;
+  color: var(--dfc-amber-600);
+  font-weight: 800;
+  margin: 4px 0;
+}
+
+.btn-add {
+  background: linear-gradient(180deg, var(--dfc-amber-400), var(--dfc-amber-500));
+  color: var(--dfc-navy-950);
+  border: none;
+  padding: 9px 12px;
+  border-radius: var(--dfc-radius-sm);
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 700;
+  transition: filter 0.2s ease;
+  margin-top: 4px;
+  width: 100%;
+}
+
+.btn-add:hover {
+  filter: brightness(1.05);
+}
+
+.order-summary {
+  background: var(--dfc-surface);
+  padding: 20px;
+  border-radius: var(--dfc-radius-lg);
+  border: 1px solid var(--dfc-border);
+  box-shadow: var(--dfc-shadow-sm);
+}
+
+.order-summary h2 {
+  font-family: var(--dfc-font-display);
+  font-size: 18px;
+  color: var(--dfc-gray-900);
+}
+
+.empty-order {
+  text-align: center;
+  color: var(--dfc-gray-400);
+  padding: 20px;
+}
+
+.order-items table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+table thead {
+  background: var(--dfc-navy-900);
+  color: #fff;
+}
+
+table th, table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--dfc-border);
+}
+
+table input {
+  width: 60px;
+  padding: 6px;
+  border: 1px solid var(--dfc-border);
+  border-radius: 6px;
+}
+
+.btn-remove {
+  background: var(--dfc-danger-bg);
+  color: var(--dfc-danger);
+  border: 1px solid var(--dfc-danger-border);
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.btn-remove:hover {
+  background: var(--dfc-danger);
+  color: #fff;
+}
+
+.total-section {
+  text-align: right;
+  border-top: 2px solid var(--dfc-navy-900);
+  padding-top: 15px;
+}
+
+.total-section h3 {
+  color: var(--dfc-amber-600);
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 15px;
+}
+
+.btn-submit {
+  background: var(--dfc-navy-900);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: var(--dfc-radius-sm);
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  transition: background-color 0.2s ease;
+}
+
+.btn-submit:hover {
+  background: var(--dfc-navy-800);
+}
+
+.receipt-actions {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-generate {
+  background: var(--dfc-navy-900);
+  color: #fff;
+  border: none;
+  padding: 12px 18px;
+  border-radius: var(--dfc-radius-sm);
+  cursor: pointer;
+  box-shadow: var(--dfc-shadow-md);
+  font-weight: 700;
+  font-size: 12px;
+  transition: background-color 0.2s ease;
+}
+
+.btn-generate:hover:not(:disabled) {
+  background: var(--dfc-navy-800);
+}
+
+.btn-generate.btn-kitchen {
+  background: var(--dfc-amber-600);
+  color: var(--dfc-navy-950);
+}
+
+.btn-generate.btn-kitchen:hover:not(:disabled) {
+  background: var(--dfc-amber-500);
+}
+
+.btn-generate:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -1,0 +1,19 @@
+<h2>Update Menu Item</h2>
+
+<form [formGroup]="form" (ngSubmit)="update()">
+
+  <input formControlName="name">
+
+  <input type="number" formControlName="price">
+
+  <select formControlName="categoryId">
+    @for (c of categories(); track c) {
+      <option [value]="c.id">
+        {{ c.name }}
+      </option>
+    }
+  </select>
+
+  <button type="submit">Update</button>
+
+</form>

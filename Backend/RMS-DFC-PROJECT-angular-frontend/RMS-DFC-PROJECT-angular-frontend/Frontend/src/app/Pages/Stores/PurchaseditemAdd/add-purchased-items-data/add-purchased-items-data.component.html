@@ -1,0 +1,52 @@
+<div class="container">
+  <h1>Purchase Entry</h1>
+
+  <div class="top-info" [formGroup]="purchaseForm">
+    <label>Bill No:
+      <input type="text" formControlName="billNo">
+    </label>
+    <label>Date:
+      <input type="date" formControlName="billDate">
+    </label>
+  </div>
+
+  <form [formGroup]="purchaseForm">
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Unit</th>
+          <th>Quantity</th>
+          <th>Price</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody formArrayName="purchaseItems">
+        @for (item of purchaseItems.controls; track item; let i = $index) {
+          <tr [formGroupName]="i">
+            <td>
+              <select formControlName="item" (change)="onItemChange(i)">
+                <option value="">Select Item</option>
+                @for (it of items; track it) {
+                  <option [value]="it.name">{{ it.name }}</option>
+                }
+              </select>
+            </td>
+            <td><input type="text" formControlName="unit" readonly></td>
+            <td><input type="number" formControlName="quantity"></td>
+            <td><input type="number" formControlName="price" step="0.01"></td>
+            <td>
+              <button type="button" class="btn-remove" (click)="removeItem(i)">Remove</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="buttons">
+      <button type="button" class="btn-add" (click)="addItem()">Add Item</button>
+      <button type="button" class="btn-submit" (click)="submitPurchase()">Submit Purchase</button>
+    </div>
+  </form>
+</div>
+<router-outlet></router-outlet>

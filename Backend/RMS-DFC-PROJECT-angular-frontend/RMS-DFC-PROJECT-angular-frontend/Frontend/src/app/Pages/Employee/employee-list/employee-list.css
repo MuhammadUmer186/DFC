@@ -1,0 +1,100 @@
+/* Container scroll for responsiveness */
+.table-container {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+/* Table styling */
+.employee-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  min-width: 600px; /* Prevent squishing on small screens */
+}
+
+/* Header */
+.employee-table thead th {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 12px;
+  text-align: left;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/* Table body cells */
+.employee-table tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Row hover effect */
+.employee-table tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Stripe effect (optional) */
+.employee-table tbody tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+/* Button styling */
+.btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 5px;
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn:hover {
+  background-color: #45a049;
+}
+
+.btn-delete {
+  background-color: #f44336;
+}
+
+.btn-delete:hover {
+  background-color: #da190b;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .employee-table {
+    font-size: 13px;
+  }
+
+  .btn {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+}
+@media (max-width: 480px) {
+  .employee-table thead {
+    display: none; /* Hide headers on very small screens */
+  }
+
+  .employee-table tbody td {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: right;
+    padding-left: 50%;
+    position: relative;
+  }
+
+  .employee-table tbody td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 10px;
+    width: calc(50% - 20px);
+    padding-right: 10px;
+    font-weight: bold;
+    text-align: left;
+  }
+}

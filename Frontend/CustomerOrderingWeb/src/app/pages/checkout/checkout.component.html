@@ -1,0 +1,110 @@
+<h2 class="page-title">Checkout</h2>
+
+@if (cart.lines().length === 0) {
+  <div class="empty-cart">
+    <p>Your cart is empty.</p>
+    <a routerLink="/" class="btn btn-primary">Browse Menu</a>
+  </div>
+} @else {
+
+  <!-- SERVICE TYPE SELECTOR -->
+  <div class="service-type-row">
+    <button class="service-type-btn" [class.active]="orderType.serviceType() === 'DineIn'" (click)="selectServiceType('DineIn')">🍽️ Dine-in</button>
+    <button class="service-type-btn" [class.active]="orderType.serviceType() === 'Takeaway'" (click)="selectServiceType('Takeaway')">🥡 Takeaway</button>
+    <button class="service-type-btn" [class.active]="orderType.serviceType() === 'Delivery'" (click)="selectServiceType('Delivery')">🛵 Delivery</button>
+  </div>
+
+  <div class="order-recap">
+    @for (line of cart.lines(); track line.kind + '-' + line.id) {
+      <div class="recap-row">
+        <span>{{ line.name }} × {{ line.quantity }}</span>
+        <span>Rs {{ line.price * line.quantity }}</span>
+      </div>
+    }
+    <div class="recap-row"><span>Subtotal</span><span>Rs {{ cart.totalAmount() }}</span></div>
+    @if (deliveryFee() > 0) {
+      <div class="recap-row"><span>Delivery Fee</span><span>Rs {{ deliveryFee() }}</span></div>
+    }
+    <div class="recap-row total">
+      <span>Total</span>
+      <span>Rs {{ grandTotal() }}</span>
+    </div>
+  </div>
+
+  <form class="checkout-form" (submit)="$event.preventDefault(); placeOrder()">
+    <label>
+      Your Name
+      <input type="text" [ngModel]="customerName()" (ngModelChange)="customerName.set($event)" name="customerName" placeholder="e.g. Ayesha Khan" required>
+    </label>
+
+    <label>
+      WhatsApp Number
+      <input type="tel" [ngModel]="phoneNumber()" (ngModelChange)="phoneNumber.set($event)" name="phoneNumber" placeholder="e.g. 03001234567" required>
+    </label>
+
+    @if (requiresAddress) {
+      <label>
+        Delivery Address
+        <textarea [ngModel]="address()" (ngModelChange)="address.set($event)" name="address" rows="3" placeholder="House #, street, area" required></textarea>
+      </label>
+
+      <label>
+        Area
+        <select [value]="selectedAreaId() ?? ''" (change)="setAreaId($any($event.target).value)" name="areaId" required>
+          <option value="" disabled>-- Select your area --</option>
+          @for (area of areas(); track area.id) {
+            <option [value]="area.id">{{ area.name }} — Rs {{ area.deliveryFee }}</option>
+          }
+        </select>
+        <p class="map-pin-hint">Don't see your area? Pick "Unknown" and we'll confirm the delivery fee with you.</p>
+      </label>
+
+      <div class="map-pin-field">
+        <div class="map-pin-field-text">
+          <span class="field-label">Map Location <span class="optional-tag">Optional</span></span>
+          @if (deliveryLocation.location()) {
+            <p class="map-pin-hint pinned">📍 Pin set — helps our rider find you faster.</p>
+          } @else {
+            <p class="map-pin-hint">Pin your exact spot on the map so the rider can find you faster. Your written address above is enough if you'd rather skip this.</p>
+          }
+        </div>
+        <button type="button" class="btn btn-outline pin-btn" (click)="openLocationPicker()">
+          📍 {{ deliveryLocation.location() ? 'Change Pin' : 'Set Pin on Map' }}
+        </button>
+      </div>
+    }
+
+    <div class="payment-method">
+      <span class="field-label">Payment Method</span>
+      <div class="payment-options">
+        <label class="payment-option" [class.selected]="paymentMethod() === 'Cash'">
+          <input type="radio" name="paymentMethod" value="Cash" [checked]="paymentMethod() === 'Cash'" (change)="paymentMethod.set('Cash')">
+          @if (orderType.serviceType() === 'Delivery') {
+            Cash on Delivery
+          } @else if (orderType.serviceType() === 'Takeaway') {
+            Cash on Pickup
+          } @else {
+            Cash
+          }
+        </label>
+        <label class="payment-option" [class.selected]="paymentMethod() === 'Online transfer'">
+          <input type="radio" name="paymentMethod" value="Online transfer" [checked]="paymentMethod() === 'Online transfer'" (change)="paymentMethod.set('Online transfer')">
+          Online Transfer
+        </label>
+      </div>
+    </div>
+
+    @if (errorMsg()) {
+      <div class="form-error">{{ errorMsg() }}</div>
+    }
+
+    <button type="submit" class="btn btn-primary submit-btn" [disabled]="!canSubmit">
+      @if (submitting()) {
+        Placing order…
+      } @else {
+        Place Order · Rs {{ grandTotal() }}
+      }
+    </button>
+  </form>
+
+}

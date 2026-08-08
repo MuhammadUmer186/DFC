@@ -1,0 +1,66 @@
+<div class="signup-screen">
+  <div class="signup-card">
+    <h2><i class="pi pi-user-plus" style="color: var(--dfc-amber-600); margin-right: 8px;"></i>Create an Account</h2>
+    <p class="signup-subtitle">Register a new staff login (Admin, Cashier, Waiter, Store Keeper or Rider)</p>
+
+    <form (ngSubmit)="OnUserSave()" [formGroup]="userform">
+
+      <div class="dfc-field">
+        <label>User Name</label>
+        <input class="dfc-input" type="text" formControlName="userName" placeholder="Enter username">
+        @if(userform.controls["userName"].touched){
+          <div class="dfc-field-error">
+            @if(userform.controls["userName"].errors?.['required']){
+              <span>This is required</span>
+            }
+            @if(userform.controls["userName"].errors?.['minlength']){
+              <span>Minimum 5 characters</span>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="dfc-field">
+        <label>Password</label>
+        <input class="dfc-input" type="password" formControlName="password" placeholder="Enter password">
+      </div>
+
+      <div class="dfc-field">
+        <label>Role</label>
+        <select formControlName="roles">
+          <option value="">-- Select Role --</option>
+          <option value="Admin">Admin</option>
+          <option value="Cashier">Cashier</option>
+          <option value="Waiter">Waiter</option>
+          <option value="StoreKeeper">StoreKeeper</option>
+          <option value="Rider">Rider</option>
+        </select>
+        @if(userform.controls["roles"].touched){
+          <div class="dfc-field-error">
+            @if(userform.controls["roles"].errors?.['required']){
+              <span>Role is required</span>
+            }
+          </div>
+        }
+      </div>
+
+      @if (isRiderRole) {
+        <div class="dfc-field">
+          <label>Rider ID</label>
+          <input class="dfc-input" type="number" formControlName="riderId" placeholder="Enter Rider ID (from the Riders page)">
+        </div>
+      } @else if (!isAdminRole) {
+        <div class="dfc-field">
+          <label>Employee ID</label>
+          <input class="dfc-input" type="number" formControlName="employeeId" placeholder="Enter Employee ID">
+        </div>
+      }
+
+      <button type="submit" [disabled]="!userform.valid" class="dfc-btn dfc-btn-primary" style="width: 100%;">
+        <i class="pi pi-check"></i> Sign Up
+      </button>
+
+    </form>
+  </div>
+</div>
+<router-outlet></router-outlet>

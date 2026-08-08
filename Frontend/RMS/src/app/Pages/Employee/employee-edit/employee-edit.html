@@ -1,0 +1,66 @@
+<div class="dfc-page">
+  <div class="dfc-form-card dfc-form-card-wide">
+    <h2><i class="pi pi-pencil" style="color: var(--dfc-amber-600); margin-right: 8px;"></i>Edit Employee</h2>
+
+    <!-- Search employee by ID -->
+    <div class="dfc-toolbar" style="margin-bottom: 20px;">
+      <input type="number" class="dfc-input" [(ngModel)]="editId" placeholder="Enter Employee ID" style="max-width: 220px;">
+      <button type="button" class="dfc-btn dfc-btn-primary" (click)="loadEmployee()"><i class="pi pi-search"></i> Load</button>
+    </div>
+
+    <!-- Edit form (always in DOM, hidden if not loaded) -->
+    @if (employeeLoaded()) {
+      <form [formGroup]="form" (ngSubmit)="update()">
+        <div class="dfc-form-grid">
+
+          <div class="dfc-field">
+            <label for="name">Name</label>
+            <input id="name" class="dfc-input" type="text" formControlName="name" placeholder="Enter name">
+          </div>
+
+          <div class="dfc-field">
+            <label for="mobileNumber">Phone</label>
+            <input id="mobileNumber" class="dfc-input" type="text" formControlName="mobileNumber" placeholder="Enter phone number">
+          </div>
+
+          <div class="dfc-field">
+            <label for="designation">Role</label>
+            <input id="designation" class="dfc-input" type="text" formControlName="designation" placeholder="Enter Role">
+          </div>
+
+          <div class="dfc-field">
+            <label for="nationalId">CNIC</label>
+            <input id="nationalId" class="dfc-input" type="text" formControlName="nationalId" placeholder="Enter CNIC">
+          </div>
+
+          <div class="dfc-field">
+            <label for="address">Address</label>
+            <input id="address" class="dfc-input" type="text" formControlName="address" placeholder="Enter Address">
+          </div>
+
+          <div class="dfc-field">
+            <label for="salaryType">Salary Type</label>
+            <select id="salaryType" formControlName="salaryType">
+              <option [ngValue]="1">Daily</option>
+              <option [ngValue]="2">Monthly</option>
+            </select>
+          </div>
+
+          <div class="dfc-field">
+            <label for="salaryAmount">Salary Amount</label>
+            <input id="salaryAmount" class="dfc-input" type="number" formControlName="salaryAmount" placeholder="Enter Salary Amount">
+          </div>
+
+          <div class="dfc-field" style="flex-direction: row; align-items: center; gap: 10px; margin-top: 22px;">
+            <input id="isActive" type="checkbox" formControlName="isActive" style="width: 18px; height: 18px;">
+            <label for="isActive" style="margin: 0;">Active</label>
+          </div>
+        </div>
+
+        <button type="submit" class="dfc-btn dfc-btn-primary" style="margin-top: 8px;">
+          <i class="pi pi-check"></i> Update
+        </button>
+      </form>
+    }
+  </div>
+</div>

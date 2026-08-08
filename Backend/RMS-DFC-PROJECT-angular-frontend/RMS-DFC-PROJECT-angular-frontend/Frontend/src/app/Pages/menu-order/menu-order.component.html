@@ -1,0 +1,232 @@
+<h2 class="title">POS Order Taker</h2>
+
+<div class="pos-toolbar">
+  <button class="fs-btn" (click)="toggleFullscreen()">
+    ⛶ Full Screen
+  </button>
+</div>
+
+<div class="pos-layout no-select">
+
+  <!-- ================= COLUMN 1 : CATEGORIES + DEALS ================= -->
+  <div class="pos-col col-left full-height">
+
+    <div class="panel fill-panel">
+      <h3 class="panel-title">Categories</h3>
+
+      <div class="category-grid">
+
+        <!-- DEALS CATEGORY -->
+        <div
+          class="category-card image-card deal-category"
+          (click)="selectCategory(DEALS_CATEGORY_ID)"
+          [ngClass]="{'active-card': selectedCategoryId() === DEALS_CATEGORY_ID}">
+
+          <div class="card-img">
+            <img src="assets/images/deals.png" alt="Deals">
+          </div>
+
+          <div class="card-text">Deals</div>
+        </div>
+
+        <!-- NORMAL CATEGORIES -->
+        @for (c of categories(); track c) {
+          <div
+            class="category-card image-card"
+            (click)="selectCategory(c.id)"
+            [ngClass]="{'active-card': selectedCategoryId() === c.id}">
+
+            <div class="card-img">
+              <img
+                [src]="getCategoryImage(c.name)"
+                (error)="$any($event.target).src = 'assets/images/default.jpg'"
+                alt="{{ c.name }}">
+            </div>
+
+            <div class="card-text">{{ c.name }}</div>
+          </div>
+        }
+
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ================= COLUMN 2 : MENU ITEMS ================= -->
+  <div class="pos-col col-middle">
+
+    <!-- SEARCH BOX -->
+    <div class="search-box">
+      <input
+        type="text"
+        placeholder="Search menu items..."
+        [ngModel]="searchText()"
+        (ngModelChange)="onSearchChange($event)"
+      />
+    </div>
+
+    <!-- ================= SEARCH RESULTS ================= -->
+    @if (searchResults().length > 0) {
+
+      <h3 class="panel-title">Search Results</h3>
+
+      <div class="menu-grid items-grid">
+
+        @for (i of searchResults(); track i) {
+
+          <div class="menu-card item-card" (click)="addToCart(i)">
+            <div class="item-name">{{ i.name }}</div>
+            <div class="item-price">Rs {{ i.price }}</div>
+          </div>
+
+        }
+
+      </div>
+
+    }
+
+    <!-- ================= CATEGORY ITEMS ================= -->
+    @if (selectedCategoryId() && searchResults().length === 0) {
+
+      <h3 class="panel-title">
+        {{ selectedCategoryId() === DEALS_CATEGORY_ID ? 'Deals' : 'Menu Items' }}
+      </h3>
+
+      <div class="menu-grid items-grid">
+
+        @for (i of displayItems(); track i) {
+
+          <!-- NORMAL ITEM -->
+          @if (i._type === 'item') {
+            <div class="menu-card item-card" (click)="addToCart(i)">
+              <div class="item-name">{{ i.name }}</div>
+              <div class="item-price">Rs {{ i.price }}</div>
+            </div>
+          }
+
+          <!-- DEAL -->
+          @if (i._type === 'deal') {
+            <div class="menu-card deal-card" (click)="applyDeal(i)">
+              <div class="item-name">{{ i.dealName }}</div>
+              <div class="item-price">Rs {{ i.finalPrice }}</div>
+            </div>
+          }
+
+        }
+
+      </div>
+
+    }
+
+    <!-- EMPTY STATE -->
+    @if (!selectedCategoryId() && searchResults().length === 0) {
+      <div class="empty-state">
+        Select a category or search items
+      </div>
+    }
+
+  </div>
+
+
+  <!-- ================= COLUMN 3 : ORDER ================= -->
+  <div class="pos-col col-right">
+
+    @if (cart().length > 0 || appliedDeals().length > 0) {
+
+      <div class="order-box colorful">
+        <h3>Current Order</h3>
+
+        <table class="order-table">
+          <tr>
+            <th>Item</th>
+            <th>Qty</th>
+            <th>Price</th>
+            <th>Total</th>
+          </tr>
+
+          @for (c of cart(); track c) {
+            <tr>
+              <td class="item-cell">{{ c.name }}</td>
+              <td>
+                <button class="qty-btn" (click)="decrease(c)">−</button>
+                <span class="qty">{{ c.quantity }}</span>
+                <button class="qty-btn" (click)="increase(c)">+</button>
+              </td>
+              <td>{{ c.unitPrice }}</td>
+              <td>{{ c.total }}</td>
+            </tr>
+          }
+
+          @for (d of appliedDeals(); track d) {
+            <tr class="deal-row">
+              <td class="item-cell"><strong>{{ d.dealName }}</strong></td>
+              <td>
+                <button class="qty-btn" (click)="decrease(d)">−</button>
+                <span class="qty">{{ d.quantity }}</span>
+                <button class="qty-btn" (click)="increase(d)">+</button>
+              </td>
+              <td>{{ d.dealPrice }}</td>
+              <td>{{ d.dealPrice * d.quantity }}</td>
+            </tr>
+          }
+
+        </table>
+
+        <!-- Discount -->
+        <div class="discount-box">
+          <input
+            type="number"
+            [ngModel]="discountPercent()"
+            (ngModelChange)="discountPercent.set($event)"
+            placeholder="Discount %">
+
+          <button class="place" (click)="applyDiscount()">Apply</button>
+        </div>
+
+        <!-- Extra Charge -->
+        <div class="extra-box">
+          <select
+            [ngModel]="selectedExtraPrice()"
+            (ngModelChange)="selectedExtraPrice.set($event)">
+
+            <option [ngValue]="null">Extra Amount</option>
+
+            @for (p of extraPrices; track p) {
+              <option [ngValue]="p">Rs {{ p }}</option>
+            }
+
+          </select>
+
+          <button class="place extra" (click)="addExtraCharge()">
+            ➕ Extra
+          </button>
+        </div>
+
+        <!-- Totals -->
+        <div class="totals">
+          <p>Total Qty: {{ totalQuantity() }}</p>
+          <h2>Grand Total: Rs {{ finalTotal() }}</h2>
+        </div>
+
+        <div class="action-buttons">
+          <button class="place primary" (click)="placeOrder()">Place Order</button>
+        </div>
+
+        <div>
+          <button class="place Secondary" (click)="sendToQueue()">
+            🕒 Send to Queue
+          </button>
+        </div>
+
+      </div>
+
+    }
+
+    @if (cart().length === 0 && appliedDeals().length === 0) {
+      <div class="empty-state">No items added</div>
+    }
+
+  </div>
+
+</div>

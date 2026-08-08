@@ -1,0 +1,103 @@
+/* General page styles */
+h2 {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* Form styles */
+form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+form label {
+  font-weight: 500;
+}
+
+form input[type="date"] {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+form input[type="date"]:focus {
+  border-color: #4caf50;
+}
+
+form button {
+  padding: 7px 15px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+form button:disabled {
+  background-color: #a5d6a7;
+  cursor: not-allowed;
+}
+
+form button:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+/* Error message */
+p.error {
+  color: #d32f2f;
+  font-weight: 500;
+  margin-top: 5px;
+}
+
+/* Loading text */
+p {
+  color: #555;
+  font-style: italic;
+  margin-top: 10px;
+}
+
+/* Bill card */
+.card {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 20px;
+  max-width: 500px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  margin-top: 20px;
+}
+
+.card h3 {
+  margin-top: 0;
+  color: #4caf50;
+}
+
+.card p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.card p strong {
+  color: #333;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  form {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .card {
+    width: 100%;
+    padding: 15px;
+  }
+}

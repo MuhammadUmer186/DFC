@@ -1,0 +1,39 @@
+<div class="report-container">
+
+  <h2>📊 Menu Item Sales Report</h2>
+
+  <!-- DATE FILTER -->
+  <div class="filter-box">
+    <label>Select Date</label>
+    <input type="date" [(ngModel)]="date" />
+    <button (click)="loadReport()">Generate Report</button>
+  </div>
+
+  <!-- LOADING -->
+  <div *ngIf="loading()" class="loading">
+    Loading...
+  </div>
+
+  <!-- MENU ITEMS TABLE -->
+  <table *ngIf="menuStats().length > 0">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Menu Item</th>
+        <th>Quantity Sold</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of menuStats(); let i = index">
+        <td>{{ i + 1 }}</td>
+        <td>{{ item.name }}</td>
+        <td>{{ item.todayCount }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="!loading() && menuStats().length === 0">
+    No menu items sold on selected date.
+  </div>
+
+</div>

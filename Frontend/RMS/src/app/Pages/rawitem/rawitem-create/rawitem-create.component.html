@@ -1,0 +1,28 @@
+<div class="dfc-page">
+  <div class="dfc-form-card">
+    <h2><i class="pi pi-plus-circle" style="color: var(--dfc-amber-600); margin-right: 8px;"></i>Add Raw Item</h2>
+
+    <form (ngSubmit)="save()">
+
+      <div class="dfc-field">
+        <label for="name">Item Name</label>
+        <input id="name" class="dfc-input" type="text" [formControl]="name" placeholder="Enter item name" />
+        @if (name.invalid && name.touched) {
+          <span class="dfc-field-error">Item Name is required</span>
+        }
+      </div>
+
+      <div class="dfc-field">
+        <label for="unit">Unit</label>
+        <input id="unit" class="dfc-input" type="text" [formControl]="unit" placeholder="Enter unit" />
+        @if (unit.invalid && unit.touched) {
+          <span class="dfc-field-error">Unit is required</span>
+        }
+      </div>
+
+      <button type="submit" class="dfc-btn dfc-btn-primary" [disabled]="name.invalid || unit.invalid">
+        <i class="pi pi-check"></i> Save
+      </button>
+    </form>
+  </div>
+</div>

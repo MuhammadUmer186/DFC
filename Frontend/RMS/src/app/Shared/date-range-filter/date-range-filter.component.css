@@ -1,0 +1,106 @@
+.drf {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  background: var(--dfc-surface);
+  border: 1px solid var(--dfc-border);
+  border-radius: var(--dfc-radius-md);
+  padding: 12px 14px;
+  box-shadow: var(--dfc-shadow-sm);
+}
+
+.drf-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.drf-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: var(--dfc-radius-pill);
+  border: 1.5px solid var(--dfc-border);
+  background: var(--dfc-gray-50);
+  color: var(--dfc-gray-700);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+
+.drf-chip:hover {
+  background: var(--dfc-amber-50);
+  border-color: var(--dfc-amber-300);
+  color: var(--dfc-amber-700);
+}
+
+.drf-chip.active {
+  background: var(--dfc-navy-900);
+  border-color: var(--dfc-navy-900);
+  color: var(--dfc-amber-300);
+}
+
+.drf-custom {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.drf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.drf-field label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--dfc-gray-400);
+}
+
+.drf-field .dfc-input {
+  height: 32px;
+  padding: 0 10px;
+  font-size: 12.5px;
+  min-width: 130px;
+}
+
+.drf-apply {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: var(--dfc-radius-sm);
+  border: none;
+  background: var(--dfc-gray-200);
+  color: var(--dfc-gray-700);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.drf-apply:hover {
+  background: var(--dfc-amber-200);
+  color: var(--dfc-amber-800);
+}
+
+.drf-apply.active {
+  background: linear-gradient(180deg, var(--dfc-amber-400), var(--dfc-amber-500));
+  color: var(--dfc-navy-950);
+}
+
+@media (max-width: 900px) {
+  .drf-custom {
+    margin-left: 0;
+    width: 100%;
+  }
+}

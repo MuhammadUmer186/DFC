@@ -1,0 +1,78 @@
+.title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  letter-spacing: .5px;
+}
+
+.loading,
+.no-data {
+  text-align: center;
+  padding: 15px;
+  font-size: 14px;
+}
+
+/* Main Table */
+.po-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #ddd;
+  font-size: 13px;
+}
+
+.po-table th {
+  background: #2b7cff;
+  color: white;
+  padding: 10px;
+}
+
+.po-table td {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+/* View Button */
+.view-btn {
+  background: #ff9800;
+  color: white;
+  border: none;
+  padding: 5px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.view-btn:hover {
+  background: #d57e02;
+  transform: scale(0.97);
+}
+
+/* Expanded Section */
+.details {
+  background: #f9fbff;
+  border-left: 3px solid #2b7cff;
+  padding: 10px;
+}
+
+/* Inner Items Table */
+.inner-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.inner-table th {
+  background: #9c27b0;
+  color: white;
+  padding: 6px;
+}
+
+.inner-table td {
+  padding: 6px;
+  border-bottom: 1px solid #ddd;
+}

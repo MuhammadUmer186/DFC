@@ -1,0 +1,35 @@
+@if (deliveryLocation.isOpen()) {
+  <div class="picker-backdrop" (click)="close()">
+    <div class="picker-panel" (click)="$event.stopPropagation()">
+
+      <div class="picker-header">
+        <h3>📍 Select Delivery Location</h3>
+        <button class="picker-close" (click)="close()">✕</button>
+      </div>
+
+      <button class="btn btn-outline gps-btn" (click)="useCurrentLocation()" [disabled]="locating()">
+        @if (locating()) {
+          Locating…
+        } @else {
+          📡 Use My Current Location
+        }
+      </button>
+
+      <div #mapEl class="picker-map"></div>
+
+      <div class="picker-address">
+        @if (resolvingAddress()) {
+          <span class="resolving">Looking up address…</span>
+        } @else {
+          <span>{{ address() || 'Tap the map to drop a pin' }}</span>
+        }
+      </div>
+
+      <div class="picker-actions">
+        <button class="btn btn-outline" (click)="close()">Cancel</button>
+        <button class="btn btn-primary" (click)="confirm()" [disabled]="resolvingAddress()">Confirm Location</button>
+      </div>
+
+    </div>
+  </div>
+}

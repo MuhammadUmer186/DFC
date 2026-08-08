@@ -1,0 +1,105 @@
+/* ===== General Layout ===== */
+.orders-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: Arial, sans-serif;
+  background-color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.orders-table th, 
+.orders-table td {
+  padding: 10px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.orders-table th {
+  background-color: #1976d2;
+  color: #fff;
+  font-weight: 600;
+}
+
+.orders-table tr:hover {
+  background-color: #f1f1f1;
+  cursor: pointer;
+}
+
+/* ===== Expanded Details ===== */
+.details-row {
+  background-color: #f9f9f9;
+}
+
+.details-container {
+  padding: 10px 0;
+}
+
+.details-container table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.details-container th,
+.details-container td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  font-size: 0.9rem;
+}
+
+.details-container th {
+  background-color: #e3f2fd;
+  color: #333;
+}
+
+/* ===== Buttons ===== */
+button {
+  padding: 5px 12px;
+  margin-right: 5px;
+  font-size: 0.85rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button:nth-child(1) {
+  background-color: #4caf50; /* Pay */
+  color: white;
+}
+
+button:nth-child(2) {
+  background-color: #f44336; /* Cancel */
+  color: white;
+}
+
+/* ===== Expanded Row Highlight ===== */
+.order-row.expanded {
+  background-color: #f0f7ff;
+}
+
+/* ===== Misc ===== */
+h2 {
+  margin-bottom: 15px;
+  color: #1976d2;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+select {
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.orders-table td, .orders-table th {
+  white-space: nowrap;
+}

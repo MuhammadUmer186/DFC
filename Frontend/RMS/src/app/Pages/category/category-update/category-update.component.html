@@ -1,0 +1,16 @@
+<div class="dfc-page">
+  <div class="dfc-form-card">
+    <h2><i class="pi pi-pencil" style="color: var(--dfc-amber-600); margin-right: 8px;"></i>Update Category</h2>
+
+    <form [formGroup]="form" (ngSubmit)="update()">
+      <div class="dfc-field">
+        <label>Category Name</label>
+        <input class="dfc-input" formControlName="name" placeholder="Enter category name">
+      </div>
+
+      <button type="submit" class="dfc-btn dfc-btn-primary" [disabled]="form.invalid">
+        <i class="pi pi-check"></i> Update
+      </button>
+    </form>
+  </div>
+</div>

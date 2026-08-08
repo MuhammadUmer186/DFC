@@ -1,0 +1,18 @@
+<h2>Create Kitchen Out</h2>
+
+<form [formGroup]="form" (ngSubmit)="save()">
+
+  <label>Item Name</label>
+  <input formControlName="itemName">
+
+  <label>Quantity</label>
+  <input type="number" formControlName="quantity">
+
+  <label>Unit</label>
+  <input formControlName="unit">
+
+  <label>Date</label>
+  <input type="date" formControlName="date">
+
+  <button type="submit">Save</button>
+</form>

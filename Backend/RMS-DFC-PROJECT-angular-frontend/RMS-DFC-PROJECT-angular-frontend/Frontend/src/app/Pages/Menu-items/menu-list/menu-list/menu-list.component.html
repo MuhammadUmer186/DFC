@@ -1,0 +1,27 @@
+<h2>Menu Items</h2>
+
+<button routerLink="/menu/create">+ Add Menu</button>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Price</th>
+      <th>Category</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (m of menuItems; track m) {
+      <tr>
+        <td>{{ m.name }}</td>
+        <td>{{ m.price }}</td>
+        <td>{{ m.categoryName }}</td>
+        <td>
+          <button (click)="edit(m.id)">Edit</button>
+          <button (click)="delete(m.id)">Delete</button>
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>

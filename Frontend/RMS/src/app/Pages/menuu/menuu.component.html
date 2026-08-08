@@ -1,0 +1,84 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-book"></i> Restaurant Menu Management</h2>
+      <p class="dfc-page-subtitle">Browse a category and manage its items</p>
+    </div>
+  </div>
+
+  <!-- CATEGORY DROPDOWN -->
+  <div class="dfc-toolbar">
+    <label style="font-size: 13px; font-weight: 700; color: var(--dfc-gray-700);">Category</label>
+    <select class="dfc-input" style="max-width: 260px;" (change)="selectCategory($event)">
+      <option value="">Select Category</option>
+      @for (c of categories; track c) {
+        <option [value]="c.id">{{ c.name }}</option>
+      }
+    </select>
+  </div>
+
+  <!-- MENU TABLE -->
+  @if (selectedCategory) {
+    <div class="dfc-table-wrap">
+      <table class="dfc-table">
+        <thead>
+          <tr>
+            <th>Item Name</th>
+            <th>Price</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of selectedCategory.items; track item) {
+            <tr>
+              <td>{{ item.name }}</td>
+              <td>{{ item.price | currency }}</td>
+              <td class="actions">
+                <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" (click)="edit(item)"><i class="pi pi-pencil"></i> Edit</button>
+                <button class="dfc-btn dfc-btn-danger dfc-btn-sm" (click)="delete(item.id)"><i class="pi pi-trash"></i> Delete</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- CREATE / UPDATE FORM -->
+  <div class="dfc-form-card">
+    <h3>{{ editMode ? 'Update' : 'Add' }} Menu Item</h3>
+
+    <form [formGroup]="menuForm" (ngSubmit)="submit()">
+      <div class="dfc-field">
+        <label>Item Name</label>
+        <input class="dfc-input" type="text" placeholder="Item Name" formControlName="name">
+      </div>
+
+      <div class="dfc-field">
+        <label>Price</label>
+        <input class="dfc-input" type="number" placeholder="Price" formControlName="price">
+      </div>
+
+      <div class="dfc-field">
+        <label>Category</label>
+        <select formControlName="categoryId">
+          <option value="">Select Category</option>
+          @for (c of categories; track c) {
+            <option [value]="c.id">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="dfc-page-actions">
+        <button type="submit" class="dfc-btn dfc-btn-primary" [disabled]="menuForm.invalid">
+          <i class="pi pi-check"></i> {{ editMode ? 'Update' : 'Create' }}
+        </button>
+        <button type="button" class="dfc-btn dfc-btn-ghost" (click)="resetForm()">
+          <i class="pi pi-times"></i> Clear
+        </button>
+      </div>
+    </form>
+  </div>
+
+</div>

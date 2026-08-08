@@ -1,0 +1,37 @@
+<div class="bill-container">
+  <h2>Add Utility Bill</h2>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+
+    <label>Bill Type *</label>
+    <select formControlName="billType">
+      <option value="">-- Select Bill Type --</option>
+      <option>Electricity</option>
+      <option>Gas</option>
+      <option>Internet</option>
+      <option>Water</option>
+      <option>Misc</option>
+    </select>
+
+    <label>Amount *</label>
+    <input type="number" formControlName="amount">
+
+    <label>Bill Date *</label>
+    <input type="date" formControlName="billDate">
+
+    <label>Due Date</label>
+    <input type="date" formControlName="dueDate">
+
+    <label>Notes</label>
+    <textarea rows="3" formControlName="notes"></textarea>
+
+    <button [disabled]="loading">Save Bill</button>
+  </form>
+
+  @if (successMessage) {
+    <p class="success">{{successMessage}}</p>
+  }
+  @if (errorMessage) {
+    <p class="error">{{errorMessage}}</p>
+  }
+</div>

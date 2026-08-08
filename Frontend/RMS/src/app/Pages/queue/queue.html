@@ -1,0 +1,137 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-clock"></i> Queued Orders</h2>
+      <p class="dfc-page-subtitle">Live queue — updates automatically as new orders come in</p>
+    </div>
+  </div>
+
+  <div class="dfc-toolbar">
+    <label class="toolbar-label">
+      Payment Method
+      <select [ngModel]="paymentMethod()" (ngModelChange)="paymentMethod.set($event)">
+        <option value="Cash">Cash</option>
+        <option value="Card">Card</option>
+        <option value="Mobile">Mobile</option>
+        <option value="Online transfer">Online transfer</option>
+      </select>
+    </label>
+
+    <label class="toolbar-label">
+      Customer Printer
+      <select [ngModel]="customerPrinter()" (ngModelChange)="customerPrinter.set($event)">
+        <option value="usb1">USB 1</option>
+        <option value="usb2">USB 2</option>
+        <option value="ethernet">Ethernet</option>
+        <option value="bluetooth">Bluetooth</option>
+      </select>
+    </label>
+
+    <label class="toolbar-label">
+      Kitchen Printer
+      <select [ngModel]="kitchenPrinter()" (ngModelChange)="kitchenPrinter.set($event)">
+        <option value="usb1">USB 1</option>
+        <option value="usb2">USB 2</option>
+        <option value="ethernet">Ethernet</option>
+        <option value="bluetooth">Bluetooth</option>
+      </select>
+    </label>
+  </div>
+
+  @if(loading()) {
+    <div class="dfc-loading"><i class="pi pi-spin pi-spinner"></i> Loading queued orders...</div>
+  }
+
+  @if(!loading()) {
+    @if (queuedOrders().length === 0) {
+      <div class="dfc-empty">
+        <i class="pi pi-inbox"></i>
+        <span>No orders in the queue</span>
+      </div>
+    } @else {
+      <div class="dfc-table-wrap">
+        <table class="dfc-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Total Amount</th>
+              <th>Quantity</th>
+              <th>Waiter / Customer</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for(order of queuedOrders(); track $index) {
+              <tr class="order-row" (click)="toggleExpand(order)" [class.expanded]="order.expanded">
+                <td>{{ order.id }}</td>
+                <td>Rs {{ order.totalAmount }}</td>
+                <td>{{ order.totalQuantity }}</td>
+                <td>
+                  @if (order.orderSource === 'Online') {
+                    <span class="dfc-badge dfc-badge-info">Online</span>
+                    <span class="dfc-badge dfc-badge-navy">{{ serviceTypeLabel(order.serviceType) }}</span>
+                    <div class="online-customer-info">{{ order.customerName }} — {{ order.address }}</div>
+                  } @else {
+                    {{ order.takenByEmployeeName }}
+                  }
+                </td>
+                <td>
+                  @if (order.paid) {
+                    <span class="dfc-badge dfc-badge-success">Paid</span>
+                  } @else {
+                    <span class="dfc-badge dfc-badge-amber">Queued</span>
+                  }
+                </td>
+                <td class="actions">
+                  @if(!order.paid) {
+                    <button class="dfc-btn dfc-btn-success dfc-btn-sm" (click)="confirmPay(order); $event.stopPropagation()"><i class="pi pi-check"></i> Pay &amp; Print</button>
+                    <button class="dfc-btn dfc-btn-danger dfc-btn-sm" (click)="cancelOrder(order); $event.stopPropagation()"><i class="pi pi-times"></i> Cancel</button>
+                  }
+                </td>
+              </tr>
+
+              @if(order.expanded) {
+                <tr class="details-row">
+                  <td colspan="6">
+                    <div class="details-container">
+                      <table class="dfc-table">
+                        <thead>
+                          <tr>
+                            <th>Item / Deal</th>
+                            <th>Price</th>
+                            <th>Qty</th>
+                            <th>Total</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for(item of order.items; track $index) {
+                            <tr>
+                              <td>{{ item.menuItemName }}</td>
+                              <td>Rs {{ item.unitPrice }}</td>
+                              <td>{{ item.quantity }}</td>
+                              <td>Rs {{ item.unitPrice * item.quantity }}</td>
+                            </tr>
+                          }
+                          @for(deal of order.deals; track $index) {
+                            <tr>
+                              <td>{{ deal.dealName }}</td>
+                              <td>Rs {{ deal.dealPrice }}</td>
+                              <td>{{ deal.quantity }}</td>
+                              <td>Rs {{ deal.dealPrice * deal.quantity }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>

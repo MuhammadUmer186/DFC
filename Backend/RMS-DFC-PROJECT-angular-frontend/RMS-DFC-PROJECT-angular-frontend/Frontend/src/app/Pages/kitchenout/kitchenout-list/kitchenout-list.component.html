@@ -1,0 +1,67 @@
+<div class="page">
+  <h2>Kitchen Out History</h2>
+
+  @if (loading()) {
+    <div class="loading">Loading...</div>
+  }
+
+  @if (!loading() && kitchenOuts().length === 0) {
+    <div class="empty">
+      No Kitchen Out records found.
+    </div>
+  }
+
+  @if(kitchenOuts().length > 0) {
+  <table class="po-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for(k of kitchenOuts(); track k; let i = $index) {
+        <!-- Main Row -->
+        <tr>
+          <td>{{ i + 1 }}</td>
+          <td>{{ k.issuedAt | date:'short' }}</td>
+          <td>
+            <button class="view-btn" (click)="toggleKitchenDetails(k.id)">
+              {{ expandedKitchenId() === k.id ? 'Hide' : 'View' }}
+            </button>
+          </td>
+        </tr>
+
+        <!-- Expanded Row -->
+        @if(expandedKitchenId() === k.id) {
+          <tr>
+            <td colspan="3" class="details">
+              <h4>Items</h4>
+              <table class="inner-table">
+                <thead>
+                  <tr>
+                    <th>Raw Item</th>
+                    <th>Qty</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for(i of k.items; track i) {
+                    <tr>
+                      <td>{{ i.rawItemName }}</td>
+                      <td>{{ i.quantity }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </td>
+          </tr>
+        }
+      }
+    </tbody>
+  </table>
+} @else {
+  <div class="no-data">No kitchen outs found.</div>
+}
+
+</div>

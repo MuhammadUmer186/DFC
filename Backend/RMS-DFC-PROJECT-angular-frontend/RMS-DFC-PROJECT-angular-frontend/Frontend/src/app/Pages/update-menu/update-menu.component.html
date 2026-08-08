@@ -1,0 +1,42 @@
+<h3>Update Menu Item</h3>
+
+<form [formGroup]="form" (ngSubmit)="update()">
+
+  <!-- CATEGORY -->
+  <select formControlName="categoryId">
+    <option value="">Select Category</option>
+    @for (c of categories; track c) {
+      <option [value]="c.id">
+        {{ c.name }}
+      </option>
+    }
+  </select>
+
+  <!-- ITEM -->
+  @if (selectedCategory) {
+    <select formControlName="itemId">
+      <option value="">Select Item</option>
+      @for (i of selectedCategory.items; track i) {
+        <option [value]="i.id">
+          {{ i.name }}
+        </option>
+      }
+    </select>
+  }
+
+  <!-- EDIT -->
+  @if (selectedItem) {
+    <div>
+      <input
+        type="text"
+        formControlName="name"
+        placeholder="Item Name">
+        <input
+          type="number"
+          formControlName="price"
+          placeholder="Price">
+          <button type="submit">Update</button>
+        </div>
+      }
+
+    </form>

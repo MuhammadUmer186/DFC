@@ -1,0 +1,87 @@
+<div class="auth-screen">
+
+  <!-- ================= BRAND PANEL ================= -->
+  <div class="brand-panel">
+    <div class="brand-panel-glow"></div>
+    <div class="brand-panel-content">
+      <img src="assets/DFC.jpg" alt="DFC — Data Finger Chips" class="brand-panel-logo" />
+      <h1 class="brand-panel-title">Data Finger Chips</h1>
+      <p class="brand-panel-tagline">Restaurant Management System</p>
+
+      <ul class="brand-panel-points">
+        <li><i class="pi pi-check-circle"></i> Orders, Kitchen &amp; Inventory in one place</li>
+        <li><i class="pi pi-check-circle"></i> Real-time stock &amp; vendor tracking</li>
+        <li><i class="pi pi-check-circle"></i> Sales, profit &amp; salary reporting</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ================= FORM PANEL ================= -->
+  <div class="form-panel">
+    <div class="login-box">
+      <div class="login-box-header">
+        <img src="assets/DFC.jpg" alt="DFC" class="login-mobile-logo" />
+        <h2>Welcome back</h2>
+        <p>Sign in to continue to your dashboard</p>
+      </div>
+
+      <form (ngSubmit)="OnloginSave()" [formGroup]="loginform" class="login-form" novalidate>
+
+        <!-- Username -->
+        <div class="field">
+          <label for="userName">Username</label>
+          <div class="input-affix">
+            <i class="pi pi-user"></i>
+            <input
+              id="userName"
+              type="text"
+              formControlName="userName"
+              placeholder="Enter your username"
+              autocomplete="username"
+            />
+          </div>
+          @if (loginform.controls['userName'].touched && loginform.controls['userName'].invalid) {
+            <div class="field-error">
+              @if (loginform.controls['userName'].hasError('required')) {
+                <span>Username is required</span>
+              }
+              @if (loginform.controls['userName'].hasError('minlength')) {
+                <span>Minimum 3 characters required</span>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Password -->
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="input-affix">
+            <i class="pi pi-lock"></i>
+            <input
+              id="password"
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+            />
+            <button type="button" class="affix-action" (click)="togglePassword()" tabindex="-1">
+              <i class="pi" [ngClass]="showPassword ? 'pi-eye-slash' : 'pi-eye'"></i>
+            </button>
+          </div>
+          @if (loginform.controls['password'].touched && loginform.controls['password'].invalid) {
+            <div class="field-error">
+              <span>Password is required</span>
+            </div>
+          }
+        </div>
+
+        <button type="submit" [disabled]="!loginform.valid" class="submit-btn">
+          <i class="pi pi-sign-in"></i> Sign In
+        </button>
+      </form>
+    </div>
+
+    <p class="footnote">© {{ currentYear }} Data Finger Chips — All rights reserved</p>
+  </div>
+</div>
+<router-outlet></router-outlet>

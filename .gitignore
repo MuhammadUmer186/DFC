@@ -1,0 +1,24 @@
+# Build artifacts
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+**/.angular/
+
+# IDE / editor
+**/.vs/
+**/.vscode/
+*.user
+
+# Secrets — never commit real values, only .env.example
+.env
+
+# Unrelated project bundled in this folder
+dfc_app/
+dfc_app.zip
+
+# Local tool state
+.claude/
+
+# Runtime-uploaded content (persisted via Docker volume instead)
+Backend/wwwroot/uploads/

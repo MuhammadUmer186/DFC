@@ -1,0 +1,27 @@
+<h2>Search Utility Bill</h2>
+
+<form [formGroup]="form" (ngSubmit)="searchBill()">
+  <label>Select Bill Date</label>
+  <input type="date" formControlName="billDate">
+
+  <button type="submit" [disabled]="loading()">
+    Search
+  </button>
+</form>
+
+@if (errorMessage()) {
+  <p class="error">{{ errorMessage() }}</p>
+}
+
+@if (bill()) {
+  <div class="card">
+    <h3>{{ bill().billType }}</h3>
+    <p><strong>Amount:</strong> {{ bill().amount }}</p>
+    <p><strong>Bill Date:</strong> {{ bill().billDate }}</p>
+    <p><strong>Notes:</strong> {{ bill().notes || 'N/A' }}</p>
+  </div>
+}
+
+@if (loading()) {
+  <p>Loading...</p>
+}

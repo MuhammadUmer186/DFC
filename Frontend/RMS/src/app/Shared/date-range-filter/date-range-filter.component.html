@@ -1,0 +1,31 @@
+<div class="drf">
+
+  <div class="drf-presets">
+    @for (p of presets; track p.key) {
+      <button
+        type="button"
+        class="drf-chip"
+        [class.active]="activePreset === p.key"
+        (click)="selectPreset(p.key)">
+        {{ p.label }}
+      </button>
+    }
+  </div>
+
+  <div class="drf-custom">
+    <div class="drf-field">
+      <label>From</label>
+      <input type="date" class="dfc-input" [(ngModel)]="customFrom" [max]="customTo">
+    </div>
+
+    <div class="drf-field">
+      <label>To</label>
+      <input type="date" class="dfc-input" [(ngModel)]="customTo" [min]="customFrom">
+    </div>
+
+    <button type="button" class="drf-apply" [class.active]="activePreset === 'custom'" (click)="applyCustomRange()">
+      <i class="pi pi-filter"></i> Apply
+    </button>
+  </div>
+
+</div>

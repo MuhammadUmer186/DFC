@@ -1,0 +1,180 @@
+/* ---------- CARD WRAPPER ---------- */
+.salary-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* ---------- HEADER ---------- */
+.salary-card h2 {
+  margin-bottom: 15px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* ---------- DATE FILTER ---------- */
+.form-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: #374151;
+}
+
+.form-group input[type="date"] {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+}
+
+/* ---------- BUTTONS ---------- */
+.btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-pay {
+  background: #16a34a;
+  color: #ffffff;
+}
+
+.btn-pay:hover {
+  background: #15803d;
+}
+
+/* ---------- TABLE ---------- */
+.salary-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+/* ---------- TABLE HEADER ---------- */
+.salary-table thead {
+  background: linear-gradient(90deg, #1f2937, #374151);
+}
+
+.salary-table thead th {
+  color: #ffffff;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* ---------- TABLE BODY ---------- */
+.salary-table tbody tr {
+  border-bottom: 1px solid #e5e7eb;
+  transition: background 0.2s ease;
+}
+
+.salary-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.salary-table td {
+  padding: 12px;
+  color: #374151;
+  vertical-align: middle;
+}
+
+/* ---------- STATUS BADGES ---------- */
+.salary-table td:nth-child(5) {
+  font-weight: 600;
+}
+
+.salary-table td:nth-child(5)::before {
+  content: '';
+}
+
+/* Paid */
+.salary-table tr td:nth-child(5):has(:not(:empty)) {
+}
+
+/* ---------- PAID / UNPAID TEXT ---------- */
+.salary-table td:has(:contains("Yes")) {
+  color: #16a34a;
+}
+
+.salary-table td:has(:contains("No")) {
+  color: #dc2626;
+}
+
+/* ---------- AMOUNT COLUMN ---------- */
+.salary-table td:nth-child(4) {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* ---------- ACTION COLUMN ---------- */
+.salary-table td:last-child {
+  text-align: right;
+}
+
+/* ---------- EMPTY / LOADING TEXT ---------- */
+.salary-card p {
+  margin-top: 14px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 900px) {
+  .salary-table thead {
+    display: none;
+  }
+
+  .salary-table,
+  .salary-table tbody,
+  .salary-table tr,
+  .salary-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .salary-table tr {
+    background: #ffffff;
+    margin-bottom: 12px;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  }
+
+  .salary-table td {
+    padding: 8px 0;
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+  }
+
+  .salary-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #6b7280;
+  }
+
+  .salary-table td:last-child {
+    justify-content: flex-end;
+  }
+}

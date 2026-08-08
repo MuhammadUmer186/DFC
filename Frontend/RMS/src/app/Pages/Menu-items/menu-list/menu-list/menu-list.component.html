@@ -1,0 +1,48 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-book"></i> Menu Items</h2>
+      <p class="dfc-page-subtitle">All items currently on your menu</p>
+    </div>
+    <div class="dfc-page-actions">
+      <button class="dfc-btn dfc-btn-primary" routerLink="/menu-create">
+        <i class="pi pi-plus"></i> Add Menu
+      </button>
+    </div>
+  </div>
+
+  @if (menuItems.length === 0) {
+    <div class="dfc-empty">
+      <i class="pi pi-inbox"></i>
+      <span>No menu items found</span>
+    </div>
+  } @else {
+    <div class="dfc-table-wrap">
+      <table class="dfc-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Category</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (m of menuItems; track m) {
+            <tr>
+              <td>{{ m.name }}</td>
+              <td>{{ m.price }}</td>
+              <td>{{ m.categoryName }}</td>
+              <td class="actions">
+                <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" (click)="edit(m.id)"><i class="pi pi-pencil"></i> Edit</button>
+                <button class="dfc-btn dfc-btn-danger dfc-btn-sm" (click)="delete(m.id)"><i class="pi pi-trash"></i> Delete</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+</div>

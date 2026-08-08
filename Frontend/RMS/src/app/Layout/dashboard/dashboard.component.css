@@ -1,0 +1,128 @@
+/* ==========================================================================
+   Dashboard
+   ========================================================================== */
+
+.dash-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.dash-title {
+  font-family: var(--dfc-font-display);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--dfc-gray-900, #0f172a);
+}
+
+.dash-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--dfc-text-muted, #64748b);
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--dfc-text-muted, #64748b);
+  padding: 12px 0;
+}
+
+/* ================= TICKERS ================= */
+.ticker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: var(--dfc-radius-md, 12px);
+  padding: 10px 16px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  box-shadow: var(--dfc-shadow-sm);
+  position: relative;
+}
+
+.ticker-track {
+  display: inline-flex;
+  gap: 40px;
+  white-space: nowrap;
+  animation: ticker-scroll 24s linear infinite;
+}
+
+.ticker:hover .ticker-track {
+  animation-play-state: paused;
+}
+
+.ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+@keyframes ticker-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.ticker-danger {
+  background: var(--dfc-danger-bg, #fef2f2);
+  border: 1px solid var(--dfc-danger-border, #fecaca);
+  color: var(--dfc-danger, #dc2626);
+}
+
+.ticker-dark {
+  background: var(--dfc-navy-900, #0f172a);
+  color: #fff;
+}
+.ticker-item.paid { color: #4ade80; }
+.ticker-item.unpaid { color: var(--dfc-amber-300, #fcd34d); }
+
+/* KPI card grid/card/icon/row styles now live in the shared global
+   design system (src/styles.css) so reports and ledgers can reuse them. */
+
+/* ================= CHARTS ================= */
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.chart-card {
+  background: var(--dfc-surface, #fff);
+  border: 1px solid var(--dfc-border, #e2e8f0);
+  border-radius: var(--dfc-radius-lg, 16px);
+  padding: 16px;
+  box-shadow: var(--dfc-shadow-sm);
+  transition: box-shadow 200ms ease;
+}
+
+.chart-card:hover {
+  box-shadow: var(--dfc-shadow-md);
+}
+
+.chart-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--dfc-gray-700, #334155);
+  margin-bottom: 10px;
+}
+
+.chart-card-title i {
+  color: var(--dfc-amber-600, #d97706);
+  font-size: 14px;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+  .chart-grid {
+    grid-template-columns: 1fr;
+  }
+}

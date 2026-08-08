@@ -1,0 +1,49 @@
+<h2>Create Purchase Order</h2>
+
+<form [formGroup]="form" (ngSubmit)="save()">
+
+  <label>Bill No</label>
+  <input type="text" formControlName="billNo">
+
+  <label>Vendor</label>
+  <select formControlName="vendorId">
+    <option [ngValue]="null">-- Select Vendor --</option>
+    @for (v of vendors(); track v) {
+      <option [ngValue]="v.id">
+        {{v.name}}
+      </option>
+    }
+  </select>
+
+  <hr>
+
+    <h3>Items</h3>
+
+    <div formArrayName="items">
+
+      @for (row of items.controls; track row; let i = $index) {
+        <div [formGroupName]="i" class="item-row">
+          <select formControlName="rawItemId">
+            <option [ngValue]="null">-- Select Raw Item --</option>
+            @for (r of rawItems(); track r) {
+              <option [ngValue]="r.id">
+                {{r.name}}
+              </option>
+            }
+          </select>
+          <input type="number" placeholder="Quantity" formControlName="quantity">
+          <input type="number" placeholder="Unit Price" formControlName="unitPrice">
+          @if (items.length > 1) {
+            <button type="button" (click)="removeItem(i)">X</button>
+          }
+        </div>
+      }
+
+    </div>
+
+    <button type="button" (click)="addItem()">Add Row</button>
+    <br><br>
+
+    <button type="submit">Save Purchase Order</button>
+
+  </form>

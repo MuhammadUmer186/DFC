@@ -1,0 +1,334 @@
+.count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--dfc-radius-pill);
+  background: var(--dfc-amber-100);
+  color: var(--dfc-amber-700);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* ================= DEAL GRID ================= */
+.deal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px;
+}
+
+.deal-card {
+  background: var(--dfc-surface);
+  border: 1px solid var(--dfc-border);
+  border-radius: var(--dfc-radius-lg);
+  box-shadow: var(--dfc-shadow-sm);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.deal-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--dfc-shadow-md);
+}
+
+.deal-card.inactive {
+  opacity: 0.6;
+}
+
+.deal-photo {
+  position: relative;
+  height: 120px;
+  background: var(--dfc-gray-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.deal-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.deal-photo-placeholder {
+  color: var(--dfc-gray-300);
+  font-size: 28px;
+}
+
+.deal-status-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--dfc-gray-600);
+  color: var(--dfc-white);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: var(--dfc-radius-pill);
+}
+
+.deal-status-badge.active {
+  background: var(--dfc-success);
+}
+
+.deal-body {
+  padding: 10px 12px 4px;
+  flex: 1;
+}
+
+.deal-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--dfc-gray-900);
+}
+
+.deal-combo-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.combo-chip {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--dfc-gray-600);
+  background: var(--dfc-gray-100);
+  padding: 2px 7px;
+  border-radius: var(--dfc-radius-pill);
+}
+
+.deal-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.deal-original-price {
+  font-size: 12px;
+  color: var(--dfc-gray-400);
+  text-decoration: line-through;
+}
+
+.deal-final-price {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--dfc-amber-600);
+}
+
+.deal-actions {
+  display: flex;
+  gap: 6px;
+  padding: 10px 12px 12px;
+}
+
+.deal-actions .dfc-btn:first-child {
+  flex: 1;
+}
+
+/* ================= ITEM PICKER ================= */
+.item-picker-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.item-picker-row select {
+  flex: 1;
+  height: 42px;
+  padding: 0 10px;
+  border-radius: var(--dfc-radius-sm);
+  border: 1.5px solid var(--dfc-border);
+  font-size: 13px;
+}
+
+.item-picker-row .qty-input {
+  width: 60px;
+  height: 42px;
+  padding: 0 8px;
+  border-radius: var(--dfc-radius-sm);
+  border: 1.5px solid var(--dfc-border);
+  text-align: center;
+}
+
+.combo-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.combo-item-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--dfc-gray-50);
+  border-radius: var(--dfc-radius-sm);
+  padding: 8px 10px;
+  font-size: 12.5px;
+}
+
+.combo-item-row span:first-child {
+  flex: 1;
+  font-weight: 600;
+}
+
+.combo-item-price {
+  color: var(--dfc-amber-600);
+  font-weight: 700;
+}
+
+.remove-btn {
+  border: none;
+  background: transparent;
+  color: var(--dfc-gray-400);
+  cursor: pointer;
+}
+
+.combo-preview {
+  background: var(--dfc-gray-50);
+  border-radius: var(--dfc-radius-md);
+  padding: 12px 14px;
+  margin: 8px 0 4px;
+}
+
+.preview-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: var(--dfc-gray-600);
+  padding: 3px 0;
+}
+
+.preview-row.total {
+  border-top: 1px solid var(--dfc-border);
+  margin-top: 4px;
+  padding-top: 8px;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--dfc-gray-900);
+}
+
+/* ================= ADD / EDIT PANEL (mirrors My Menu's slide-over) ================= */
+.menu-form-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 18, 32, 0.45);
+  z-index: 90;
+}
+
+.menu-form-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 380px;
+  max-width: 92vw;
+  background: var(--dfc-surface);
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.2);
+  z-index: 91;
+  display: flex;
+  flex-direction: column;
+  animation: slide-in 200ms ease;
+}
+
+@keyframes slide-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+.menu-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--dfc-border);
+  flex-shrink: 0;
+}
+
+.menu-form-header h3 {
+  font-family: var(--dfc-font-display);
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--dfc-gray-900);
+}
+
+.menu-form-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: var(--dfc-gray-100);
+  color: var(--dfc-gray-600);
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-form-close:hover {
+  background: var(--dfc-danger-bg);
+  color: var(--dfc-danger);
+}
+
+.menu-form-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.menu-form-photo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.menu-form-photo img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: var(--dfc-radius-md);
+  border: 1px solid var(--dfc-border);
+}
+
+.menu-item-photo-placeholder {
+  color: var(--dfc-gray-300);
+  font-size: 28px;
+}
+
+.menu-item-photo-placeholder.large {
+  font-size: 40px;
+}
+
+.menu-form-photo .menu-item-photo-placeholder.large {
+  width: 100%;
+  height: 160px;
+  border-radius: var(--dfc-radius-md);
+  border: 1.5px dashed var(--dfc-border);
+  background: var(--dfc-gray-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-form-upload-btn {
+  cursor: pointer;
+  width: 100%;
+  justify-content: center;
+}
+
+.menu-form-save {
+  width: 100%;
+  height: 46px;
+  margin-top: 12px;
+}

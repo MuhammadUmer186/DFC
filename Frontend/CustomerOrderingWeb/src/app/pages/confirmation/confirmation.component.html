@@ -1,0 +1,32 @@
+<div class="confirmation">
+  <div class="check-badge">✓</div>
+  <h2>Order Received!</h2>
+  <p class="order-no">Order #{{ orderId }} · {{ serviceTypeLabel }}</p>
+  <p class="sub-text">We've got your order and it's awaiting confirmation from the restaurant. You'll receive updates on WhatsApp shortly.</p>
+
+  @if (order) {
+    <div class="recap-card">
+      @for (item of order.items; track item.menuItemName) {
+        <div class="recap-row">
+          <span>{{ item.menuItemName }} × {{ item.quantity }}</span>
+          <span>Rs {{ item.unitPrice * item.quantity }}</span>
+        </div>
+      }
+      @for (deal of order.deals; track deal.dealName) {
+        <div class="recap-row">
+          <span>{{ deal.dealName }} × {{ deal.quantity }}</span>
+          <span>Rs {{ deal.dealPrice * deal.quantity }}</span>
+        </div>
+      }
+      @if (deliveryFee > 0) {
+        <div class="recap-row"><span>Delivery Fee{{ areaName ? ' (' + areaName + ')' : '' }}</span><span>Rs {{ deliveryFee }}</span></div>
+      }
+      <div class="recap-row total">
+        <span>Total</span>
+        <span>Rs {{ order.totalAmount }}</span>
+      </div>
+    </div>
+  }
+
+  <a routerLink="/" class="btn btn-primary">Back to Menu</a>
+</div>

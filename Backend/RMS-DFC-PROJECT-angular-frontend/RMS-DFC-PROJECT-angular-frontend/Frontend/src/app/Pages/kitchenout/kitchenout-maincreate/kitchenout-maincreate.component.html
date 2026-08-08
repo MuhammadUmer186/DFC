@@ -1,0 +1,49 @@
+<h2>Kitchen Out (Issue Raw Items)</h2>
+
+<form [formGroup]="form" (ngSubmit)="save()">
+
+  <label>Reference No</label>
+  <input type="text" formControlName="referenceNo" placeholder="Enter Reference No">
+  <br><br>
+
+  <table border="1" width="100%">
+    <thead>
+      <tr>
+        <th>Raw Item</th>
+        <th>Quantity</th>
+        <th width="80">Action</th>
+      </tr>
+    </thead>
+
+    <tbody formArrayName="items">
+      @for (row of items.controls; track row; let i = $index) {
+        <tr [formGroupName]="i">
+          <td>
+            <select formControlName="rawItemId">
+              <option value="">-- Select Raw Item --</option>
+              @for (r of rawItems(); track r) {
+                <option [value]="r.id">{{ r.name }}</option>
+              }
+            </select>
+          </td>
+          <td>
+            <input type="number" formControlName="quantity" placeholder="Quantity">
+          </td>
+          <td>
+            @if (items.length > 1) {
+              <button type="button" (click)="removeItem(i)">
+                Remove
+              </button>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  <br>
+
+    <button type="button" (click)="addItem()">+ Add More Item</button>
+    <button type="submit">Save Kitchen Out</button>
+
+  </form>

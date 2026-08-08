@@ -1,0 +1,34 @@
+<div class="dfc-page">
+  <div class="dfc-form-card dfc-form-card-wide">
+    <h2><i class="pi pi-sign-out" style="color: var(--dfc-amber-600); margin-right: 8px;"></i>Kitchen Out (Issue Raw Items)</h2>
+
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="dfc-field" style="max-width: 320px;">
+        <label>Reference No</label>
+        <input class="dfc-input" type="text" formControlName="referenceNo" placeholder="Enter Reference No">
+      </div>
+
+      <div formArrayName="items" class="item-rows">
+        @for (row of items.controls; track row; let i = $index) {
+          <div [formGroupName]="i" class="item-row-2col">
+            <select formControlName="rawItemId" class="item-row-select">
+              <option value="">-- Select Raw Item --</option>
+              @for (r of rawItems(); track r) {
+                <option [value]="r.id">{{ r.name }}</option>
+              }
+            </select>
+            <input type="number" class="dfc-input" formControlName="quantity" placeholder="Quantity">
+            @if (items.length > 1) {
+              <button type="button" class="dfc-btn dfc-btn-danger dfc-btn-sm" (click)="removeItem(i)"><i class="pi pi-times"></i></button>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="dfc-page-actions" style="margin-top: 12px;">
+        <button type="button" class="dfc-btn dfc-btn-ghost" (click)="addItem()"><i class="pi pi-plus"></i> Add More Item</button>
+        <button type="submit" class="dfc-btn dfc-btn-primary"><i class="pi pi-check"></i> Save Kitchen Out</button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,28 @@
+<nav class="topbar">
+  <div class="left">
+    <button class="icon-btn" (click)="toggle()" title="Toggle sidebar">
+      <i class="pi pi-bars"></i>
+    </button>
+
+    <div class="brand-inline">
+      <img src="assets/DFC.jpg" alt="DFC" class="brand-inline-logo" />
+      <span class="brand-inline-text">Data Finger Chips</span>
+    </div>
+  </div>
+
+  <div class="actions">
+    <span class="role-badge">
+      <i class="pi pi-verified"></i>
+      {{ auth.getRole() }}
+    </span>
+
+    <div class="user-chip">
+      <span class="avatar">{{ initials() }}</span>
+      <span class="user-name">{{ displayName() }}</span>
+    </div>
+
+    <button class="icon-btn danger" (click)="logout()" title="Logout">
+      <i class="pi pi-sign-out"></i>
+    </button>
+  </div>
+</nav>

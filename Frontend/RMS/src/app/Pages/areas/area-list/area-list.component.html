@@ -1,0 +1,97 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-map"></i> Delivery Areas</h2>
+      <p class="dfc-page-subtitle">Manage the areas customers can choose at checkout and the delivery fee charged for each — keep an "Unknown" area so customers outside your listed areas can still order</p>
+    </div>
+  </div>
+
+  <!-- ADD AREA -->
+  <div class="dfc-toolbar area-add-form">
+    <input
+      type="text"
+      class="dfc-input"
+      placeholder="Area name"
+      [value]="newName()"
+      (input)="newName.set($any($event.target).value)"
+    />
+    <input
+      type="number"
+      min="0"
+      class="dfc-input"
+      placeholder="Delivery fee (Rs)"
+      [value]="newFee() ?? ''"
+      (input)="setNewFee($any($event.target).value)"
+    />
+    <button class="dfc-btn dfc-btn-primary" [disabled]="adding()" (click)="add()">
+      @if (adding()) {
+        <i class="pi pi-spin pi-spinner"></i> Adding…
+      } @else {
+        <i class="pi pi-plus"></i> Add Area
+      }
+    </button>
+  </div>
+
+  <!-- TABLE -->
+  @if (areas().length === 0) {
+    <div class="dfc-empty">
+      <i class="pi pi-inbox"></i>
+      <span>No areas found</span>
+    </div>
+  }
+
+  @if (areas().length > 0) {
+    <div class="dfc-table-wrap">
+      <table class="dfc-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Delivery Fee</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (a of areas(); track a.id) {
+            <tr>
+              @if (editingId() === a.id) {
+                <td>
+                  <input type="text" class="dfc-input" [value]="editName()" (input)="editName.set($any($event.target).value)" />
+                </td>
+                <td>
+                  <input type="number" min="0" class="dfc-input" [value]="editFee() ?? ''" (input)="setEditFee($any($event.target).value)" />
+                </td>
+                <td>
+                  <label style="display:flex; align-items:center; gap:6px; font-weight:600; font-size:13px;">
+                    <input type="checkbox" [checked]="editActive()" (change)="editActive.set($any($event.target).checked)" />
+                    Active
+                  </label>
+                </td>
+                <td class="actions">
+                  <button class="dfc-btn dfc-btn-success dfc-btn-sm" (click)="saveEdit(a)"><i class="pi pi-check"></i> Save</button>
+                  <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" (click)="cancelEdit()"><i class="pi pi-times"></i> Cancel</button>
+                </td>
+              } @else {
+                <td>{{ a.name }}</td>
+                <td>Rs {{ a.deliveryFee }}</td>
+                <td>
+                  @if (a.isActive) {
+                    <span class="dfc-badge dfc-badge-success">Active</span>
+                  } @else {
+                    <span class="dfc-badge dfc-badge-danger">Inactive</span>
+                  }
+                </td>
+                <td class="actions">
+                  <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" (click)="startEdit(a)"><i class="pi pi-pencil"></i> Edit</button>
+                  <button class="dfc-btn dfc-btn-danger dfc-btn-sm" (click)="delete(a)"><i class="pi pi-trash"></i> Delete</button>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+</div>

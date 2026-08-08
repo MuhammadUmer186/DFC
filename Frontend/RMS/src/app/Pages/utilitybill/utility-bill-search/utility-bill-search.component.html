@@ -1,0 +1,39 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-search"></i> Search Utility Bill</h2>
+      <p class="dfc-page-subtitle">Look up a bill by its date</p>
+    </div>
+  </div>
+
+  <div class="dfc-toolbar">
+    <form [formGroup]="form" (ngSubmit)="searchBill()" style="display: flex; align-items: center; gap: 10px;">
+      <label style="font-size: 13px; font-weight: 700; color: var(--dfc-gray-700);">Bill Date</label>
+      <input class="dfc-input" type="date" formControlName="billDate">
+      <button type="submit" class="dfc-btn dfc-btn-primary" [disabled]="loading()">
+        <i class="pi pi-search"></i> Search
+      </button>
+    </form>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="dfc-empty">
+      <i class="pi pi-exclamation-circle"></i>
+      <span>{{ errorMessage() }}</span>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="dfc-loading"><i class="pi pi-spin pi-spinner"></i> Loading...</div>
+  }
+
+  @if (bill()) {
+    <div class="dfc-form-card">
+      <h3>{{ bill().billType }}</h3>
+      <div class="kpi-row"><span>Amount</span><strong>{{ bill().amount }}</strong></div>
+      <div class="kpi-row"><span>Bill Date</span><strong>{{ bill().billDate }}</strong></div>
+      <div class="kpi-row"><span>Notes</span><strong>{{ bill().notes || 'N/A' }}</strong></div>
+    </div>
+  }
+</div>

@@ -1,0 +1,85 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-truck"></i> Purchase Orders</h2>
+      <p class="dfc-page-subtitle">All stock purchases recorded from vendors</p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="dfc-loading"><i class="pi pi-spin pi-spinner"></i> Loading purchase orders...</div>
+  }
+
+  @if (!loading() && orders().length === 0) {
+    <div class="dfc-empty">
+      <i class="pi pi-inbox"></i>
+      <span>No purchase orders found</span>
+    </div>
+  }
+
+  @if (orders().length > 0) {
+    <div class="dfc-table-wrap">
+      <table class="dfc-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Bill No</th>
+            <th>Vendor</th>
+            <th>Date</th>
+            <th>Total Amount</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (o of orders(); track o; let i = $index) {
+            <tr>
+              <td>{{ i + 1 }}</td>
+              <td>{{ o.billNo }}</td>
+              <td>{{ o.vendorName }}</td>
+              <td>{{ o.purchaseDate | date:'medium' }}</td>
+              <td>Rs {{ o.totalAmount }}</td>
+              <td>
+                <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" (click)="toggleDetails(o.id)">
+                  <i class="pi" [ngClass]="expandedOrderId() === o.id ? 'pi-chevron-up' : 'pi-eye'"></i>
+                  {{ expandedOrderId() === o.id ? 'Hide' : 'View' }}
+                </button>
+              </td>
+            </tr>
+
+            <!-- Expanded Row -->
+            @if (expandedOrderId() === o.id) {
+              <tr>
+                <td colspan="6" class="details">
+                  <div class="inner-table-wrap">
+                    <h4>Items</h4>
+                    <table class="dfc-table">
+                      <thead>
+                        <tr>
+                          <th>Item</th>
+                          <th>Qty</th>
+                          <th>Unit Price</th>
+                          <th>Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (item of o.items; track item) {
+                          <tr>
+                            <td>{{ item.rawItemName }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>{{ item.unitPrice }}</td>
+                            <td>{{ item.totalPrice }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

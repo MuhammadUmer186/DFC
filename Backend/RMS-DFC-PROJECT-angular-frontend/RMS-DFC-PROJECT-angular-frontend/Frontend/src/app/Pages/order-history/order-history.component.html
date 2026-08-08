@@ -1,0 +1,76 @@
+<div>
+  <table border="1" width="100%" class="orders-table">
+  <thead>
+    <tr>
+      <th>Order Id</th>
+      <th>Total Amount</th>
+      <th>Total Quantity</th>
+      <th>Date</th>
+      <th>Waiter</th>
+      <th>Cashier</th>
+      <th>Status</th>
+      <th>Cancelled By</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for(order of orders(); track $index) {
+      <!-- Main Row -->
+      <tr class="order-row" (click)="order.expanded = !order.expanded" [class.expanded]="order.expanded">
+        <td>{{ order.id }}</td>
+        <td>Rs {{ order.totalAmount }}</td>
+        <td>{{ order.totalQuantity }}</td>
+        <td>{{ order.createdAt | date:'medium' }}</td>
+        <td>{{ order.takenByEmployeeName || '-' }}</td>
+        <td>{{ order.cashierName || '-' }}</td>
+        <td>{{ order.paid ? 'Paid' : 'Unpaid' }}</td>
+        <td>{{ order.cancelledByEmployeeName || '-' }}</td>
+        <td>
+          <button (click)="deleteOrder(order.id); $event.stopPropagation()" class="delete-btn">
+            Delete
+          </button>
+        </td>
+      </tr>
+
+      <!-- Expanded Row (Items & Deals) -->
+      @if(order.expanded) {
+        <tr class="details-row">
+          <td colspan="9">
+            <div class="details-container">
+              <table border="1" width="100%">
+                <thead>
+                  <tr>
+                    <th>Item / Deal</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for(item of order.items; track $index) {
+                    <tr>
+                      <td>{{ item.menuItemName }}</td>
+                      <td>Rs {{ item.unitPrice }}</td>
+                      <td>{{ item.quantity }}</td>
+                      <td>Rs {{ item.unitPrice * item.quantity }}</td>
+                    </tr>
+                  }
+                  @for(deal of order.deals; track $index) {
+                    <tr>
+                      <td>{{ deal.dealName }}</td>
+                      <td>Rs {{ deal.dealPrice }}</td>
+                      <td>{{ deal.quantity }}</td>
+                      <td>Rs {{ deal.dealPrice * deal.quantity }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </td>
+        </tr>
+      }
+    }
+  </tbody>
+</table>
+<p-paginator [first]="first()" [rows]="rows()" [rowsPerPageOptions]="[2,5,10,20]" [totalRecords]="totalRecords()" (onPageChange)="onPageChange($event)"> </p-paginator>
+</div>

@@ -1,0 +1,75 @@
+<div class="page">
+  <h2>Waste Management Records</h2>
+
+  @if (loading()) {
+    <div class="loading">
+      Loading...
+    </div>
+  }
+
+  @if (!loading() && wastes().length === 0) {
+    <div class="empty">
+      No waste records found.
+    </div>
+  }
+
+  @if(!loading()) {
+  @if(wastes().length > 0) {
+    <table class="po-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Reference</th>
+          <th>Date</th>
+          <th>Reason</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for(w of wastes(); track w; let i = $index) {
+          <!-- Main Row -->
+          <tr>
+            <td>{{ i + 1 }}</td>
+            <td>{{ w.referenceNo }}</td>
+            <td>{{ w.createdAt | date:'short' }}</td>
+            <td>{{ w.reason }}</td>
+            <td>
+              <button class="view-btn" (click)="toggleWasteDetails(w.id)">
+                {{ expandedWasteId() === w.id ? 'Hide' : 'View' }}
+              </button>
+            </td>
+          </tr>
+
+          <!-- Expanded Row -->
+          @if(expandedWasteId() === w.id) {
+            <tr>
+              <td colspan="5" class="details">
+                <h4>Items</h4>
+                <table class="inner-table">
+                  <thead>
+                    <tr>
+                      <th>Raw Item</th>
+                      <th>Quantity</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for(i of w.items; track i) {
+                      <tr>
+                        <td>{{ i.rawItemName }}</td>
+                        <td>{{ i.quantity }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  } @else {
+    <div class="no-data">No waste records found.</div>
+  }
+}
+
+</div>

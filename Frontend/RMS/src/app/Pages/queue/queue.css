@@ -1,0 +1,46 @@
+.toolbar-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--dfc-gray-700);
+}
+
+.toolbar-label select {
+  height: 38px;
+  padding: 0 10px;
+  border-radius: var(--dfc-radius-sm);
+  border: 1.5px solid var(--dfc-border);
+  background: var(--dfc-surface);
+  font-family: var(--dfc-font-sans);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.order-row {
+  cursor: pointer;
+}
+
+.online-customer-info {
+  font-size: 11.5px;
+  color: var(--dfc-gray-500);
+  margin-top: 2px;
+}
+
+.order-row.expanded td {
+  background: var(--dfc-amber-50);
+}
+
+.details-row td {
+  padding: 0 !important;
+  background: var(--dfc-gray-50);
+}
+
+.details-container {
+  padding: 14px 16px;
+}
+
+.details-container .dfc-table {
+  font-size: 12.5px;
+}

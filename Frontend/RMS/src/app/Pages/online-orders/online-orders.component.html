@@ -1,0 +1,318 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text oo-header-text">
+      <div class="oo-header-icon"><i class="pi pi-globe"></i></div>
+      <div>
+        <h2 class="dfc-page-title">Online Orders</h2>
+        <p class="dfc-page-subtitle">Review and approve incoming website orders</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="oo-stats-grid">
+    <div class="oo-stat-card">
+      <div class="oo-stat-icon oo-stat-icon-amber"><i class="pi pi-clipboard"></i></div>
+      <div class="oo-stat-body">
+        <span class="oo-stat-label">Pending Approval</span>
+        <span class="oo-stat-value">{{ allCount() }}</span>
+        <span class="oo-stat-sub">Orders waiting</span>
+      </div>
+    </div>
+
+    <div class="oo-stat-card">
+      <div class="oo-stat-icon oo-stat-icon-blue"><i class="pi pi-clock"></i></div>
+      <div class="oo-stat-body">
+        <span class="oo-stat-label">Ready to Process</span>
+        <span class="oo-stat-value">{{ readyToProcessCount() }}</span>
+        <span class="oo-stat-sub">Orders ready</span>
+      </div>
+    </div>
+
+    <div class="oo-stat-card">
+      <div class="oo-stat-icon oo-stat-icon-green"><i class="pi pi-chart-bar"></i></div>
+      <div class="oo-stat-body">
+        <span class="oo-stat-label">Today's Online Sales</span>
+        <span class="oo-stat-value">Rs {{ todaysOnlineSales() }}</span>
+        <span class="oo-stat-sub">Value of today's online orders</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="oo-tabs" style="margin-bottom: 12px;">
+    <button class="oo-tab" [class.active]="viewMode() === 'pending'" (click)="setViewMode('pending')">Pending Approval ({{ allCount() }})</button>
+    <button class="oo-tab" [class.active]="viewMode() === 'inProgress'" (click)="setViewMode('inProgress')">In Progress ({{ activeOrders().length }})</button>
+  </div>
+
+  @if (viewMode() === 'pending') {
+  <div class="oo-toolbar">
+    <div class="oo-search">
+      <i class="pi pi-search"></i>
+      <input
+        type="text"
+        placeholder="Search order, customer or phone"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+      />
+    </div>
+
+    <div class="oo-tabs">
+      <button class="oo-tab" [class.active]="activeTab() === 'all'" (click)="setTab('all')">All ({{ allCount() }})</button>
+      <button class="oo-tab" [class.active]="activeTab() === 'delivery'" (click)="setTab('delivery')">Delivery ({{ deliveryCount() }})</button>
+      <button class="oo-tab" [class.active]="activeTab() === 'pickup'" (click)="setTab('pickup')">Pickup ({{ pickupCount() }})</button>
+    </div>
+
+    <div class="oo-toolbar-spacer"></div>
+
+    <div class="oo-select">
+      <i class="pi pi-filter"></i>
+      <select [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)">
+        <option value="all">Status: All</option>
+        <option value="pending">Awaiting rider</option>
+        <option value="riderAssigned">Rider assigned</option>
+      </select>
+    </div>
+
+    <div class="oo-select">
+      <i class="pi pi-sort-alt"></i>
+      <select [ngModel]="sortOrder()" (ngModelChange)="setSort($event)">
+        <option value="newest">Sort: Newest</option>
+        <option value="oldest">Sort: Oldest</option>
+      </select>
+    </div>
+  </div>
+
+  @if(loading()) {
+    <div class="dfc-loading"><i class="pi pi-spin pi-spinner"></i> Loading online orders...</div>
+  }
+
+  @if(!loading()) {
+    @if (visibleOrders().length === 0) {
+      <div class="dfc-empty">
+        <i class="pi pi-inbox"></i>
+        <span>{{ allCount() === 0 ? 'No online orders waiting for approval' : 'No orders match your filters' }}</span>
+      </div>
+    } @else {
+      <div class="online-order-grid">
+        @for(order of visibleOrders(); track order.id) {
+          <div class="online-order-card">
+
+            <div class="ooc-header">
+              <div class="ooc-header-left">
+                <span class="ooc-order-no">#{{ order.id }}</span>
+                <span class="ooc-time"><i class="pi pi-clock"></i> {{ timeAgo(order.createdAt) }}</span>
+              </div>
+              <div class="ooc-header-badges">
+                <span class="dfc-badge dfc-badge-navy"><i class="pi" [ngClass]="serviceTypeIcon(order.serviceType)"></i> {{ serviceTypeLabel(order.serviceType) }}</span>
+                <span class="dfc-badge dfc-badge-amber">Pending Approval</span>
+              </div>
+            </div>
+
+            <div class="ooc-info-grid">
+              <div class="ooc-info">
+                <span class="ooc-info-label"><i class="pi pi-user"></i> Customer</span>
+                <span class="ooc-info-value">{{ order.customerName || 'Unknown customer' }}</span>
+              </div>
+              <div class="ooc-info">
+                <span class="ooc-info-label"><i class="pi pi-phone"></i> Contact</span>
+                @if (order.phoneNumber) {
+                  <a class="ooc-info-value ooc-link" [href]="waLink(order.phoneNumber)" target="_blank" rel="noopener">{{ order.phoneNumber }}</a>
+                } @else {
+                  <span class="ooc-info-value">—</span>
+                }
+              </div>
+
+              @if (order.address) {
+                <div class="ooc-info">
+                  <span class="ooc-info-label"><i class="pi pi-map-marker"></i> Delivery Address</span>
+                  <span class="ooc-info-value">{{ order.address }}</span>
+                </div>
+              }
+              <div class="ooc-info">
+                <span class="ooc-info-label"><i class="pi pi-credit-card"></i> Payment</span>
+                <span class="dfc-badge" [class.dfc-badge-success]="order.paymentMethod === 'Cash'" [class.dfc-badge-info]="order.paymentMethod !== 'Cash'">
+                  {{ order.paymentMethod || 'Cash' }}
+                </span>
+              </div>
+            </div>
+
+            @if (isDelivery(order)) {
+              <div class="ooc-rider" [class.ooc-rider-assigned-bg]="!isEditingRider(order)">
+                @if (isEditingRider(order)) {
+                  <div class="ooc-rider-form">
+                    <select class="dfc-input" [value]="getDraftRiderId(order) ?? ''" (change)="setDraftRiderId(order, $any($event.target).value)">
+                      <option value="">-- Select rider --</option>
+                      @for (r of riders(); track r.id) {
+                        <option [value]="r.id">{{ r.name }} ({{ r.phoneNumber }})</option>
+                      }
+                    </select>
+                    <input
+                      type="number"
+                      min="0"
+                      class="dfc-input"
+                      placeholder="Rider cost (Rs)"
+                      [value]="getDraftCost(order) ?? ''"
+                      (input)="setDraftCost(order, $any($event.target).value)"
+                    />
+                    <button class="dfc-btn dfc-btn-primary dfc-btn-sm" [disabled]="isBusy(order.id)" (click)="assignRider(order)">
+                      <i class="pi pi-car"></i> Allot Rider
+                    </button>
+                  </div>
+                } @else {
+                  <div class="ooc-rider-assigned">
+                    <div class="ooc-rider-info">
+                      <i class="pi pi-car"></i>
+                      <div>
+                        <span class="ooc-rider-caption">Rider</span>
+                        <span class="ooc-rider-name">{{ order.riderName }} — Rs {{ order.riderCost }}</span>
+                      </div>
+                    </div>
+                    <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" (click)="changeRider(order)">
+                      <i class="pi pi-pencil"></i> Change rider
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+
+            <div class="ooc-items" (click)="toggleExpand(order)">
+              <span><i class="pi pi-shopping-bag"></i> {{ order.totalQuantity }} item(s) — Rs {{ order.totalAmount }}</span>
+              <i class="pi" [class.pi-chevron-down]="!order.expanded" [class.pi-chevron-up]="order.expanded"></i>
+            </div>
+
+            @if (order.expanded) {
+              <div class="ooc-details">
+                @for(item of order.items; track $index) {
+                  <div class="ooc-detail-row">
+                    <span>{{ item.menuItemName }} × {{ item.quantity }}</span>
+                    <span>Rs {{ item.unitPrice * item.quantity }}</span>
+                  </div>
+                }
+                @for(deal of order.deals; track $index) {
+                  <div class="ooc-detail-row">
+                    <span>{{ deal.dealName }} × {{ deal.quantity }}</span>
+                    <span>Rs {{ deal.dealPrice * deal.quantity }}</span>
+                  </div>
+                }
+              </div>
+            }
+
+            <div class="ooc-actions">
+              <button class="dfc-btn dfc-btn-success dfc-btn-sm" [disabled]="isBusy(order.id)" (click)="approve(order)">
+                <i class="pi pi-check"></i> Approve &amp; Print
+              </button>
+              <button class="dfc-btn dfc-btn-danger dfc-btn-sm" [disabled]="isBusy(order.id)" (click)="reject(order)">
+                <i class="pi pi-times"></i> Reject
+              </button>
+              <div class="ooc-more">
+                <button class="dfc-btn dfc-btn-ghost dfc-btn-sm ooc-more-btn" (click)="toggleMenu(order.id)">
+                  <i class="pi pi-ellipsis-h"></i>
+                </button>
+                @if (openMenuId() === order.id) {
+                  <div class="ooc-more-menu">
+                    @if (order.phoneNumber) {
+                      <button (click)="copyPhone(order)"><i class="pi pi-copy"></i> Copy phone number</button>
+                    }
+                    @if (order.address) {
+                      <button (click)="openInMaps(order)"><i class="pi pi-map"></i> Open in Maps</button>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+  }
+
+  @if (viewMode() === 'inProgress') {
+    @if (loadingActive()) {
+      <div class="dfc-loading"><i class="pi pi-spin pi-spinner"></i> Loading in-progress orders...</div>
+    }
+
+    @if (!loadingActive()) {
+      @if (activeOrders().length === 0) {
+        <div class="dfc-empty">
+          <i class="pi pi-inbox"></i>
+          <span>No online orders in progress</span>
+        </div>
+      } @else {
+        <div class="online-order-grid">
+          @for (order of activeOrders(); track order.id) {
+            <div class="online-order-card">
+              <div class="ooc-header">
+                <div class="ooc-header-left">
+                  <span class="ooc-order-no">#{{ order.id }}</span>
+                  <span class="ooc-time"><i class="pi pi-clock"></i> {{ timeAgo(order.createdAt) }}</span>
+                </div>
+                <div class="ooc-header-badges">
+                  <span class="dfc-badge dfc-badge-navy"><i class="pi" [ngClass]="serviceTypeIcon(order.serviceType)"></i> {{ serviceTypeLabel(order.serviceType) }}</span>
+                  <span class="dfc-badge dfc-badge-amber">{{ order.deliveryStatus }}</span>
+                </div>
+              </div>
+
+              <div class="ooc-info-grid">
+                <div class="ooc-info">
+                  <span class="ooc-info-label"><i class="pi pi-user"></i> Customer</span>
+                  <span class="ooc-info-value">{{ order.customerName || 'Unknown customer' }}</span>
+                </div>
+                <div class="ooc-info">
+                  <span class="ooc-info-label"><i class="pi pi-phone"></i> Contact</span>
+                  @if (order.phoneNumber) {
+                    <a class="ooc-info-value ooc-link" [href]="waLink(order.phoneNumber)" target="_blank" rel="noopener">{{ order.phoneNumber }}</a>
+                  } @else {
+                    <span class="ooc-info-value">—</span>
+                  }
+                </div>
+                @if (order.address) {
+                  <div class="ooc-info">
+                    <span class="ooc-info-label"><i class="pi pi-map-marker"></i> Delivery Address</span>
+                    <span class="ooc-info-value">{{ order.address }}{{ order.areaName ? ' — ' + order.areaName : '' }}</span>
+                  </div>
+                }
+                @if (isDelivery(order)) {
+                  <div class="ooc-info">
+                    <span class="ooc-info-label"><i class="pi pi-car"></i> Rider</span>
+                    <span class="ooc-info-value">{{ order.riderName || 'Not assigned' }}</span>
+                  </div>
+                }
+              </div>
+
+              <div class="ooc-items" (click)="toggleExpand(order)">
+                <span><i class="pi pi-shopping-bag"></i> {{ order.totalQuantity }} item(s) — Rs {{ order.totalAmount }}</span>
+                <i class="pi" [class.pi-chevron-down]="!order.expanded" [class.pi-chevron-up]="order.expanded"></i>
+              </div>
+
+              @if (order.expanded) {
+                <div class="ooc-details">
+                  @for(item of order.items; track $index) {
+                    <div class="ooc-detail-row">
+                      <span>{{ item.menuItemName }} × {{ item.quantity }}</span>
+                      <span>Rs {{ item.unitPrice * item.quantity }}</span>
+                    </div>
+                  }
+                  @for(deal of order.deals; track $index) {
+                    <div class="ooc-detail-row">
+                      <span>{{ deal.dealName }} × {{ deal.quantity }}</span>
+                      <span>Rs {{ deal.dealPrice * deal.quantity }}</span>
+                    </div>
+                  }
+                </div>
+              }
+
+              <div class="ooc-actions">
+                @for (status of statusOptions(order); track status) {
+                  <button class="dfc-btn dfc-btn-primary dfc-btn-sm" [disabled]="isBusy(order.id)" (click)="setDeliveryStatus(order, status)">
+                    Mark {{ status }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  }
+</div>

@@ -1,0 +1,15 @@
+<h2>Edit Raw Item</h2>
+
+<form (ngSubmit)="update()">
+
+  <label>Item Name</label>
+  <input type="text" [formControl]="itemName">
+
+  <label>Unit</label>
+  <input type="text" [formControl]="unit">
+
+  <label>Opening Stock</label>
+  <input type="number" [formControl]="openingStock">
+
+  <button type="submit">Update</button>
+</form>

@@ -1,0 +1,81 @@
+.navbar {
+  height: 60px;
+  background: #0f172a;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  box-sizing: border-box; /* ✅ include padding in width */
+  width: 100%; /* ✅ full width */
+  overflow-x: hidden; /* ✅ prevent horizontal overflow */
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* space between menu button and logo */
+}
+
+.menu-btn {
+  font-size: 22px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 500;
+  white-space: nowrap; /* ✅ prevent wrapping breaking navbar */
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.actions button {
+  margin: 0; /* already handled by gap */
+}
+
+/* Optional: prevent body horizontal scroll caused by navbar */
+body {
+  margin: 0;
+  overflow-x: hidden;
+}
+.logo img.logo-img {
+  height: 40px; /* Adjust as needed */
+  width: auto;
+  display: block;
+}
+/* Logo on left */
+.logo img.logo-img {
+  height: 40px;
+  width: auto;
+  display: block;
+}
+
+/* Title image */
+.title img.title-img {
+  height: 35px;  /* Adjust as needed */
+  width: auto;
+  display: block;
+  margin: 0 auto; /* Center in navbar */
+}
+
+/* Optional: align navbar items vertically */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
+}
+

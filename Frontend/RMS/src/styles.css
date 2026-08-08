@@ -1,0 +1,585 @@
+/* ==========================================================================
+   DFC — Restaurant Management System
+   Global Design System — "Deep Navy + Amber" (ERP/POS professional theme)
+   ========================================================================== */
+
+:root {
+  /* ---- Brand palette: Navy (surfaces/sidebar) ---- */
+  --dfc-navy-950: #0b1220;
+  --dfc-navy-900: #0f172a;
+  --dfc-navy-800: #16213b;
+  --dfc-navy-700: #1e293b;
+  --dfc-navy-600: #2a3b57;
+  --dfc-navy-500: #334155;
+
+  /* ---- Brand palette: Amber (accent/actions) ---- */
+  --dfc-amber-50:  #fffbeb;
+  --dfc-amber-100: #fef3c7;
+  --dfc-amber-200: #fde68a;
+  --dfc-amber-300: #fcd34d;
+  --dfc-amber-400: #fbbf24;
+  --dfc-amber-500: #f59e0b;
+  --dfc-amber-600: #d97706;
+  --dfc-amber-700: #b45309;
+
+  /* ---- Neutrals (content surfaces / text) ---- */
+  --dfc-gray-50:  #f8fafc;
+  --dfc-gray-100: #f1f5f9;
+  --dfc-gray-200: #e2e8f0;
+  --dfc-gray-300: #cbd5e1;
+  --dfc-gray-400: #94a3b8;
+  --dfc-gray-500: #64748b;
+  --dfc-gray-600: #475569;
+  --dfc-gray-700: #334155;
+  --dfc-gray-800: #1e293b;
+  --dfc-gray-900: #0f172a;
+  --dfc-white: #ffffff;
+
+  /* ---- Semantic ---- */
+  --dfc-success: #16a34a;
+  --dfc-success-bg: #ecfdf5;
+  --dfc-success-border: #a7f3d0;
+  --dfc-danger: #dc2626;
+  --dfc-danger-bg: #fef2f2;
+  --dfc-danger-border: #fecaca;
+  --dfc-warning: #d97706;
+  --dfc-warning-bg: #fffbeb;
+  --dfc-warning-border: #fde68a;
+  --dfc-info: #0891b2;
+  --dfc-info-bg: #ecfeff;
+  --dfc-info-border: #a5f3fc;
+
+  /* ---- Surfaces ---- */
+  --dfc-app-bg: var(--dfc-gray-100);
+  --dfc-surface: var(--dfc-white);
+  --dfc-border: var(--dfc-gray-200);
+  --dfc-text: var(--dfc-gray-900);
+  --dfc-text-muted: var(--dfc-gray-500);
+
+  /* ---- Typography ---- */
+  --dfc-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --dfc-font-display: 'Lexend', var(--dfc-font-sans);
+
+  /* ---- Radius / shadow / spacing ---- */
+  --dfc-radius-sm: 8px;
+  --dfc-radius-md: 12px;
+  --dfc-radius-lg: 16px;
+  --dfc-radius-pill: 999px;
+
+  --dfc-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --dfc-shadow-md: 0 6px 16px rgba(15, 23, 42, 0.08);
+  --dfc-shadow-lg: 0 16px 32px rgba(15, 23, 42, 0.14);
+
+  --dfc-sidebar-width: 260px;
+  --dfc-sidebar-rail: 76px;
+  --dfc-topbar-height: 64px;
+
+  --dfc-transition: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================================================
+   Reset / base
+   ========================================================================== */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--dfc-font-sans);
+  background: var(--dfc-app-bg);
+  color: var(--dfc-text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--dfc-font-display);
+  color: var(--dfc-gray-900);
+  margin: 0;
+}
+
+/* Slim, unobtrusive scrollbars used across the app */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--dfc-gray-300) transparent;
+}
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: var(--dfc-gray-300);
+  border-radius: var(--dfc-radius-pill);
+}
+*::-webkit-scrollbar-thumb:hover { background: var(--dfc-gray-400); }
+
+/* ==========================================================================
+   Shared component utilities (namespaced "dfc-" to avoid clashing with
+   Bootstrap classes still used by legacy pages)
+   ========================================================================== */
+
+.dfc-card {
+  background: var(--dfc-surface);
+  border: 1px solid var(--dfc-border);
+  border-radius: var(--dfc-radius-lg);
+  box-shadow: var(--dfc-shadow-sm);
+}
+
+.dfc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: var(--dfc-radius-sm);
+  border: 1px solid transparent;
+  font-family: var(--dfc-font-sans);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background var(--dfc-transition), border-color var(--dfc-transition), transform var(--dfc-transition), box-shadow var(--dfc-transition);
+}
+.dfc-btn:active { transform: translateY(1px); }
+.dfc-btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+.dfc-btn-primary {
+  background: linear-gradient(180deg, var(--dfc-amber-400), var(--dfc-amber-500));
+  color: var(--dfc-navy-950);
+  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.35);
+}
+.dfc-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, var(--dfc-amber-300), var(--dfc-amber-400));
+}
+
+.dfc-btn-ghost {
+  background: transparent;
+  color: var(--dfc-gray-700);
+  border-color: var(--dfc-border);
+}
+.dfc-btn-ghost:hover:not(:disabled) {
+  background: var(--dfc-gray-100);
+  border-color: var(--dfc-gray-300);
+}
+
+.dfc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--dfc-radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+.dfc-badge-amber   { background: var(--dfc-amber-100); color: var(--dfc-amber-700); border-color: var(--dfc-amber-200); }
+.dfc-badge-navy    { background: var(--dfc-navy-800);  color: var(--dfc-amber-300); }
+.dfc-badge-success { background: var(--dfc-success-bg); color: var(--dfc-success); border-color: var(--dfc-success-border); }
+.dfc-badge-danger  { background: var(--dfc-danger-bg);  color: var(--dfc-danger);  border-color: var(--dfc-danger-border); }
+.dfc-badge-info    { background: var(--dfc-info-bg);    color: var(--dfc-info);    border-color: var(--dfc-info-border); }
+
+.dfc-input {
+  height: 42px;
+  width: 100%;
+  padding: 0 14px;
+  border-radius: var(--dfc-radius-sm);
+  border: 1.5px solid var(--dfc-border);
+  background: var(--dfc-surface);
+  font-family: var(--dfc-font-sans);
+  font-size: 14px;
+  color: var(--dfc-text);
+  transition: border-color var(--dfc-transition), box-shadow var(--dfc-transition);
+}
+.dfc-input:focus {
+  outline: none;
+  border-color: var(--dfc-amber-500);
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
+}
+.dfc-input::placeholder { color: var(--dfc-gray-400); }
+
+.dfc-page-title {
+  font-family: var(--dfc-font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--dfc-gray-900);
+}
+
+.dfc-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  color: var(--dfc-gray-500);
+  margin: 4px 0 12px;
+}
+
+/* Focus-visible ring, keyboard-accessible */
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--dfc-amber-500);
+  outline-offset: 2px;
+}
+
+.dfc-btn-danger {
+  background: var(--dfc-danger-bg);
+  color: var(--dfc-danger);
+  border-color: var(--dfc-danger-border);
+}
+.dfc-btn-danger:hover:not(:disabled) {
+  background: var(--dfc-danger);
+  color: #fff;
+  border-color: var(--dfc-danger);
+}
+
+.dfc-btn-success {
+  background: var(--dfc-success-bg);
+  color: var(--dfc-success);
+  border-color: var(--dfc-success-border);
+}
+.dfc-btn-success:hover:not(:disabled) {
+  background: var(--dfc-success);
+  color: #fff;
+  border-color: var(--dfc-success);
+}
+
+.dfc-btn-sm {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 12.5px;
+  border-radius: 7px;
+}
+
+/* ==========================================================================
+   Page shell — consistent header + content wrapper used by every page
+   ========================================================================== */
+.dfc-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  font-family: var(--dfc-font-sans);
+  color: var(--dfc-text);
+}
+
+.dfc-page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.dfc-page-header-text .dfc-page-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dfc-page-header-text .dfc-page-title i {
+  color: var(--dfc-amber-600);
+  font-size: 20px;
+}
+
+.dfc-page-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--dfc-text-muted);
+}
+
+.dfc-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ---- Toolbar: search / filters / add ---- */
+.dfc-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: var(--dfc-surface);
+  border: 1px solid var(--dfc-border);
+  border-radius: var(--dfc-radius-md);
+  padding: 12px 14px;
+  box-shadow: var(--dfc-shadow-sm);
+}
+
+.dfc-toolbar .dfc-input {
+  max-width: 260px;
+}
+
+.dfc-toolbar-spacer {
+  flex: 1;
+}
+
+/* ---- Cards / form cards ---- */
+.dfc-form-card {
+  background: var(--dfc-surface);
+  border: 1px solid var(--dfc-border);
+  border-radius: var(--dfc-radius-lg);
+  box-shadow: var(--dfc-shadow-sm);
+  padding: 22px 24px;
+  max-width: 560px;
+}
+
+.dfc-form-card-wide {
+  max-width: none;
+}
+
+.dfc-form-card h2, .dfc-form-card h3 {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 18px;
+  color: var(--dfc-gray-900);
+}
+
+.dfc-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.dfc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.dfc-field:last-child { margin-bottom: 0; }
+
+.dfc-field label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--dfc-gray-700);
+}
+
+.dfc-field select,
+.dfc-field textarea {
+  height: 42px;
+  padding: 0 14px;
+  border-radius: var(--dfc-radius-sm);
+  border: 1.5px solid var(--dfc-border);
+  background: var(--dfc-surface);
+  font-family: var(--dfc-font-sans);
+  font-size: 14px;
+  color: var(--dfc-text);
+  transition: border-color var(--dfc-transition), box-shadow var(--dfc-transition);
+}
+
+.dfc-field textarea {
+  height: auto;
+  min-height: 90px;
+  padding: 10px 14px;
+  resize: vertical;
+}
+
+.dfc-field select:focus,
+.dfc-field textarea:focus {
+  outline: none;
+  border-color: var(--dfc-amber-500);
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
+}
+
+.dfc-field-error {
+  font-size: 12px;
+  color: var(--dfc-danger);
+  font-weight: 600;
+}
+
+.dfc-field-optional {
+  font-weight: 500;
+  color: var(--dfc-gray-400);
+  text-transform: none;
+}
+
+/* ---- Data table ---- */
+.dfc-table-wrap {
+  background: var(--dfc-surface);
+  border: 1px solid var(--dfc-border);
+  border-radius: var(--dfc-radius-lg);
+  box-shadow: var(--dfc-shadow-sm);
+  overflow: auto;
+}
+
+table.dfc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  font-family: var(--dfc-font-sans);
+}
+
+.dfc-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--dfc-navy-900);
+  color: #e2e8f0;
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.dfc-table tbody td {
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--dfc-border);
+  color: var(--dfc-gray-800);
+  vertical-align: middle;
+}
+
+.dfc-table tbody tr:hover td {
+  background: var(--dfc-amber-50);
+}
+
+.dfc-table tbody tr:last-child td { border-bottom: none; }
+
+.dfc-table .actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ---- Empty / loading states ---- */
+.dfc-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 48px 20px;
+  color: var(--dfc-gray-400);
+  font-size: 14px;
+  text-align: center;
+}
+
+.dfc-empty i {
+  font-size: 32px;
+  color: var(--dfc-gray-300);
+}
+
+.dfc-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 0;
+  color: var(--dfc-text-muted);
+  font-size: 14px;
+}
+
+/* ==========================================================================
+   KPI cards — reusable summary card grid (dashboard, reports, ledgers)
+   ========================================================================== */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.kpi-card {
+  background: var(--dfc-surface);
+  border: 1px solid var(--dfc-border);
+  border-radius: var(--dfc-radius-lg);
+  padding: 16px 18px;
+  box-shadow: var(--dfc-shadow-sm);
+  position: relative;
+  overflow: hidden;
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--dfc-shadow-md);
+}
+
+.kpi-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+}
+
+.kpi-success::before { background: linear-gradient(90deg, #16a34a, #22c55e); }
+.kpi-profit::before  { background: linear-gradient(90deg, var(--dfc-amber-500), var(--dfc-amber-400)); }
+.kpi-info::before    { background: linear-gradient(90deg, #0891b2, #22d3ee); }
+.kpi-danger::before  { background: linear-gradient(90deg, #dc2626, #ef4444); }
+
+.kpi-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.kpi-card-head h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--dfc-gray-800);
+}
+
+.kpi-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--dfc-gray-100);
+  color: var(--dfc-gray-700);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.kpi-success .kpi-icon { background: var(--dfc-success-bg); color: var(--dfc-success); }
+.kpi-profit  .kpi-icon { background: var(--dfc-amber-100);  color: var(--dfc-amber-700); }
+.kpi-info    .kpi-icon { background: var(--dfc-info-bg);    color: var(--dfc-info); }
+.kpi-danger  .kpi-icon { background: var(--dfc-danger-bg);  color: var(--dfc-danger); }
+
+.kpi-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 5px 0;
+  font-size: 12.5px;
+  border-top: 1px dashed var(--dfc-border);
+}
+
+.kpi-row:first-of-type { border-top: none; }
+
+.kpi-row span { color: var(--dfc-text-muted); }
+
+.kpi-row strong {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--dfc-gray-900);
+  text-align: right;
+}
+
+@media (max-width: 768px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+}
+
+/* ==========================================================================
+   PrimeNG component touch-ups to match the brand
+   ========================================================================== */
+.p-chart canvas { max-width: 100%; }
+
+.p-toast .p-toast-message {
+  border-radius: var(--dfc-radius-md);
+  box-shadow: var(--dfc-shadow-lg);
+}

@@ -1,0 +1,68 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-car"></i> My Deliveries</h2>
+      <p class="dfc-page-subtitle">
+        @if (auth.getRiderName()) {
+          Welcome, {{ auth.getRiderName() }} — here are the orders assigned to you
+        } @else {
+          Orders assigned to you
+        }
+      </p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="dfc-loading"><i class="pi pi-spin pi-spinner"></i> Loading your deliveries...</div>
+  }
+
+  @if (!loading() && orders().length === 0) {
+    <div class="dfc-empty">
+      <i class="pi pi-inbox"></i>
+      <span>No deliveries assigned to you yet</span>
+    </div>
+  }
+
+  @if (!loading() && orders().length > 0) {
+    <div class="delivery-grid">
+      @for (order of orders(); track order.id) {
+        <div class="delivery-card">
+          <div class="dc-header">
+            <span class="dc-order-no">Order #{{ order.id }}</span>
+            @if (order.deliveryStatus) {
+              <span class="dfc-badge" [class.dfc-badge-success]="order.deliveryStatus === 'Delivered'" [class.dfc-badge-amber]="order.deliveryStatus !== 'Delivered'">{{ order.deliveryStatus }}</span>
+            } @else if (order.paid) {
+              <span class="dfc-badge dfc-badge-success">Completed</span>
+            } @else {
+              <span class="dfc-badge dfc-badge-amber">In Progress</span>
+            }
+          </div>
+
+          <div class="dc-row"><i class="pi pi-user"></i> {{ order.customerName || 'Unknown customer' }}</div>
+          @if (order.phoneNumber) {
+            <div class="dc-row">
+              <i class="pi pi-whatsapp"></i>
+              <a [href]="waLink(order.phoneNumber)" target="_blank" rel="noopener">{{ order.phoneNumber }}</a>
+            </div>
+          }
+          @if (order.address) {
+            <div class="dc-row"><i class="pi pi-map-marker"></i> {{ order.address }}</div>
+          }
+
+          <div class="dc-footer">
+            <span>{{ order.totalQuantity }} item(s) — Rs {{ order.totalAmount }}</span>
+            <span class="dc-cost">Your cost: Rs {{ order.riderCost }}</span>
+          </div>
+
+          @if (order.deliveryStatus === 'Enroute') {
+            <button class="dfc-btn dfc-btn-success dfc-btn-sm" style="width:100%; margin-top:10px;" [disabled]="isBusy(order.id)" (click)="markDelivered(order)">
+              <i class="pi pi-check"></i> Mark Delivered
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+
+</div>

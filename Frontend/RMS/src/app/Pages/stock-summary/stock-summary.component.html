@@ -1,0 +1,52 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-database"></i> Store Stock Summary</h2>
+      <p class="dfc-page-subtitle">Current on-hand quantity for every raw item</p>
+    </div>
+  </div>
+
+  <div class="dfc-toolbar">
+    <input
+      type="text"
+      placeholder="Search raw item..."
+      [(ngModel)]="searchText"
+      class="dfc-input"
+      />
+  </div>
+
+  @if (loading()) {
+    <div class="dfc-loading"><i class="pi pi-spin pi-spinner"></i> Loading...</div>
+  }
+
+  @if (!loading() && filteredStock().length) {
+    <div class="dfc-table-wrap">
+      <table class="dfc-table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Unit</th>
+            <th>Quantity</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of filteredStock(); track s) {
+            <tr>
+              <td>{{ s.itemName }}</td>
+              <td>{{ s.unit }}</td>
+              <td>{{ s.totalQuantity }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (!loading() && filteredStock().length === 0) {
+    <div class="dfc-empty">
+      <i class="pi pi-inbox"></i>
+      <span>No stock found</span>
+    </div>
+  }
+</div>

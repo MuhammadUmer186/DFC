@@ -1,0 +1,12 @@
+.kpi-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-top: 1px dashed var(--dfc-border);
+  font-size: 13.5px;
+}
+
+.kpi-row:first-of-type { border-top: none; }
+
+.kpi-row span { color: var(--dfc-text-muted); }
+.kpi-row strong { color: var(--dfc-gray-900); font-weight: 700; }

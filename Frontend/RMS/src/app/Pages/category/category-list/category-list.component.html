@@ -1,0 +1,103 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-tags"></i> Categories</h2>
+      <p class="dfc-page-subtitle">Manage the categories used to group your menu items</p>
+    </div>
+  </div>
+
+  <!-- ADD CATEGORY -->
+  <div class="dfc-toolbar">
+    <input
+      type="text"
+      class="dfc-input"
+      placeholder="New category name"
+      [value]="newCategoryName()"
+      (input)="newCategoryName.set($any($event.target).value)"
+    />
+    <button class="dfc-btn dfc-btn-primary" (click)="add()">
+      <i class="pi pi-plus"></i> Add
+    </button>
+  </div>
+
+  <!-- TABLE -->
+  @if (categories().length === 0) {
+    <div class="dfc-empty">
+      <i class="pi pi-inbox"></i>
+      <span>No categories found</span>
+    </div>
+  }
+
+  @if (categories().length > 0) {
+    <div class="dfc-table-wrap">
+      <table class="dfc-table">
+        <thead>
+          <tr>
+            <th>Photo</th>
+            <th>Name</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of categories(); track c.id) {
+            <tr>
+
+              <!-- PHOTO -->
+              <td>
+                <div class="cat-photo-cell">
+                  @if (c.imageUrl) {
+                    <img [src]="fullImageUrl(c.imageUrl)" alt="{{ c.name }}" class="cat-photo-thumb">
+                  } @else {
+                    <span class="cat-photo-placeholder"><i class="pi pi-image"></i></span>
+                  }
+
+                  <label class="dfc-btn dfc-btn-ghost dfc-btn-sm cat-photo-upload-btn">
+                    @if (uploadingId() === c.id) {
+                      <i class="pi pi-spin pi-spinner"></i>
+                    } @else {
+                      <i class="pi pi-upload"></i>
+                    }
+                    {{ c.imageUrl ? 'Replace' : 'Upload' }}
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/gif"
+                      hidden
+                      (change)="onFileSelected(c, $event)"
+                    />
+                  </label>
+                </div>
+              </td>
+
+              <!-- NAME / EDIT INPUT -->
+              <td>
+                @if (editingId() === c.id) {
+                  <input
+                    type="text"
+                    class="dfc-input"
+                    [value]="editName()"
+                    (input)="editName.set($any($event.target).value)"
+                  />
+                } @else {
+                  {{ c.name }}
+                }
+              </td>
+
+              <!-- ACTIONS -->
+              <td class="actions">
+                @if (editingId() === c.id) {
+                  <button class="dfc-btn dfc-btn-success dfc-btn-sm" (click)="saveEdit(c)"><i class="pi pi-check"></i> Save</button>
+                  <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" (click)="cancelEdit()"><i class="pi pi-times"></i> Cancel</button>
+                } @else {
+                  <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" (click)="startEdit(c)"><i class="pi pi-pencil"></i> Edit</button>
+                  <button class="dfc-btn dfc-btn-danger dfc-btn-sm" (click)="delete(c.id)"><i class="pi pi-trash"></i> Delete</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+</div>

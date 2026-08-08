@@ -1,0 +1,40 @@
+<div class="login-container">
+  <div class="login-box">
+    <h2>Login</h2>
+    <form (ngSubmit)="OnloginSave()" [formGroup]="loginform">
+
+      <!-- Employee Name -->
+      <div class="input-group">
+        <label>User Name</label>
+        <input type="text" formControlName="userName" placeholder="Enter your Name">
+        @if (loginform.controls['userName'].touched) {
+          <div class="text-danger">
+            @if (loginform.controls['userName'].hasError('required')) {
+              <span>This field is required</span>
+            }
+            @if (loginform.controls['userName'].hasError('minlength')) {
+              <span>Minimum 5 characters required</span>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Password with Visibility Toggle -->
+      <div class="input-group password-group">
+        <label>Password</label>
+        <input [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="Enter your password">
+        <i class="toggle-password" (click)="togglePassword()">
+          {{ showPassword ? '🙈' : '👁️' }}
+        </i>
+      </div>
+
+      <!-- Login Button -->
+      <button type="submit" [disabled]="!loginform.valid" class="submit-btn">Login</button>
+
+      <!-- Signup Link -->
+      
+    </form>
+  </div>
+</div>
+<router-outlet></router-outlet>
+

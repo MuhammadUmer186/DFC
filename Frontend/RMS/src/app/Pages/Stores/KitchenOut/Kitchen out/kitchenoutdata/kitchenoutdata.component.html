@@ -1,0 +1,56 @@
+<div class="dfc-page">
+  <div class="dfc-form-card dfc-form-card-wide">
+    <h2><i class="pi pi-sign-out" style="color: var(--dfc-amber-600); margin-right: 8px;"></i>Kitchen Out</h2>
+
+    <div class="dfc-form-grid" [formGroup]="kitchenOutForm">
+      <div class="dfc-field">
+        <label>Out No</label>
+        <input class="dfc-input" type="text" formControlName="outNo">
+      </div>
+      <div class="dfc-field">
+        <label>Date</label>
+        <input class="dfc-input" type="date" formControlName="outDate">
+      </div>
+    </div>
+
+    <form [formGroup]="kitchenOutForm">
+      <div class="dfc-table-wrap">
+        <table class="dfc-table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Unit</th>
+              <th>Quantity</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody formArrayName="kitchenItems">
+            @for (item of kitchenItems.controls; track item; let i = $index) {
+              <tr [formGroupName]="i">
+                <td>
+                  <select formControlName="item" (change)="onItemChange(i)">
+                    <option value="">Select Item</option>
+                    @for (it of items; track it) {
+                      <option [value]="it.name">{{ it.name }}</option>
+                    }
+                  </select>
+                </td>
+                <td><input class="dfc-input" type="text" formControlName="unit" readonly></td>
+                <td><input class="dfc-input" type="number" formControlName="quantity"></td>
+                <td class="actions">
+                  <button type="button" class="dfc-btn dfc-btn-danger dfc-btn-sm" (click)="removeItem(i)"><i class="pi pi-trash"></i> Remove</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="dfc-page-actions" style="margin-top: 14px;">
+        <button type="button" class="dfc-btn dfc-btn-ghost" (click)="addItem()"><i class="pi pi-plus"></i> Add Item</button>
+        <button type="button" class="dfc-btn dfc-btn-primary" (click)="submitKitchenOut()"><i class="pi pi-check"></i> Submit</button>
+      </div>
+    </form>
+  </div>
+</div>
+<router-outlet></router-outlet>

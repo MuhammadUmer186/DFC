@@ -1,0 +1,58 @@
+<div class="waste-container">
+
+  <h2>Waste Management</h2>
+
+  <form [formGroup]="wasteForm" (ngSubmit)="submitWaste()">
+
+    <div class="reason-box">
+      <label>Waste Reason</label>
+      <input type="text" formControlName="reason" placeholder="Enter reason like Burnt / Expired">
+    </div>
+
+    <h3>Waste Items</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Raw Item</th>
+          <th>Quantity</th>
+          <th></th>
+        </tr>
+      </thead>
+
+      <tbody formArrayName="items">
+        @for (item of items.controls; track item; let i = $index) {
+          <tr [formGroupName]="i">
+            <td>
+              <select formControlName="rawItemId">
+                <option value="">-- Select Item --</option>
+                @for (r of rawItems(); track r) {
+                  <option [value]="r.id">
+                    {{ r.name }} ({{ r.unit }})
+                  </option>
+                }
+              </select>
+            </td>
+            <td>
+              <input type="number" formControlName="quantity">
+            </td>
+            <td>
+              @if (items.length > 1) {
+                <button type="button" class="remove-btn" (click)="removeItem(i)">
+                  ✖
+                </button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <button type="button" class="add-btn" (click)="addWasteItem()">+ Add Item</button>
+
+    <button type="submit" class="submit-btn" [disabled]="submitting">
+      {{ submitting ? 'Saving...' : 'Submit Waste' }}
+    </button>
+
+  </form>
+</div>

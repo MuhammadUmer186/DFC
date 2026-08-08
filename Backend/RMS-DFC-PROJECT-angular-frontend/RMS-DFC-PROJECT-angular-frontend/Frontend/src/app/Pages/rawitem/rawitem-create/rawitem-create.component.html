@@ -1,0 +1,40 @@
+<div class="form-card">
+  <h2>Add Raw Item</h2>
+
+  <form (ngSubmit)="save()">
+
+    <div class="form-group">
+      <label for="name">Item Name</label>
+      <input
+        id="name"
+        type="text"
+        [formControl]="name"
+        placeholder="Enter item name"
+      />
+      @if (name.invalid && name.touched) {
+        <div class="error-msg">
+          Item Name is required
+        </div>
+      }
+    </div>
+
+    <div class="form-group">
+      <label for="unit">Unit</label>
+      <input
+        id="unit"
+        type="text"
+        [formControl]="unit"
+        placeholder="Enter unit"
+      />
+      @if (unit.invalid && unit.touched) {
+        <div class="error-msg">
+          Unit is required
+        </div>
+      }
+    </div>
+
+    <button type="submit" class="submit-btn" [disabled]="name.invalid || unit.invalid">
+      Save
+    </button>
+  </form>
+</div>

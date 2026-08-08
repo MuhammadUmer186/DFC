@@ -1,0 +1,112 @@
+<div class="card p-3">
+
+  <h2>Vendor Account Management</h2>
+
+  <!-- Select Vendor -->
+  <div class="row mt-2">
+    <div class="col-4">
+
+      <select [(ngModel)]="vendorId"
+        class="form-control"
+        (change)="loadVendorAccount()">
+
+        <option value="">-- Select Vendor --</option>
+
+        @for (v of vendors(); track v) {
+          <option [value]="v.id">
+            {{ v.name }}
+          </option>
+        }
+
+      </select>
+
+    </div>
+
+    <div class="col-2">
+      <button class="btn btn-primary" (click)="loadVendorAccount()">Load</button>
+    </div>
+  </div>
+
+  <hr>
+
+    @if (vendor()) {
+      <div>
+        <h4>{{ vendor().vendorName }}</h4>
+        <table class="table table-bordered w-50">
+          <tr>
+            <th>Total Purchased</th>
+            <td>{{ vendor().totalPurchased }}</td>
+          </tr>
+          <tr>
+            <th>Total Paid</th>
+            <td>{{ vendor().totalPaid }}</td>
+          </tr>
+          <tr>
+            <th>Un Paid</th>
+            <td><b>{{ vendor().unPaid }}</b></td>
+          </tr>
+        </table>
+        <button class="btn btn-success" (click)="openPaymentForm()">Pay Vendor</button>
+        <!-- Payment Form -->
+        @if (showPaymentForm()) {
+          <div class="card p-3 mt-3">
+            <h5>Pay Vendor</h5>
+            <form [formGroup]="paymentForm" (ngSubmit)="submitPayment()">
+              <input type="hidden" formControlName="vendorId">
+              <div class="mb-2">
+                <label>Amount To Pay</label>
+                <input type="number" class="form-control" formControlName="amountPaid">
+              </div>
+              <button class="btn btn-primary" type="submit">Submit Payment</button>
+            </form>
+          </div>
+        }
+        <hr>
+          <!-- Purchase Orders -->
+          <h5>Purchase Orders</h5>
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>PO Id</th>
+                <th>Bill No</th>           <!-- ✅ Added -->
+                <th>Total Amount</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of vendor().purchaseOrders; track p) {
+                <tr>
+                  <td>{{ p.id }}</td>
+                  <td>{{ p.billNo }}</td>     <!-- ✅ Showing Bill No -->
+                  <td>{{ p.totalAmount }}</td>
+                  <td>{{ p.createdAt | date:'short' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          <hr>
+            <!-- Payments Table -->
+            <h5>Payments History</h5>
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Payment Id</th>
+                  <th>Amount Paid</th>
+                  <th>Paid By</th>
+                  <th>Paid On</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of vendor().payments; track p) {
+                  <tr>
+                    <td>{{ p.id }}</td>
+                    <td>{{ p.amountPaid }}</td>
+                    <td><b>{{ p.paidByUser }}</b></td>
+                    <td>{{ p.paidOn | date:'short' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>

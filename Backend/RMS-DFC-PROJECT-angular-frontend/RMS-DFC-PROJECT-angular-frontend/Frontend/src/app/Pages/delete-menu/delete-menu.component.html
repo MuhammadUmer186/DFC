@@ -1,0 +1,38 @@
+<h3>Delete Menu Item</h3>
+
+<form [formGroup]="form">
+
+  <!-- CATEGORY -->
+  <select formControlName="categoryId">
+    <option value="">Select Category</option>
+    @for (c of categories; track c) {
+      <option [value]="c.id">
+        {{ c.name }}
+      </option>
+    }
+  </select>
+
+  <!-- ITEM -->
+  @if (selectedCategory) {
+    <select formControlName="itemId">
+      <option value="">Select Item</option>
+      @for (i of selectedCategory.items; track i) {
+        <option [value]="i.id">
+          {{ i.name }}
+        </option>
+      }
+    </select>
+  }
+
+  <!-- CONFIRM -->
+  @if (selectedItem) {
+    <div class="confirm-box">
+      <p>
+        Are you sure you want to delete
+        <strong>{{ selectedItem.name }}</strong> ?
+      </p>
+      <button type="button" (click)="delete()">Delete</button>
+    </div>
+  }
+
+</form>

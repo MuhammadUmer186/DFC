@@ -1,0 +1,43 @@
+<h2 class="title">Store Stock Summary</h2>
+
+<div class="top-bar">
+  <input
+    type="text"
+    placeholder="🔍 Search Raw Item..."
+    [(ngModel)]="searchText"
+    class="search-box"
+    />
+  </div>
+
+  @if (loading()) {
+    <div class="loading-box">
+      Loading...
+    </div>
+  }
+
+  @if (!loading() && filteredStock().length) {
+    <table class="stock-table">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Unit</th>
+          <th>Quantity</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of filteredStock(); track s) {
+          <tr>
+            <td>{{ s.itemName }}</td>
+            <td>{{ s.unit }}</td>
+            <td>{{ s.totalQuantity }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+
+  @if (!loading() && filteredStock().length === 0) {
+    <div class="empty-box">
+      No stock found.
+    </div>
+  }

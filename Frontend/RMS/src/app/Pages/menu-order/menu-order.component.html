@@ -1,0 +1,278 @@
+<div class="pos-page">
+<div class="pos-header">
+  <h2 class="title"><i class="pi pi-shopping-cart"></i> POS Order Taker</h2>
+
+  <div class="pos-toolbar">
+    <button class="fs-btn" (click)="toggleFullscreen()">
+      <i class="pi pi-window-maximize"></i> Full Screen
+    </button>
+  </div>
+</div>
+
+<div class="pos-layout no-select">
+
+  <!-- ================= COLUMN 1 : CATEGORIES + DEALS ================= -->
+  <div class="pos-col col-left full-height">
+
+    <div class="panel fill-panel">
+      <h3 class="panel-title">Categories</h3>
+
+      <div class="category-grid">
+
+        <!-- DEALS CATEGORY -->
+        <div
+          class="category-tile deal-tile"
+          (click)="selectCategory(DEALS_CATEGORY_ID)"
+          [class.active]="selectedCategoryId() === DEALS_CATEGORY_ID">
+
+          <div class="tile-icon">🔥</div>
+          <div class="tile-label">Deals</div>
+
+          @if (selectedCategoryId() === DEALS_CATEGORY_ID) {
+            <i class="pi pi-check-circle tile-check"></i>
+          }
+        </div>
+
+        <!-- NORMAL CATEGORIES -->
+        @for (c of categories(); track c) {
+          <div
+            class="category-tile"
+            (click)="selectCategory(c.id)"
+            [class.active]="selectedCategoryId() === c.id">
+
+            @if (c.imageUrl) {
+              <img [src]="fullImageUrl(c.imageUrl)" alt="{{ c.name }}" class="tile-photo">
+            } @else {
+              <div class="tile-icon">{{ getCategoryIcon(c.name) }}</div>
+            }
+            <div class="tile-label">{{ c.name }}</div>
+
+            @if (selectedCategoryId() === c.id) {
+              <i class="pi pi-check-circle tile-check"></i>
+            }
+          </div>
+        }
+
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ================= COLUMN 2 : MENU ITEMS ================= -->
+  <div class="pos-col col-middle">
+
+    <!-- SEARCH BOX -->
+    <div class="search-box">
+      <i class="pi pi-search search-icon"></i>
+      <input
+        type="text"
+        placeholder="Search menu items..."
+        [ngModel]="searchText()"
+        (ngModelChange)="onSearchChange($event)"
+      />
+    </div>
+
+    <!-- ================= SEARCH RESULTS ================= -->
+    @if (searchResults().length > 0) {
+
+      <h3 class="panel-title">Search Results <span class="count-badge">{{ searchResults().length }}</span></h3>
+
+      <div class="menu-grid items-grid">
+
+        @for (i of searchResults(); track i) {
+
+          <div class="menu-card item-card" [class.has-photo]="i.imageUrl" (click)="addToCart(i)">
+            @if (i.imageUrl) {
+              <img [src]="fullImageUrl(i.imageUrl)" alt="{{ i.name }}" class="item-photo">
+            }
+            <div class="item-name">{{ i.name }}</div>
+            <div class="item-price">Rs {{ i.price }}</div>
+            <span class="add-badge"><i class="pi pi-plus"></i></span>
+          </div>
+
+        }
+
+      </div>
+
+    }
+
+    <!-- ================= CATEGORY ITEMS ================= -->
+    @if (selectedCategoryId() && searchResults().length === 0) {
+
+      <h3 class="panel-title">
+        {{ selectedCategoryId() === DEALS_CATEGORY_ID ? 'Deals' : 'Menu Items' }}
+        <span class="count-badge">{{ displayItems().length }}</span>
+      </h3>
+
+      <div class="menu-grid items-grid">
+
+        @for (i of displayItems(); track i) {
+
+          <!-- NORMAL ITEM -->
+          @if (i._type === 'item') {
+            <div class="menu-card item-card" [class.has-photo]="i.imageUrl" (click)="addToCart(i)">
+              @if (i.imageUrl) {
+                <img [src]="fullImageUrl(i.imageUrl)" alt="{{ i.name }}" class="item-photo">
+              }
+              <div class="item-name">{{ i.name }}</div>
+              <div class="item-price">Rs {{ i.price }}</div>
+              <span class="add-badge"><i class="pi pi-plus"></i></span>
+            </div>
+          }
+
+          <!-- DEAL -->
+          @if (i._type === 'deal') {
+            <div class="menu-card deal-card" [class.has-photo]="i.imageUrl" (click)="applyDeal(i)">
+              <span class="deal-ribbon">DEAL</span>
+              @if (i.imageUrl) {
+                <img [src]="fullImageUrl(i.imageUrl)" alt="{{ i.dealName }}" class="item-photo">
+              }
+              <div class="item-name">{{ i.dealName }}</div>
+              <div class="item-price">Rs {{ i.finalPrice }}</div>
+              <span class="add-badge"><i class="pi pi-plus"></i></span>
+            </div>
+          }
+
+        }
+
+      </div>
+
+    }
+
+    <!-- EMPTY STATE -->
+    @if (!selectedCategoryId() && searchResults().length === 0) {
+      <div class="empty-state">
+        <i class="pi pi-th-large"></i>
+        <span>Select a category or search items</span>
+      </div>
+    }
+
+  </div>
+
+
+  <!-- ================= COLUMN 3 : ORDER ================= -->
+  <div class="pos-col col-right">
+
+      <div class="order-box">
+
+        <div class="order-header">
+          <h3><i class="pi pi-receipt"></i> Current Order</h3>
+          <span class="order-count-badge">{{ totalQuantity() }} items</span>
+        </div>
+
+        <div class="cart-lines">
+
+          @if (cart().length === 0 && appliedDeals().length === 0) {
+            <div class="empty-state">
+              <i class="pi pi-shopping-cart"></i>
+              <span>No items added</span>
+            </div>
+          }
+
+          @for (c of cart(); track c) {
+            <div class="cart-line">
+              @if (c.imageUrl) {
+                <img [src]="fullImageUrl(c.imageUrl)" alt="{{ c.name }}" class="cart-line-photo">
+              } @else {
+                <span class="cart-line-photo-placeholder"><i class="pi pi-image"></i></span>
+              }
+              <div class="cart-line-main">
+                <span class="cart-line-name">{{ c.name }}</span>
+                <span class="cart-line-unit">Rs {{ c.unitPrice }} each</span>
+              </div>
+              <div class="qty-stepper">
+                <button class="qty-btn" (click)="decrease(c)"><i class="pi pi-minus"></i></button>
+                <span class="qty">{{ c.quantity }}</span>
+                <button class="qty-btn" (click)="increase(c)"><i class="pi pi-plus"></i></button>
+              </div>
+              <div class="cart-line-total">Rs {{ c.total }}</div>
+              <button class="line-remove" (click)="removeLine(c)" title="Remove"><i class="pi pi-trash"></i></button>
+            </div>
+          }
+
+          @for (d of appliedDeals(); track d) {
+            <div class="cart-line deal-line">
+              <div class="cart-line-main">
+                <span class="cart-line-name"><i class="pi pi-tag"></i> {{ d.dealName }}</span>
+                <span class="cart-line-unit">Rs {{ d.dealPrice }} each</span>
+              </div>
+              <div class="qty-stepper">
+                <button class="qty-btn" (click)="decrease(d)"><i class="pi pi-minus"></i></button>
+                <span class="qty">{{ d.quantity }}</span>
+                <button class="qty-btn" (click)="increase(d)"><i class="pi pi-plus"></i></button>
+              </div>
+              <div class="cart-line-total">Rs {{ d.dealPrice * d.quantity }}</div>
+              <button class="line-remove" (click)="removeLine(d)" title="Remove"><i class="pi pi-trash"></i></button>
+            </div>
+          }
+
+        </div>
+
+        <!-- Adjustments -->
+        <div class="adjustments">
+          <div class="adjust-row">
+            <input
+              type="number"
+              class="adjust-input"
+              [ngModel]="discountPercent()"
+              (ngModelChange)="discountPercent.set($event)"
+              placeholder="Discount %">
+
+            <button class="adjust-btn" (click)="applyDiscount()"><i class="pi pi-percentage"></i> Apply</button>
+          </div>
+
+          <div class="adjust-row">
+            <select
+              class="adjust-input"
+              [ngModel]="selectedExtraPrice()"
+              (ngModelChange)="selectedExtraPrice.set($event)">
+
+              <option [ngValue]="null">Extra Amount</option>
+
+              @for (p of extraPrices; track p) {
+                <option [ngValue]="p">Rs {{ p }}</option>
+              }
+
+            </select>
+
+            <button class="adjust-btn amber" (click)="addExtraCharge()">
+              <i class="pi pi-plus"></i> Extra
+            </button>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="summary">
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span>Rs {{ itemsTotal() + dealsTotal() }}</span>
+          </div>
+
+          @if (discountPercent() > 0) {
+            <div class="summary-row discount">
+              <span>Discount ({{ discountPercent() }}%)</span>
+              <span>− Rs {{ discountAmount() }}</span>
+            </div>
+          }
+
+          <div class="summary-row grand">
+            <span>Grand Total</span>
+            <span>Rs {{ finalTotal() }}</span>
+          </div>
+
+          <div class="summary-qty">Total Qty: {{ totalQuantity() }}</div>
+        </div>
+
+        <!-- Actions -->
+        <div class="checkout-actions">
+          <button class="btn-place" [disabled]="cart().length === 0 && appliedDeals().length === 0" (click)="placeOrder()"><i class="pi pi-check-circle"></i> Place Order</button>
+          <button class="btn-queue" [disabled]="cart().length === 0 && appliedDeals().length === 0" (click)="sendToQueue()"><i class="pi pi-clock"></i> Send to Queue</button>
+        </div>
+
+      </div>
+
+  </div>
+
+</div>
+</div>

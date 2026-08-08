@@ -1,0 +1,89 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-history"></i> Order History</h2>
+      <p class="dfc-page-subtitle">All past orders, click a row to see items</p>
+    </div>
+  </div>
+
+  <div class="dfc-table-wrap">
+    <table class="dfc-table orders-table">
+      <thead>
+        <tr>
+          <th>Order Id</th>
+          <th>Total Amount</th>
+          <th>Total Quantity</th>
+          <th>Date</th>
+          <th>Waiter</th>
+          <th>Cashier</th>
+          <th>Status</th>
+          <th>Cancelled By</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for(order of orders(); track $index) {
+          <!-- Main Row -->
+          <tr class="order-row" (click)="order.expanded = !order.expanded" [class.expanded]="order.expanded">
+            <td>{{ order.id }}</td>
+            <td>Rs {{ order.totalAmount }}</td>
+            <td>{{ order.totalQuantity }}</td>
+            <td>{{ order.createdAt | date:'medium' }}</td>
+            <td>{{ order.takenByEmployeeName || '-' }}</td>
+            <td>{{ order.cashierName || '-' }}</td>
+            <td>
+              @if (order.paid) {
+                <span class="dfc-badge dfc-badge-success">Paid</span>
+              } @else {
+                <span class="dfc-badge dfc-badge-danger">Unpaid</span>
+              }
+            </td>
+            <td>{{ order.cancelledByEmployeeName || '-' }}</td>
+          </tr>
+
+          <!-- Expanded Row (Items & Deals) -->
+          @if(order.expanded) {
+            <tr class="details-row">
+              <td colspan="8">
+                <div class="details-container">
+                  <table class="dfc-table">
+                    <thead>
+                      <tr>
+                        <th>Item / Deal</th>
+                        <th>Price</th>
+                        <th>Qty</th>
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for(item of order.items; track $index) {
+                        <tr>
+                          <td>{{ item.menuItemName }}</td>
+                          <td>Rs {{ item.unitPrice }}</td>
+                          <td>{{ item.quantity }}</td>
+                          <td>Rs {{ item.unitPrice * item.quantity }}</td>
+                        </tr>
+                      }
+                      @for(deal of order.deals; track $index) {
+                        <tr>
+                          <td>{{ deal.dealName }}</td>
+                          <td>Rs {{ deal.dealPrice }}</td>
+                          <td>{{ deal.quantity }}</td>
+                          <td>Rs {{ deal.dealPrice * deal.quantity }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="paginator-wrap">
+    <p-paginator [first]="first()" [rows]="rows()" [rowsPerPageOptions]="[2,5,10,20]" [totalRecords]="totalRecords()" (onPageChange)="onPageChange($event)"> </p-paginator>
+  </div>
+</div>

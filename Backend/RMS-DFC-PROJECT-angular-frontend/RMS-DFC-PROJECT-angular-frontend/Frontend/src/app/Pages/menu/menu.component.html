@@ -1,0 +1,72 @@
+<div class="menu-container">
+  <h1>Restaurant Menu</h1>
+
+  <div class="menu-grid">
+    @for (item of menuItems; track item) {
+      <div class="menu-card">
+        <img [src]="item.image" [alt]="item.name" class="dish-image">
+        <h4>{{ item.name }}</h4>
+        <!--<p class="description">{{ item.description }}</p>-->
+        <p class="price">Rs. {{ item.price }}</p>
+        <button (click)="addToOrder(item)" class="btn-add">Add to Order</button>
+      </div>
+    }
+  </div>
+
+  <div class="order-summary">
+    <h2>Order Summary</h2>
+
+    @if (selectedItems.length === 0) {
+      <div class="empty-order">
+        <p>No items selected</p>
+      </div>
+    }
+
+    @if (selectedItems.length > 0) {
+      <div class="order-items">
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Price</th>
+              <th>Quantity</th>
+              <th>Subtotal</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (orderItem of selectedItems; track orderItem) {
+              <tr>
+                <td>{{ orderItem.menuItem.name }}</td>
+                <td>Rs. {{ orderItem.menuItem.price }}</td>
+                <td>
+                  <input type="number" min="1" [value]="orderItem.quantity"
+                    (change)="updateQuantity(orderItem.menuItem.id, $any($event.target).value)">
+                  </td>
+                  <td>Rs. {{ orderItem.menuItem.price * orderItem.quantity }}</td>
+                  <td>
+                    <button (click)="removeFromOrder(orderItem.menuItem.id)" class="btn-remove">Remove</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      <div class="total-section">
+        <h3>Total Bill: Rs. {{ totalBill }}</h3>
+        <button (click)="submitOrder()" class="btn-submit">Submit Order</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- receipt action buttons (fixed at bottom) -->
+  <div class="receipt-actions">
+    <button class="btn-generate" (click)="generateCustomerCopy()" [disabled]="selectedItems.length === 0">
+      Generate Customer Copy (PDF)
+    </button>
+    <button class="btn-generate btn-kitchen" (click)="generateKitchenCopy()" [disabled]="selectedItems.length === 0">
+      Generate Kitchen Copy (PDF)
+    </button>
+  </div>

@@ -1,0 +1,23 @@
+.order-row {
+  cursor: pointer;
+}
+
+.order-row.expanded td {
+  background: var(--dfc-amber-50);
+}
+
+.details-row td,
+.details td {
+  padding: 0 !important;
+  background: var(--dfc-gray-50);
+}
+
+.details-container,
+.inner-table-wrap {
+  padding: 14px 16px;
+}
+
+.details-container .dfc-table,
+.inner-table-wrap .dfc-table {
+  font-size: 12.5px;
+}

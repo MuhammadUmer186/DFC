@@ -1,0 +1,534 @@
+/* ================= GLOBAL ================= */
+* {
+  box-sizing: border-box;
+}
+
+.no-select,
+.menu-card,
+.item-card {
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ================= PAGE TITLE ================= */
+.title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 1px;
+  letter-spacing: 0.4px;
+  margin:0 0 2px 0 ;
+}
+
+/* ================= TOOLBAR ================= */
+.pos-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1px;
+}
+
+.fs-btn {
+  background: #111827;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.fs-btn:hover {
+  background: #000;
+}
+
+/* ================= POS LAYOUT ================= */
+.pos-layout {
+  display: grid;
+  grid-template-columns: 1.1fr 1.6fr 1.3fr;
+  gap: 10px;
+
+  /* take remaining screen space only */
+  height: calc(100vh - 56px); /* title + toolbar */
+}
+
+
+/* ================= BASE COLUMN ================= */
+.pos-col {
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+
+  /* 🔥 allow internal scrolling */
+  overflow-y: auto;
+}
+
+
+/* ================= LEFT COLUMN (2 ROWS) ================= */
+.col-left.two-rows {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 8px;
+  height: 80%;
+}
+/* ================= LEFT COLUMN FULL HEIGHT ================= */
+.col-left.full-height {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* PANEL FILLS COLUMN */
+.fill-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ================= CATEGORY GRID (VERTICAL AUTO STRETCH) ================= */
+/* ================= CATEGORY GRID (2x1 WITH SCROLL) ================= */
+/* ================= CATEGORY GRID (AUTO-FIT, NO CROP) ================= */
+/* CATEGORY GRID: auto rows, no fixed height */
+.category-grid {
+  display: grid;
+
+  /* 3 columns always */
+  grid-template-columns: repeat(3, 1fr);
+
+  /* let rows adjust automatically */
+  grid-auto-rows: minmax(120px, auto);
+
+  gap: 4px;
+  padding: 2px;
+
+  /* optional: allow scrolling only if very long */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* remove fixed height for cards if needed */
+.category-card.image-card {
+  position: relative;
+}
+
+
+.category-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.category-grid::-webkit-scrollbar-thumb {
+  background: #c7d2fe;
+  border-radius: 6px;
+}
+
+.category-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+
+
+
+/* ================= CATEGORY CARD (IMAGE READY) ================= */
+.category-card.image-card {
+  background: transparent;   /* remove background */
+  border-radius: 12px;
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+
+  box-shadow: none;          /* remove shadow */
+  padding: 0;                /* remove inner spacing */
+  overflow: hidden;          /* clip image nicely */
+}
+
+
+.category-card.image-card:hover {
+  transform: translateY(-2px);
+}
+
+.category-card.image-card:active {
+  transform: scale(0.96);
+}
+
+/* ================= IMAGE HOLDER ================= */
+.card-img {
+  width: 100%;
+  height: 90px;   /* control category size here */
+  padding: 0;
+}
+
+.card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;  /* 🔥 makes it look like modern tiles */
+  border-radius: 12px;
+}
+
+
+/* ================= CATEGORY TEXT ================= */
+.category-card .card-text {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+
+  padding: 6px;
+}
+
+/* ================= ACTIVE ================= */
+.category-card.active-card {
+  outline: 3px solid #22c55e;
+}
+
+/* ================= DEALS SPECIAL ================= */
+.deal-category {
+  background: linear-gradient(135deg, #7c2d12, #b45309);
+}
+
+/* ================= PANELS ================= */
+.panel {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 4px;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 2px;
+}
+
+/* ================= MENU GRID (DEFAULT) ================= */
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 6px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* ================= COMPACT GRID (CATEGORIES / DEALS) ================= */
+.menu-grid.compact .menu-card {
+  min-height: 44px;
+  padding: 6px;
+}
+
+/* ================= SMART ITEMS GRID ================= */
+.items-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-auto-rows: 1fr;          /* 🔥 rows stretch automatically */
+  gap: 8px;
+  align-content: stretch;      /* 🔥 fills empty space */
+}
+
+/* ================= MENU CARD BASE ================= */
+.menu-card {
+  background: linear-gradient(135deg, #ffffff, #eef4ff);
+  border-radius: 12px;
+  padding: 8px;
+  border: 1px solid #dbe2ff;
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  transition: 0.15s ease;
+}
+
+.menu-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(43, 124, 255, 0.15);
+}
+
+.menu-card:active {
+  transform: scale(0.96);
+}
+
+.active-card {
+  background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+  border-color: #2b7cff;
+}
+
+/* ================= ITEM CARD ================= */
+.item-card {
+  padding: 10px;
+}
+
+/* ================= TEXT CONTROL ================= */
+.card-text,
+.item-name {
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.3;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;        /* max 2 lines */
+  -webkit-box-orient: vertical;
+
+  overflow: hidden;
+  word-break: break-word;
+}
+/* ================= EXTRA CHARGE ================= */
+.extra-box {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+/* dropdown */
+.extra-box select {
+  flex: 1;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid #dbe2ff;
+  padding: 0 10px;
+  font-size: 13px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+/* focus same as inputs */
+.extra-box select:focus {
+  outline: none;
+  border-color: #2b7cff;
+  box-shadow: 0 0 0 2px rgba(43, 124, 255, 0.15);
+}
+
+/* button – warm action (not primary green) */
+.place.extra {
+  width: auto;
+  padding: 0 14px;
+  height: 40px;
+
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+/* hover */
+.place.extra:hover {
+  opacity: 0.95;
+}
+
+/* active */
+.place.extra:active {
+  transform: scale(0.97);
+}
+
+/* ================= ITEM PRICE ================= */
+.item-price {
+  margin-top: 6px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #16a34a;
+}
+
+/* ================= ORDER BOX ================= */
+.order-box {
+  background: linear-gradient(180deg, #ffffff, #f0f7ff);
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid #c7ddff;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.order-box h3 {
+  margin-bottom: 6px;
+  font-size: 15px;
+}
+
+/* ================= ORDER TABLE ================= */
+.order-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.order-table th {
+  background: #2b7cff;
+  color: white;
+  padding: 6px;
+}
+
+.order-table td {
+  padding: 6px;
+  border-bottom: 1px dashed #e5e7eb;
+}
+
+.item-cell {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ================= QTY BUTTONS ================= */
+.qty-btn {
+  width: 26px;
+  height: 26px;
+  background: #2b7cff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.qty-btn:hover {
+  background: #1b5bd3;
+}
+
+.qty {
+  margin: 0 4px;
+}
+
+/* ================= DISCOUNT ================= */
+.discount-box {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.discount-box input {
+  flex: 1;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid #dbe2ff;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+/* ================= TOTALS ================= */
+.totals {
+  margin-top: 6px;
+}
+
+.totals p {
+  font-size: 12px;
+  margin: 2px 0;
+}
+
+.totals h2 {
+  font-size: 16px;
+  margin-top: 4px;
+  color: #2b7cff;
+}
+
+/* ================= ACTION BUTTONS ================= */
+.action-buttons {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.place {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  border: none;
+  height: 46px;
+  width: 100%;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.place:hover {
+  opacity: 0.95;
+}
+
+/* ================= EMPTY STATE ================= */
+.empty-state {
+  text-align: center;
+  color: #777;
+  padding: 20px;
+  font-size: 14px;
+}
+
+/* ================= TABLET ================= */
+/* Tablet Portrait = Mobile */
+@media (max-width: 1024px) and (orientation: portrait) {
+  .pos-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+}
+
+/* Tablet Landscape = Laptop */
+@media (max-width: 1024px) and (orientation: landscape) {
+  .pos-layout {
+    grid-template-columns: 1.2fr 1.6fr 1.2fr;
+  }
+}
+
+/* ================= MOBILE ================= */
+@media (max-width: 768px) {
+  .menu-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .title {
+    display: none;
+  }
+
+
+  .search-box {
+  margin-bottom: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #fff;
+  padding: 8px 0;
+}
+.search-box input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #d0d0d0;
+  font-size: 16px;
+  outline: none;
+  transition: 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+.search-box input:focus {
+  border-color: #ff9800;
+  box-shadow: 0 0 6px rgba(255, 152, 0, 0.4);
+}
+.menu-grid.items-grid {
+  margin-top: 10px;
+}
+.menu-card.item-card {
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+.menu-card.item-card:hover {
+  transform: scale(1.02);
+  background: #fff8e1;
+}
+.active-card {
+  border: 2px solid #ff9800 !important;
+  transform: scale(1.03);
+}
+}

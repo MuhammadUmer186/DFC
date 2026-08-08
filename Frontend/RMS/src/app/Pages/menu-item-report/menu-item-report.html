@@ -1,0 +1,44 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-list"></i> Menu Item Sales Report</h2>
+      <p class="dfc-page-subtitle">Quantity sold per menu item on a given day</p>
+    </div>
+  </div>
+
+  <div class="dfc-toolbar">
+    <label style="font-size: 13px; font-weight: 700; color: var(--dfc-gray-700);">Select Date</label>
+    <input type="date" class="dfc-input" style="max-width: 200px;" [(ngModel)]="date" />
+    <button class="dfc-btn dfc-btn-primary" (click)="loadReport()"><i class="pi pi-chart-bar"></i> Generate Report</button>
+  </div>
+
+  <div *ngIf="loading()" class="dfc-loading">
+    <i class="pi pi-spin pi-spinner"></i> Loading...
+  </div>
+
+  <div *ngIf="menuStats().length > 0" class="dfc-table-wrap">
+    <table class="dfc-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Menu Item</th>
+          <th>Quantity Sold</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of menuStats(); let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ item.name }}</td>
+          <td>{{ item.todayCount }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="!loading() && menuStats().length === 0" class="dfc-empty">
+    <i class="pi pi-inbox"></i>
+    <span>No menu items sold on selected date</span>
+  </div>
+
+</div>

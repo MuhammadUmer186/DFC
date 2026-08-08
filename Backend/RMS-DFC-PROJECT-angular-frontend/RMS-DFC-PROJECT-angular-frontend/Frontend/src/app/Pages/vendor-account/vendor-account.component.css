@@ -1,0 +1,226 @@
+/* Container */
+.vendor-container {
+  padding: 25px;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f4f6fb;
+  min-height: 100vh;
+}
+
+/* Page Title */
+.vendor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.vendor-header h2 {
+  font-size: 26px;
+  margin: 0;
+  color: #333;
+  font-weight: 700;
+}
+
+/* Vendor Card */
+.vendor-card {
+  background: white;
+  border-radius: 10px;
+  padding: 18px 22px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  margin-bottom: 20px;
+}
+
+.vendor-info {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.vendor-info div {
+  margin-bottom: 8px;
+  font-size: 15px;
+  color: #444;
+}
+
+.vendor-info span {
+  font-weight: 600;
+}
+
+/* Amount Section */
+.amount-section {
+  display: flex;
+  gap: 25px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+.amount-box {
+  background: #fff;
+  flex: 1;
+  min-width: 260px;
+  padding: 18px;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+}
+
+.amount-title {
+  font-weight: 600;
+  color: #666;
+}
+
+.amount-value {
+  margin-top: 6px;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.amount-paid {
+  color: #1f9b5f;
+}
+
+.amount-unpaid {
+  color: #c0392b;
+}
+
+/* Pay Button */
+.pay-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #4f46e5;
+  color: white;
+  font-weight: 600;
+  transition: .2s;
+  cursor: pointer;
+}
+
+.pay-btn:hover {
+  background: #3c35c7;
+}
+
+/* Payments Table */
+.table-container {
+  margin-top: 25px;
+  background: white;
+  padding: 22px;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+
+.table-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: #4f46e5;
+  color: white;
+}
+
+th {
+  padding: 12px;
+  text-align: left;
+  font-size: 14px;
+}
+
+td {
+  padding: 12px;
+  border-bottom: 1px solid #e6e6e6;
+  font-size: 14px;
+}
+
+tr:hover {
+  background: #f7f7ff;
+}
+
+/* Pay Popup */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99;
+}
+
+.modal-box {
+  background: white;
+  width: 400px;
+  border-radius: 10px;
+  padding: 25px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.modal-box h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.modal-box label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 10px;
+  display: block;
+}
+
+.modal-box input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+  gap: 10px;
+}
+
+.cancel-btn {
+  border: none;
+  padding: 8px 14px;
+  border-radius: 5px;
+  background: #bdc3c7;
+  cursor: pointer;
+}
+
+.save-btn {
+  border: none;
+  padding: 8px 14px;
+  border-radius: 5px;
+  background: #27ae60;
+  color: white;
+  cursor: pointer;
+}
+
+.save-btn:hover {
+  background: #1f8f4e;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .vendor-info {
+    flex-direction: column;
+  }
+
+  .amount-section {
+    flex-direction: column;
+  }
+
+  .vendor-header h2 {
+    font-size: 20px;
+  }
+}

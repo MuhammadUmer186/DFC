@@ -1,0 +1,99 @@
+/* ==============================
+   Global reset / body
+   ============================== */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f1f5f9;
+}
+
+/* ==============================
+   Layout container
+   ============================== */
+.main {
+  display: flex;
+  min-height: 100vh; /* ensure it fills the viewport */
+  height: 100%;
+}
+
+/* ==============================
+   Sidebar
+   ============================== */
+.sidebar {
+  width: 220px;
+  background: #1e293b;
+  color: white;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  
+  display: flex;
+  flex-direction: column; /* stack links vertically */
+  min-height: 100vh;      /* always full height */
+  position: sticky;
+  top: 0;
+  transition: width .3s ease;
+}
+
+.sidebar.closed {
+  width: 0;
+  overflow: hidden;
+}
+
+/* ==============================
+   Sidebar Links
+   ============================== */
+.sidebar li {
+  padding: 14px 18px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.sidebar li:hover,
+.sidebar li.active {
+  background: #334155;
+}
+
+/* ==============================
+   Content area
+   ============================== */
+.content {
+  flex: 1;             /* take remaining width */
+  padding: 20px;
+  background: #f1f5f9;
+  min-height: 100vh;   /* optional: ensures content area is at least viewport height */
+  box-sizing: border-box;
+  overflow: auto;      /* scroll if content is taller */
+  transition: margin-left .3s ease;
+}
+
+/* ==============================
+   Responsive adjustments
+   ============================== */
+@media (max-width: 900px) {
+  .main {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-height: auto;
+  }
+
+  .content {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .sidebar li {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .content {
+    padding: 10px;
+  }
+}

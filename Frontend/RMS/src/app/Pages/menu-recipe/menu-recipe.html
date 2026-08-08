@@ -1,0 +1,80 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-book"></i> Menu Recipe Management</h2>
+      <p class="dfc-page-subtitle">Define which raw items and quantities go into each menu item</p>
+    </div>
+  </div>
+
+  <div class="dfc-toolbar">
+    <label style="font-size: 13px; font-weight: 700; color: var(--dfc-gray-700);">Menu Item</label>
+    <select
+      class="dfc-input"
+      style="max-width: 280px;"
+      [ngModel]="selectedMenuItemId()"
+      (ngModelChange)="selectedMenuItemId.set($event); loadRecipe()"
+    >
+      <option [ngValue]="null">-- Select Menu Item --</option>
+      @for(item of menuItems(); track item) {
+        <option [ngValue]="item.id">{{ item.name }}</option>
+      }
+    </select>
+  </div>
+
+  @if (loading()) {
+    <div class="dfc-loading"><i class="pi pi-spin pi-spinner"></i> Loading recipe...</div>
+  }
+
+  @if (selectedMenuItemId() && !loading()) {
+    <div class="dfc-page-actions">
+      <button class="dfc-btn dfc-btn-ghost" (click)="addRecipeItem()"><i class="pi pi-plus"></i> Add Raw Item</button>
+      <button class="dfc-btn dfc-btn-primary" (click)="saveRecipe()"><i class="pi pi-check"></i> Save Recipe</button>
+      <button class="dfc-btn dfc-btn-danger" (click)="deleteRecipe()"><i class="pi pi-trash"></i> Delete Recipe</button>
+    </div>
+
+    @if (recipeItems().length > 0) {
+      <div class="dfc-table-wrap">
+        <table class="dfc-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Raw Item</th>
+              <th>Quantity Required</th>
+              <th>Unit</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for(r of recipeItems(); track r; let i = $index) {
+              <tr>
+                <td>{{ i + 1 }}</td>
+                <td>
+                  <select class="dfc-input" [(ngModel)]="r.rawItemId">
+                    <option [ngValue]="0">--Select--</option>
+                    @for(raw of rawItems(); track raw) {
+                      <option [ngValue]="raw.id">{{ raw.name }}</option>
+                    }
+                  </select>
+                </td>
+                <td>
+                  <input type="number" class="dfc-input" style="max-width: 120px;" [(ngModel)]="r.quantityRequired" />
+                </td>
+                <td>{{ getUnit(r.rawItemId) }}</td>
+                <td class="actions">
+                  <button class="dfc-btn dfc-btn-danger dfc-btn-sm" (click)="removeRecipeItem(i)"><i class="pi pi-trash"></i> Remove</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="dfc-empty">
+        <i class="pi pi-inbox"></i>
+        <span>No recipe items assigned yet</span>
+      </div>
+    }
+  }
+
+</div>

@@ -1,0 +1,6 @@
+<h2>Create Category</h2>
+
+<form [formGroup]="form" (ngSubmit)="save()">
+  <input formControlName="name" placeholder="Category Name">
+  <button type="submit">Save</button>
+</form>

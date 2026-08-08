@@ -1,0 +1,58 @@
+<div class="form-card">
+  <h2>Edit Employee</h2>
+
+  <!-- Search employee by ID -->
+  <div class="form-group">
+    <label for="searchId">Employee ID</label>
+    <input id="searchId" type="number" [(ngModel)]="editId" placeholder="Enter Employee ID">
+    <button type="button" class="submit-btn" (click)="loadEmployee()">Load</button>
+  </div>
+
+  <!-- Edit form (always in DOM, hidden if not loaded) -->
+  <form [formGroup]="form" (ngSubmit)="update()" [class.hidden]="!employeeLoaded()">
+    
+    <div class="form-group">
+      <label for="name">Name</label>
+      <input id="name" type="text" formControlName="name" placeholder="Enter name">
+    </div>
+
+    <div class="form-group">
+      <label for="mobileNumber">Phone</label>
+      <input id="mobileNumber" type="text" formControlName="mobileNumber" placeholder="Enter phone number">
+    </div>
+    <div class="form-group">
+      <label for="designation">Role</label>
+      <input id="designation" type="text" formControlName="designation" placeholder="Enter Role">
+    </div>
+
+    <div class="form-group">
+      <label for="nationalId">CNIC</label>
+      <input id="nationalId" type="text" formControlName="nationalId" placeholder="Enter CNIC">
+    </div>
+
+    <div class="form-group">
+      <label for="address">Address</label>
+      <input id="address" type="text" formControlName="address" placeholder="Enter Address">
+    </div>
+
+    <div class="form-group">
+      <label for="salaryType">Salary Type</label>
+      <select id="salaryType" formControlName="salaryType">
+        <option [ngValue]="1">Daily</option>
+        <option [ngValue]="2">Monthly</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="salaryAmount">Salary Amount</label>
+      <input id="salaryAmount" type="number" formControlName="salaryAmount" placeholder="Enter Salary Amount">
+    </div>
+
+    <div class="form-group">
+      <label for="isActive">Active?</label>
+      <input id="isActive" type="checkbox" formControlName="isActive">
+    </div>
+
+    <button type="submit" class="submit-btn">Update</button>
+  </form>
+</div>

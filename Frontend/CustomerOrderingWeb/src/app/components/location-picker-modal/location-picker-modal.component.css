@@ -1,0 +1,78 @@
+.picker-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+
+.picker-panel {
+  background: var(--dfc-white);
+  border-radius: var(--dfc-radius-md);
+  width: 100%;
+  max-width: 520px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.picker-header h3 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.picker-close {
+  background: var(--dfc-gray-100);
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.gps-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.picker-map {
+  width: 100%;
+  height: 300px;
+  border-radius: var(--dfc-radius-sm);
+  overflow: hidden;
+  border: 1.5px solid var(--dfc-gray-200);
+}
+
+.picker-address {
+  font-size: 12.5px;
+  color: var(--dfc-gray-700);
+  background: var(--dfc-gray-50);
+  border-radius: var(--dfc-radius-sm);
+  padding: 10px 12px;
+  min-height: 20px;
+}
+
+.resolving {
+  color: var(--dfc-gray-500);
+  font-style: italic;
+}
+
+.picker-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.picker-actions .btn {
+  flex: 1;
+}

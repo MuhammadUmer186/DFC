@@ -1,0 +1,58 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-users"></i> Employees</h2>
+      <p class="dfc-page-subtitle">Staff records, roles and salary configuration</p>
+    </div>
+    <div class="dfc-page-actions">
+      <button (click)="load()" class="dfc-btn dfc-btn-ghost"><i class="pi pi-refresh"></i> Reload</button>
+      <button routerLink="/emp-create" class="dfc-btn dfc-btn-primary"><i class="pi pi-user-plus"></i> Add Employee</button>
+    </div>
+  </div>
+
+  @if (employee().length === 0) {
+    <div class="dfc-empty">
+      <i class="pi pi-inbox"></i>
+      <span>No employees found</span>
+    </div>
+  } @else {
+    <div class="dfc-table-wrap">
+      <table class="dfc-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Mobile</th>
+            <th>Role</th>
+            <th>Type</th>
+            <th>Salary</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (e of employee(); track $index) {
+            <tr>
+              <td>{{ e.id }}</td>
+              <td>{{ e.name }}</td>
+              <td>{{ e.mobileNumber }}</td>
+              <td>{{ e.designation}}</td>
+              <td>
+                @if(e.salaryType === 1) {
+                  <span class="dfc-badge dfc-badge-info">Daily</span>
+                } @else {
+                  <span class="dfc-badge dfc-badge-amber">Monthly</span>
+                }
+              </td>
+              <td>{{ e.salaryAmount | currency:'PKR':'symbol':'1.0-0' }}</td>
+              <td class="actions">
+                <button (click)="delete(e.id)" class="dfc-btn dfc-btn-danger dfc-btn-sm"><i class="pi pi-trash"></i> Delete</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+</div>

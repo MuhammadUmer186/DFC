@@ -1,0 +1,65 @@
+
+<div class="parent">
+    <div class="signup-container">
+        <form  class="signup-form"(ngSubmit)="OnUserSave()" [formGroup]="userform">
+            <h2>Create an Account</h2>
+            <div class="input-group">
+                <label>User Name</label>
+                <input type="text" formControlName="userName"  name="confirm-password" placeholder="Enter your EmployeeName" >
+                <small id="confirm-password-error" class="error-message"></small>
+                @if(userform.controls["userName"].touched){
+                    <div class="text-danger">
+                        @if(userform.controls["userName"].errors?.['required']){
+                            <span>This is Required</span>
+                        }
+                        @if(userform.controls["userName"].errors?.['minlength']){
+                            <span>Minimum 5 Characters</span>
+                        }
+                      </div>
+                }  
+            </div>
+            <div class="input-group">
+              <label>Password</label>
+              <input type="text" formControlName="password" name="password" placeholder="Enter your password" >
+              <small id="password-error" class="error-message"></small>
+            </div>
+            <div class="input-group">
+                <label>Employee ID</label>
+                <input
+                  type="number"
+                  formControlName="employeeId"
+                  placeholder="Enter Employee ID">
+
+                @if (userform.controls["employeeId"].touched) {
+                  <div class="text-danger">
+                    @if (userform.controls["employeeId"].errors?.['required']) {
+                      <span>Employee ID is required</span>
+                    }
+                  </div>
+                }
+              </div>
+            <div class="input-group">
+              <label>Role</label>
+
+              <select formControlName="roles">
+                <option value="">-- Select Role --</option>
+                <option value="Cashier">Cashier</option>
+                <option value="Waiter">Waiter</option>
+                <option value="StoreKeeper">StoreKeeper</option>
+              </select>
+
+              @if(userform.controls["roles"].touched){
+                <div class="text-danger">
+                  @if(userform.controls["roles"].errors?.['required']){
+                    <span>Role is required</span>
+                  }
+                </div>
+              }
+            </div>
+
+            <button type="submit" [disabled]="!userform.valid" class="submit-btn">Sign Up</button>
+            
+          </form>
+    </div>
+</div>
+<router-outlet></router-outlet>

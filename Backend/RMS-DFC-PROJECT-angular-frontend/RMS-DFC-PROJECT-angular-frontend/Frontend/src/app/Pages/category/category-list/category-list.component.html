@@ -1,0 +1,67 @@
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <h2>Categories</h2>
+  </div>
+
+  <!-- ADD CATEGORY -->
+  <div class="add-box">
+    <input
+      type="text"
+      placeholder="New category name"
+      [value]="newCategoryName()"
+      (input)="newCategoryName.set($any($event.target).value)"
+    />
+    <button class="add-btn" (click)="add()">Add</button>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-container">
+
+    @if (categories().length === 0) {
+      <div class="empty">No categories found</div>
+    }
+
+    @if (categories().length > 0) {
+      <table>
+        <tr>
+          <th>Name</th>
+          <th>Action</th>
+        </tr>
+
+        @for (c of categories(); track c.id) {
+          <tr>
+
+            <!-- NAME / EDIT INPUT -->
+            <td>
+              @if (editingId() === c.id) {
+                <input
+                  type="text"
+                  [value]="editName()"
+                  (input)="editName.set($any($event.target).value)"
+                />
+              } @else {
+                {{ c.name }}
+              }
+            </td>
+
+            <!-- ACTIONS -->
+            <td class="actions">
+
+              @if (editingId() === c.id) {
+                <button class="save-btn" (click)="saveEdit(c)">Save</button>
+                <button class="cancel-btn" (click)="cancelEdit()">Cancel</button>
+              } @else {
+                <button class="edit-btn" (click)="startEdit(c)">Edit</button>
+                <button class="delete-btn" (click)="delete(c.id)">Delete</button>
+              }
+
+            </td>
+          </tr>
+        }
+      </table>
+    }
+
+  </div>
+</div>
