@@ -3,4 +3,5 @@ export interface ServiceTimeSetting {
   serviceType: 'DineIn' | 'Takeaway' | 'Delivery';
   minMinutes: number;
   maxMinutes: number;
+  isEnabled: boolean;
 }

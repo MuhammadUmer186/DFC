@@ -47,8 +47,34 @@
 
   <div class="dfc-page-header" style="margin-top: 24px;">
     <div class="dfc-page-header-text">
-      <h2 class="dfc-page-title" style="font-size: 16px;"><i class="pi pi-clock"></i> Estimated Times</h2>
-      <p class="dfc-page-subtitle">Set the estimated prep/delivery time shown to customers for each service type</p>
+      <h2 class="dfc-page-title" style="font-size: 16px;"><i class="pi pi-whatsapp"></i> WhatsApp Number</h2>
+      <p class="dfc-page-subtitle">Customers tapping the WhatsApp icon on the ordering site will message this number</p>
+    </div>
+  </div>
+
+  <div class="dfc-toolbar">
+    <input
+      type="text"
+      class="dfc-input"
+      placeholder="e.g. 923001234567 (with country code, no + or spaces)"
+      style="min-width: 320px;"
+      [value]="whatsAppNumber()"
+      (input)="setWhatsAppNumber($any($event.target).value)"
+    />
+    <button class="dfc-btn dfc-btn-primary dfc-btn-sm" [disabled]="savingWhatsApp()" (click)="saveWhatsAppNumber()">
+      @if (savingWhatsApp()) {
+        <i class="pi pi-spin pi-spinner"></i>
+      } @else {
+        <i class="pi pi-check"></i>
+      }
+      Save
+    </button>
+  </div>
+
+  <div class="dfc-page-header" style="margin-top: 24px;">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title" style="font-size: 16px;"><i class="pi pi-clock"></i> Service Types</h2>
+      <p class="dfc-page-subtitle">Set the estimated prep/delivery time shown to customers, and enable or disable each service type — disabled types are hidden from the ordering website</p>
     </div>
   </div>
 
@@ -67,6 +93,7 @@
             <th>Service Type</th>
             <th>Min Minutes</th>
             <th>Max Minutes</th>
+            <th>Enabled</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -93,6 +120,16 @@
                   [value]="getMax(s.serviceType)"
                   (input)="setMax(s.serviceType, $any($event.target).value)"
                 />
+              </td>
+              <td>
+                <label style="display:flex; align-items:center; gap:6px; font-weight:600; font-size:13px;">
+                  <input type="checkbox" [checked]="getEnabled(s.serviceType)" (change)="setEnabled(s.serviceType, $any($event.target).checked)" />
+                  @if (getEnabled(s.serviceType)) {
+                    <span class="dfc-badge dfc-badge-success">Enabled</span>
+                  } @else {
+                    <span class="dfc-badge dfc-badge-danger">Disabled</span>
+                  }
+                </label>
               </td>
               <td class="actions">
                 <button class="dfc-btn dfc-btn-primary dfc-btn-sm" [disabled]="savingType() === s.serviceType" (click)="save(s)">

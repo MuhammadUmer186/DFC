@@ -375,9 +375,9 @@ namespace RestaurantSystem.Data
                 var seedDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
                 entity.HasData(
-                    new ServiceTimeSetting { Id = 1, ServiceType = "DineIn", MinMinutes = 15, MaxMinutes = 20, UpdatedAt = seedDate },
-                    new ServiceTimeSetting { Id = 2, ServiceType = "Takeaway", MinMinutes = 15, MaxMinutes = 20, UpdatedAt = seedDate },
-                    new ServiceTimeSetting { Id = 3, ServiceType = "Delivery", MinMinutes = 25, MaxMinutes = 35, UpdatedAt = seedDate }
+                    new ServiceTimeSetting { Id = 1, ServiceType = "DineIn", MinMinutes = 15, MaxMinutes = 20, IsEnabled = true, UpdatedAt = seedDate },
+                    new ServiceTimeSetting { Id = 2, ServiceType = "Takeaway", MinMinutes = 15, MaxMinutes = 20, IsEnabled = true, UpdatedAt = seedDate },
+                    new ServiceTimeSetting { Id = 3, ServiceType = "Delivery", MinMinutes = 25, MaxMinutes = 35, IsEnabled = true, UpdatedAt = seedDate }
                 );
             });
         }

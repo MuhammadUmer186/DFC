@@ -9,9 +9,15 @@
 
   <!-- SERVICE TYPE SELECTOR -->
   <div class="service-type-row">
-    <button class="service-type-btn" [class.active]="orderType.serviceType() === 'DineIn'" (click)="selectServiceType('DineIn')">🍽️ Dine-in</button>
-    <button class="service-type-btn" [class.active]="orderType.serviceType() === 'Takeaway'" (click)="selectServiceType('Takeaway')">🥡 Takeaway</button>
-    <button class="service-type-btn" [class.active]="orderType.serviceType() === 'Delivery'" (click)="selectServiceType('Delivery')">🛵 Delivery</button>
+    @if (isServiceTypeEnabled('DineIn')) {
+      <button class="service-type-btn" [class.active]="orderType.serviceType() === 'DineIn'" (click)="selectServiceType('DineIn')">🍽️ Dine-in</button>
+    }
+    @if (isServiceTypeEnabled('Takeaway')) {
+      <button class="service-type-btn" [class.active]="orderType.serviceType() === 'Takeaway'" (click)="selectServiceType('Takeaway')">🥡 Takeaway</button>
+    }
+    @if (isServiceTypeEnabled('Delivery')) {
+      <button class="service-type-btn" [class.active]="orderType.serviceType() === 'Delivery'" (click)="selectServiceType('Delivery')">🛵 Delivery</button>
+    }
   </div>
 
   <div class="order-recap">

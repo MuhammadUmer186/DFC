@@ -7,6 +7,7 @@ import { OrderService } from '../../services/order.service';
 import { OrderTypeService, ServiceType } from '../../services/order-type.service';
 import { DeliveryLocationService } from '../../services/delivery-location.service';
 import { AreaService, Area } from '../../services/area.service';
+import { ServiceTimeService } from '../../services/service-time.service';
 
 @Component({
   selector: 'app-checkout',
@@ -38,6 +39,7 @@ export class CheckoutComponent {
     public cart: CartService,
     public orderType: OrderTypeService,
     public deliveryLocation: DeliveryLocationService,
+    public serviceTime: ServiceTimeService,
     private orderService: OrderService,
     private areaService: AreaService,
     private router: Router
@@ -49,10 +51,26 @@ export class CheckoutComponent {
       }
     });
 
+    // If the customer's previously-selected service type has since been disabled
+    // by the admin, switch to the first still-enabled one.
+    effect(() => {
+      const enabledTypes = this.serviceTime.settings().map(s => s.serviceType);
+      if (enabledTypes.length === 0) return;
+      if (!enabledTypes.includes(this.orderType.serviceType())) {
+        this.orderType.set(enabledTypes[0]);
+      }
+    });
+
     this.areaService.getAreas().subscribe({
       next: (areas) => this.areas.set(areas),
       error: () => this.errorMsg.set('Could not load delivery areas — please refresh the page.')
     });
+  }
+
+  isServiceTypeEnabled(type: ServiceType): boolean {
+    const settings = this.serviceTime.settings();
+    if (settings.length === 0) return true; // still loading — don't flash-hide everything
+    return settings.some(s => s.serviceType === type);
   }
 
   setAreaId(value: string) {

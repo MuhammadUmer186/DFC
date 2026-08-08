@@ -15,8 +15,8 @@ export class ServiceTimeSettingService {
     return this.http.get<ServiceTimeSetting[]>(this.api, { headers: reqHeader });
   }
 
-  update(serviceType: string, minMinutes: number, maxMinutes: number) {
+  update(serviceType: string, minMinutes: number, maxMinutes: number, isEnabled: boolean) {
     const reqHeader = new HttpHeaders({ 'Authorization': 'Bearer ' + this.authservice.gettoken() });
-    return this.http.put<ServiceTimeSetting>(`${this.api}/${serviceType}`, { minMinutes, maxMinutes }, { headers: reqHeader });
+    return this.http.put<ServiceTimeSetting>(`${this.api}/${serviceType}`, { minMinutes, maxMinutes, isEnabled }, { headers: reqHeader });
   }
 }

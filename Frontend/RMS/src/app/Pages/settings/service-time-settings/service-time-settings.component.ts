@@ -25,7 +25,10 @@ export class ServiceTimeSettingsComponent implements OnInit {
   heroImageUrl = signal<string | null>(null);
   uploadingHero = signal(false);
 
-  editValues = new Map<string, { min: number; max: number }>();
+  whatsAppNumber = signal('');
+  savingWhatsApp = signal(false);
+
+  editValues = new Map<string, { min: number; max: number; enabled: boolean }>();
 
   constructor(
     private service: ServiceTimeSettingService,
@@ -42,8 +45,30 @@ export class ServiceTimeSettingsComponent implements OnInit {
 
   loadSiteSettings() {
     this.siteSettingService.get().subscribe({
-      next: (res) => this.heroImageUrl.set(res.heroImageUrl),
+      next: (res) => {
+        this.heroImageUrl.set(res.heroImageUrl);
+        this.whatsAppNumber.set(res.whatsAppNumber ?? '');
+      },
       error: (err) => this.handleLoadError(err)
+    });
+  }
+
+  setWhatsAppNumber(value: string) {
+    this.whatsAppNumber.set(value);
+  }
+
+  saveWhatsAppNumber() {
+    this.savingWhatsApp.set(true);
+    this.siteSettingService.updateWhatsAppNumber(this.whatsAppNumber().trim()).subscribe({
+      next: (res) => {
+        this.whatsAppNumber.set(res.whatsAppNumber ?? '');
+        this.savingWhatsApp.set(false);
+        this.toast.success('WhatsApp number updated');
+      },
+      error: (err) => {
+        this.savingWhatsApp.set(false);
+        this.toast.error(err?.error || 'Failed to update WhatsApp number');
+      }
     });
   }
 
@@ -111,7 +136,7 @@ export class ServiceTimeSettingsComponent implements OnInit {
       next: (res) => {
         this.settings.set(res);
         for (const s of res) {
-          this.editValues.set(s.serviceType, { min: s.minMinutes, max: s.maxMinutes });
+          this.editValues.set(s.serviceType, { min: s.minMinutes, max: s.maxMinutes, enabled: s.isEnabled });
         }
       },
       error: (err) => this.handleLoadError(err)
@@ -131,14 +156,24 @@ export class ServiceTimeSettingsComponent implements OnInit {
   }
 
   setMin(serviceType: string, value: string) {
-    const entry = this.editValues.get(serviceType) ?? { min: 0, max: 0 };
+    const entry = this.editValues.get(serviceType) ?? { min: 0, max: 0, enabled: true };
     entry.min = Number(value);
     this.editValues.set(serviceType, entry);
   }
 
   setMax(serviceType: string, value: string) {
-    const entry = this.editValues.get(serviceType) ?? { min: 0, max: 0 };
+    const entry = this.editValues.get(serviceType) ?? { min: 0, max: 0, enabled: true };
     entry.max = Number(value);
+    this.editValues.set(serviceType, entry);
+  }
+
+  getEnabled(serviceType: string): boolean {
+    return this.editValues.get(serviceType)?.enabled ?? true;
+  }
+
+  setEnabled(serviceType: string, enabled: boolean) {
+    const entry = this.editValues.get(serviceType) ?? { min: 0, max: 0, enabled: true };
+    entry.enabled = enabled;
     this.editValues.set(serviceType, entry);
   }
 
@@ -152,7 +187,7 @@ export class ServiceTimeSettingsComponent implements OnInit {
     }
 
     this.savingType.set(setting.serviceType);
-    this.service.update(setting.serviceType, entry.min, entry.max).subscribe({
+    this.service.update(setting.serviceType, entry.min, entry.max, entry.enabled).subscribe({
       next: () => {
         this.toast.success(`${this.label(setting.serviceType)} estimated time updated`);
         this.savingType.set(null);

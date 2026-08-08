@@ -27,7 +27,8 @@ namespace RestaurantSystem.Controllers
                     Id = s.Id,
                     ServiceType = s.ServiceType,
                     MinMinutes = s.MinMinutes,
-                    MaxMinutes = s.MaxMinutes
+                    MaxMinutes = s.MaxMinutes,
+                    IsEnabled = s.IsEnabled
                 })
                 .ToListAsync();
 
@@ -48,6 +49,7 @@ namespace RestaurantSystem.Controllers
 
             setting.MinMinutes = dto.MinMinutes;
             setting.MaxMinutes = dto.MaxMinutes;
+            setting.IsEnabled = dto.IsEnabled;
             setting.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
@@ -57,7 +59,8 @@ namespace RestaurantSystem.Controllers
                 Id = setting.Id,
                 ServiceType = setting.ServiceType,
                 MinMinutes = setting.MinMinutes,
-                MaxMinutes = setting.MaxMinutes
+                MaxMinutes = setting.MaxMinutes,
+                IsEnabled = setting.IsEnabled
             });
         }
     }

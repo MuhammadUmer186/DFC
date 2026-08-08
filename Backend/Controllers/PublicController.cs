@@ -80,12 +80,14 @@ namespace RestaurantSystem.Controllers
         public async Task<ActionResult<List<ServiceTimeSettingDto>>> GetServiceTimes()
         {
             var settings = await _context.ServiceTimeSettings
+                .Where(s => s.IsEnabled)
                 .Select(s => new ServiceTimeSettingDto
                 {
                     Id = s.Id,
                     ServiceType = s.ServiceType,
                     MinMinutes = s.MinMinutes,
-                    MaxMinutes = s.MaxMinutes
+                    MaxMinutes = s.MaxMinutes,
+                    IsEnabled = s.IsEnabled
                 })
                 .ToListAsync();
 
@@ -99,7 +101,7 @@ namespace RestaurantSystem.Controllers
         public async Task<IActionResult> GetSiteSettings()
         {
             var setting = await _context.SiteSettings.FirstOrDefaultAsync(s => s.Id == 1);
-            return Ok(new { heroImageUrl = setting?.HeroImageUrl });
+            return Ok(new { heroImageUrl = setting?.HeroImageUrl, whatsAppNumber = setting?.WhatsAppNumber });
         }
 
         // ===============================

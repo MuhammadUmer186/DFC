@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RestaurantSystem.Data;
+using RestaurantSystem.DTOs;
 
 namespace RestaurantSystem.Controllers
 {
@@ -22,7 +23,26 @@ namespace RestaurantSystem.Controllers
         public async Task<IActionResult> Get()
         {
             var setting = await _context.SiteSettings.FirstOrDefaultAsync(s => s.Id == 1);
-            return Ok(new { heroImageUrl = setting?.HeroImageUrl });
+            return Ok(new { heroImageUrl = setting?.HeroImageUrl, whatsAppNumber = setting?.WhatsAppNumber });
+        }
+
+        [HttpPut("whatsapp-number")]
+        public async Task<IActionResult> UpdateWhatsAppNumber([FromBody] UpdateWhatsAppNumberDto dto)
+        {
+            var setting = await _context.SiteSettings.FirstOrDefaultAsync(s => s.Id == 1);
+            if (setting == null)
+            {
+                setting = new Models.SiteSetting { Id = 1, WhatsAppNumber = dto.WhatsAppNumber };
+                _context.SiteSettings.Add(setting);
+            }
+            else
+            {
+                setting.WhatsAppNumber = dto.WhatsAppNumber;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { whatsAppNumber = setting.WhatsAppNumber });
         }
 
         [HttpPost("hero-image")]
