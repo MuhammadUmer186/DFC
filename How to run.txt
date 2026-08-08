@@ -1,0 +1,32 @@
+Easiest way: double-click start-app.bat at
+E:\RMS-DFC-PROJECT\start-app.bat
+
+It opens three windows (backend + shop management frontend + customer ordering site), waits for them to finish starting, then opens http://localhost:4200 in your browser automatically. Just keep all three windows open while you use the app — closing any one of them stops that server. To stop everything, close all three windows (or Ctrl+C in each).
+
+Manual way, if you ever want to do it by hand — three separate terminal windows:
+
+Window 1 — Backend:
+
+cd "E:\RMS-DFC-PROJECT\Backend"
+dotnet run --launch-profile https
+Wait for "Now listening on: http://0.0.0.0:7122".
+
+Window 2 — Shop Management Frontend:
+
+cd "E:\RMS-DFC-PROJECT\Frontend\RMS"
+npm start
+Wait for "Application bundle generation complete".
+Open http://localhost:4200
+
+Window 3 — Customer Ordering Website:
+
+cd "E:\RMS-DFC-PROJECT\Frontend\CustomerOrderingWeb"
+npx ng serve --port 4300
+Open http://localhost:4300
+
+Login (shop management app only — the customer site has no login):
+
+Username: HassanAli
+Password: lup@fg3WT3
+
+One note: this all assumes SQL Server (the TEW_SQLEXPRESS instance) is running, which it normally does automatically as a Windows service — you'd only need to worry about it if the backend throws a database connection error on startup.

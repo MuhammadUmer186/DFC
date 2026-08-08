@@ -1,0 +1,71 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      MSSQL_PID: Express
+    volumes:
+      - mssql-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./Backend
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=RestaurantDB;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=True"
+      AppSettings__Issuer: ${JWT_ISSUER:-DFC-RMS}
+      AppSettings__Audience: ${JWT_AUDIENCE:-DFC-RMS-Clients}
+      AppSettings__Token: ${JWT_TOKEN}
+      SuperAdmin__UserName: ${SUPERADMIN_USERNAME}
+      SuperAdmin__Password: ${SUPERADMIN_PASSWORD}
+      Gemini__ApiKey: ${GEMINI_API_KEY:-}
+    volumes:
+      - backend-uploads:/app/wwwroot/uploads
+    ports:
+      - "8080:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  rms-frontend:
+    build:
+      context: ./Frontend/RMS
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  customer-frontend:
+    build:
+      context: ./Frontend/CustomerOrderingWeb
+    ports:
+      - "4300:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mssql-data:
+  backend-uploads:
