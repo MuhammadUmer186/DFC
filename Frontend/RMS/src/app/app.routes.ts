@@ -50,6 +50,9 @@ import { ServiceTimeSettingsComponent } from './Pages/settings/service-time-sett
 import { RiderListComponent } from './Pages/riders/rider-list/rider-list.component';
 import { AreaListComponent } from './Pages/areas/area-list/area-list.component';
 import { MyDeliveriesComponent } from './Pages/my-deliveries/my-deliveries.component';
+import { AiForecastComponent } from './Pages/ai/ai-forecast/ai-forecast.component';
+import { AiInventoryComponent } from './Pages/ai/ai-inventory/ai-inventory.component';
+import { AiAssistantComponent } from './Pages/ai/ai-assistant/ai-assistant.component';
 
 export const routes: Routes = [
     { path: "", redirectTo: "login", pathMatch: "full" },
@@ -138,6 +141,18 @@ export const routes: Routes = [
             },
             {
             path:"dashboard",component:DashboardComponent,canActivate: [AuthGuard],
+            data: { roles: ['SuperAdmin', 'Admin','MainAdmin'] }
+            },
+            {
+            path:"ai-forecast",component:AiForecastComponent,canActivate: [AuthGuard],
+            data: { roles: ['SuperAdmin', 'Admin','MainAdmin'] }
+            },
+            {
+            path:"ai-inventory",component:AiInventoryComponent,canActivate: [AuthGuard],
+            data: { roles: ['SuperAdmin', 'Admin','MainAdmin','StoreKeeper'] }
+            },
+            {
+            path:"ai-assistant",component:AiAssistantComponent,canActivate: [AuthGuard],
             data: { roles: ['SuperAdmin', 'Admin','MainAdmin'] }
             },
             {

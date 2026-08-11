@@ -28,7 +28,12 @@ services:
       AppSettings__Token: ${JWT_TOKEN}
       SuperAdmin__UserName: ${SUPERADMIN_USERNAME}
       SuperAdmin__Password: ${SUPERADMIN_PASSWORD}
-      Gemini__ApiKey: ${GEMINI_API_KEY:-}
+      OpenAI__ApiKey: ${OPENAI_API_KEY:-}
+      OpenAI__Model: ${OPENAI_MODEL:-gpt-4o-mini}
+      AiFeatures__ForecastingEnabled: ${AI_FORECASTING_ENABLED:-true}
+      AiFeatures__InventoryRecommendationsEnabled: ${AI_INVENTORY_ENABLED:-true}
+      AiFeatures__InsightsAssistantEnabled: ${AI_ASSISTANT_ENABLED:-true}
+      AiFeatures__UseMockProvider: ${AI_USE_MOCK_PROVIDER:-false}
     volumes:
       - backend-uploads:/app/wwwroot/uploads
     ports:

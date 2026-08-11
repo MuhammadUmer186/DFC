@@ -1,0 +1,110 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-box"></i> Inventory Recommendations</h2>
+      <p class="dfc-page-subtitle">
+        AI-suggested reorders and waste alerts based on the latest demand forecast. Nothing here is ever submitted automatically — every recommendation needs your approval.
+      </p>
+    </div>
+  </div>
+
+  <div class="dfc-toolbar">
+    <label class="toolbar-label">
+      Status
+      <select [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($any($event))" style="margin-left:6px;">
+        <option value="Pending">Pending</option>
+        <option value="Approved">Approved</option>
+        <option value="Rejected">Rejected</option>
+        <option value="All">All</option>
+      </select>
+    </label>
+    <button class="dfc-btn dfc-btn-primary dfc-btn-sm" [disabled]="recalculating()" (click)="recalculate()">
+      @if (recalculating()) {
+        <i class="pi pi-spin pi-spinner"></i> Recalculating…
+      } @else {
+        <i class="pi pi-refresh"></i> Recalculate Now
+      }
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="dfc-loading"><i class="pi pi-spin pi-spinner"></i> Loading recommendations…</div>
+  }
+
+  @if (!loading() && recommendations().length === 0) {
+    <div class="dfc-empty">
+      <i class="pi pi-inbox"></i>
+      <span>No {{ statusFilter() === 'All' ? '' : statusFilter().toLowerCase() }} recommendations right now.</span>
+    </div>
+  }
+
+  @if (!loading() && recommendations().length > 0) {
+    <div class="dfc-table-wrap">
+      <table class="dfc-table">
+        <thead>
+          <tr>
+            <th>Ingredient</th>
+            <th>Type</th>
+            <th>Current Stock</th>
+            <th>Forecasted Demand</th>
+            <th>Suggested Reorder</th>
+            <th>Details</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (rec of recommendations(); track rec.id) {
+            <tr>
+              <td>{{ rec.rawItemName }}</td>
+              <td><span class="dfc-badge" [class]="typeBadgeClass(rec.recommendationType)">{{ rec.recommendationType }}</span></td>
+              <td>{{ rec.currentStock }} {{ rec.unit }}</td>
+              <td>{{ rec.forecastedDemand }} {{ rec.unit }}</td>
+              <td>
+                @if (rec.suggestedReorderQuantity > 0) {
+                  {{ rec.suggestedReorderQuantity }} {{ rec.unit }}
+                  @if (rec.suggestedReorderDate) { <div style="font-size:11px; color:#64748b;">by {{ rec.suggestedReorderDate | date:'MMM d' }}</div> }
+                } @else { — }
+              </td>
+              <td style="max-width:320px;">
+                <div>{{ rec.explanation }}</div>
+                @if (rec.dataWarnings) {
+                  <div style="color:#b45309; font-size:12px; margin-top:4px;"><i class="pi pi-exclamation-triangle"></i> {{ rec.dataWarnings }}</div>
+                }
+              </td>
+              <td class="actions">
+                @if (rec.status === 'Pending') {
+                  <div style="display:flex; flex-direction:column; gap:6px;">
+                    <div style="display:flex; gap:6px;">
+                      <button class="dfc-btn dfc-btn-success dfc-btn-sm" [disabled]="isBusy(rec.id)" (click)="approve(rec)">
+                        <i class="pi pi-check"></i> Approve
+                      </button>
+                      <button class="dfc-btn dfc-btn-danger dfc-btn-sm" [disabled]="isBusy(rec.id)" (click)="reject(rec)">
+                        <i class="pi pi-times"></i> Reject
+                      </button>
+                    </div>
+                    @if (rec.suggestedReorderQuantity > 0) {
+                      <div style="display:flex; gap:6px; align-items:center;">
+                        <input
+                          type="number" min="0" class="dfc-input" style="width:90px;"
+                          [value]="getModifyDraft(rec.id, rec.suggestedReorderQuantity)"
+                          (input)="setModifyDraft(rec.id, $any($event.target).value)"
+                        />
+                        <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" [disabled]="isBusy(rec.id)" (click)="modify(rec)">
+                          <i class="pi pi-pencil"></i> Approve modified
+                        </button>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <span class="dfc-badge dfc-badge-info">{{ rec.status }}</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+</div>

@@ -37,6 +37,17 @@ namespace RestaurantSystem.Data
         public DbSet<Rider> Riders { get; set; } = null!;
         public DbSet<Area> Areas { get; set; } = null!;
 
+        // ===== AI feature tables =====
+        public DbSet<AiAuditLog> AiAuditLogs { get; set; } = null!;
+        public DbSet<AiForecastRun> AiForecastRuns { get; set; } = null!;
+        public DbSet<AiForecastValue> AiForecastValues { get; set; } = null!;
+        public DbSet<AiInventoryRecommendation> AiInventoryRecommendations { get; set; } = null!;
+        public DbSet<AiInventoryRecommendationDecision> AiInventoryRecommendationDecisions { get; set; } = null!;
+        public DbSet<AiConversation> AiConversations { get; set; } = null!;
+        public DbSet<AiMessageRecord> AiMessageRecords { get; set; } = null!;
+        public DbSet<AiToolExecutionRecord> AiToolExecutionRecords { get; set; } = null!;
+        public DbSet<Customer> Customers { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -58,9 +69,81 @@ namespace RestaurantSystem.Data
             ConfigureSiteSetting(modelBuilder);
             ConfigureRider(modelBuilder);
             ConfigureArea(modelBuilder);
+            ConfigureAiEntities(modelBuilder);
 
             // Seed Vendors
 
+        }
+
+        private void ConfigureAiEntities(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<AiAuditLog>(entity =>
+            {
+                entity.HasIndex(e => e.CreatedAt);
+                entity.HasIndex(e => e.Feature);
+            });
+
+            modelBuilder.Entity<AiForecastRun>(entity =>
+            {
+                entity.HasIndex(e => new { e.ForecastFrom, e.ForecastTo });
+            });
+
+            modelBuilder.Entity<AiForecastValue>(entity =>
+            {
+                entity.HasOne(v => v.ForecastRun)
+                    .WithMany(r => r.Values)
+                    .HasForeignKey(v => v.ForecastRunId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(v => v.MenuItem)
+                    .WithMany()
+                    .HasForeignKey(v => v.MenuItemId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasIndex(e => new { e.ForecastDate, e.MenuItemId, e.HourOfDay });
+            });
+
+            modelBuilder.Entity<AiInventoryRecommendation>(entity =>
+            {
+                entity.HasOne(r => r.RawItem)
+                    .WithMany()
+                    .HasForeignKey(r => r.RawItemId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => new { e.RawItemId, e.Status });
+                entity.HasIndex(e => e.CreatedAt);
+            });
+
+            modelBuilder.Entity<AiInventoryRecommendationDecision>(entity =>
+            {
+                entity.HasOne(d => d.Recommendation)
+                    .WithMany(r => r.Decisions)
+                    .HasForeignKey(d => d.RecommendationId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<AiConversation>(entity =>
+            {
+                entity.HasIndex(e => e.UserId);
+            });
+
+            modelBuilder.Entity<AiMessageRecord>(entity =>
+            {
+                entity.HasOne(m => m.Conversation)
+                    .WithMany(c => c.Messages)
+                    .HasForeignKey(m => m.ConversationId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<AiToolExecutionRecord>(entity =>
+            {
+                entity.HasIndex(e => e.ConversationId);
+            });
+
+            modelBuilder.Entity<Customer>(entity =>
+            {
+                entity.HasIndex(e => e.PhoneNumber).IsUnique();
+            });
         }
 
         // ====== CONFIGURE ENTITIES ======

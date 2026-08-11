@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.SemanticKernel;
 using RestaurantSystem.Data;
 using RestaurantSystem.DTOs;
 using RestaurantSystem.Helpers;

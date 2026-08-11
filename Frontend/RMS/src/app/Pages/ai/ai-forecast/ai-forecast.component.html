@@ -1,0 +1,135 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-chart-line"></i> Sales &amp; Demand Forecast</h2>
+      <p class="dfc-page-subtitle">
+        AI-generated forecast (a weighted average of the same weekday in recent weeks — not a black box). Never used to automatically change prices or place orders.
+      </p>
+    </div>
+  </div>
+
+  @if (loadError()) {
+    <div class="dfc-empty" style="color: #dc2626;">
+      <i class="pi pi-exclamation-triangle"></i>
+      <span>{{ loadError() }}</span>
+    </div>
+  }
+
+  <div class="dfc-toolbar">
+    <label class="toolbar-label">
+      Horizon (days)
+      <select [ngModel]="horizonDays()" (ngModelChange)="setHorizon($any($event))" style="margin-left:6px;">
+        <option [value]="3">3</option>
+        <option [value]="7">7</option>
+        <option [value]="14">14</option>
+      </select>
+    </label>
+    <button class="dfc-btn dfc-btn-primary dfc-btn-sm" [disabled]="recalculating()" (click)="recalculate()">
+      @if (recalculating()) {
+        <i class="pi pi-spin pi-spinner"></i> Recalculating…
+      } @else {
+        <i class="pi pi-refresh"></i> Recalculate Now
+      }
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="dfc-loading"><i class="pi pi-spin pi-spinner"></i> Loading forecast…</div>
+  }
+
+  @if (!loading() && !run()) {
+    <div class="dfc-empty">
+      <i class="pi pi-inbox"></i>
+      <span>No forecast has been generated yet — click "Recalculate Now" to generate one.</span>
+    </div>
+  }
+
+  @if (run(); as r) {
+    <div class="dfc-page-header" style="margin-top: 8px;">
+      <div class="dfc-page-header-text">
+        <p class="dfc-page-subtitle">
+          Run #{{ r.id }} · model {{ r.modelVersion }} · generated {{ r.createdAt | date:'medium' }} ·
+          covers {{ r.forecastFrom | date:'MMM d' }} – {{ r.forecastTo | date:'MMM d' }}
+          @if (r.mae !== null) { · MAE Rs {{ r.mae }} @if (r.wape !== null) { , WAPE {{ r.wape }}% } }
+          @else { · accuracy not yet available (computed once the forecasted dates have passed) }
+        </p>
+        @if (r.notes) {
+          <p class="dfc-page-subtitle" style="color:#b45309;"><i class="pi pi-info-circle"></i> {{ r.notes }}</p>
+        }
+      </div>
+    </div>
+
+    <h3 class="dfc-section-title">Daily Totals</h3>
+    <div class="dfc-table-wrap" style="margin-bottom:20px;">
+      <table class="dfc-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Predicted Sales</th>
+            <th>Confidence Range</th>
+            <th>Predicted Orders</th>
+            <th>Actual Sales</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of dayRows(); track row.forecastDate) {
+            <tr>
+              <td>{{ row.forecastDate | date:'EEE, MMM d' }}</td>
+              <td>Rs {{ row.predictedSales }} @if (row.lowConfidence) { <span class="dfc-badge dfc-badge-amber" title="Limited historical data for this date">Low confidence</span> }</td>
+              <td>Rs {{ row.confidenceLow }} – Rs {{ row.confidenceHigh }}</td>
+              <td>{{ row.predictedOrderCount }}</td>
+              <td>{{ row.actualSales !== null ? ('Rs ' + row.actualSales) : '—' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="dfc-section-title">Peak Hours — {{ dayRows()[0]?.forecastDate | date:'EEE, MMM d' }}</h3>
+    <div class="dfc-table-wrap" style="margin-bottom:20px;">
+      <div style="display:flex; align-items:flex-end; gap:3px; height:120px; padding:10px 0;">
+        @for (h of hourlyFirstDay(); track h.hourOfDay) {
+          <div
+            [title]="hourLabel(h.hourOfDay) + ' — Rs ' + h.predictedSales"
+            style="flex:1; background:var(--dfc-navy-600, #1e3a5f); border-radius:2px 2px 0 0; min-width:4px;"
+            [style.height.%]="(h.predictedSales / maxHourlySales()) * 100"
+          ></div>
+        }
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:10px; color:#94a3b8; padding:0 2px;">
+        <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:00</span>
+      </div>
+    </div>
+
+    <h3 class="dfc-section-title">Prep Plan — {{ dayRows()[0]?.forecastDate | date:'EEE, MMM d' }} (top items by predicted quantity)</h3>
+    @if (topItemsFirstDay().length === 0) {
+      <div class="dfc-empty">
+        <i class="pi pi-inbox"></i>
+        <span>No item-level forecast available for this date (not enough matching-weekday history yet).</span>
+      </div>
+    } @else {
+      <div class="dfc-table-wrap">
+        <table class="dfc-table">
+          <thead>
+            <tr>
+              <th>Menu Item</th>
+              <th>Predicted Quantity</th>
+              <th>Range</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of topItemsFirstDay(); track item.menuItemId) {
+              <tr>
+                <td>{{ item.menuItemName }}</td>
+                <td>{{ item.predictedQuantity }} @if (item.lowConfidence) { <span class="dfc-badge dfc-badge-amber">Low confidence</span> }</td>
+                <td>{{ item.confidenceLow }} – {{ item.confidenceHigh }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+
+</div>

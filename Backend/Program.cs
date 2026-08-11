@@ -1,17 +1,19 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Microsoft.SemanticKernel;
 using Polly;
 using RestaurantSystem.Hubs;
 using RestaurantSystem.Data;
 using RestaurantSystem.DTOs;
 using RestaurantSystem.Interfaces;
 using RestaurantSystem.Services;
+using RestaurantSystem.Services.Ai;
 using System;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.RateLimiting;
 using Polly.Timeout;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -77,6 +79,42 @@ builder.Services.AddScoped<IReportService,ReportService>();
 builder.Services.AddScoped<IMenuRecipeService, MenuRecipeService>();
 builder.Services.AddScoped<IRiderService, RiderService>();
 builder.Services.AddScoped<IAreaService, AreaService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+
+// ===== AI foundation =====
+builder.Services.Configure<AiFeatureOptions>(builder.Configuration.GetSection("AiFeatures"));
+builder.Services.Configure<AiProviderOptions>(builder.Configuration.GetSection("OpenAI"));
+builder.Services.AddScoped<IAiAuditService, AiAuditService>();
+builder.Services.AddSingleton<MockAiProvider>();
+builder.Services.AddSingleton<OpenAiProvider>();
+builder.Services.AddScoped<IAiProvider>(sp =>
+{
+    var features = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<AiFeatureOptions>>().Value;
+    var providerOptions = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<AiProviderOptions>>().Value;
+    // Falls back to the mock provider whenever there's no real key configured, so the app
+    // never crashes on missing config — AI features just answer with an explicit placeholder.
+    return (features.UseMockProvider || string.IsNullOrWhiteSpace(providerOptions.ApiKey))
+        ? sp.GetRequiredService<MockAiProvider>()
+        : sp.GetRequiredService<OpenAiProvider>();
+});
+builder.Services.AddScoped<ForecastingService>();
+builder.Services.AddScoped<InventoryRecommendationService>();
+builder.Services.AddScoped<IInsightsTools, InsightsTools>();
+builder.Services.AddScoped<InsightsAssistantService>();
+builder.Services.AddHostedService<ForecastBackgroundService>();
+
+builder.Services.AddRateLimiter(options =>
+{
+    // Applied via [EnableRateLimiting("ai")] on the AI controllers — a live LLM call costs
+    // real money per request, so this is a blunt but necessary abuse guard.
+    options.AddFixedWindowLimiter("ai", opt =>
+    {
+        opt.PermitLimit = 20;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 0;
+    });
+    options.RejectionStatusCode = 429;
+});
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
@@ -127,51 +165,6 @@ builder.Services.AddCors(options =>
     );
 });
 
-// Program.cs
-//string geminiApiKey = builder.Configuration["Gemini:ApiKey"]!;
-
-//// -------------------------------
-//// 2️⃣ Resilient HttpClient for Gemini
-//// -------------------------------
-//builder.Services.AddHttpClient("GeminiClient", client =>
-//{
-//    client.Timeout = TimeSpan.FromSeconds(120); // 2 minutes
-//})
-//.AddStandardResilienceHandler(options =>
-//{
-//    // Retry policy
-//    options.Retry.MaxRetryAttempts = 3;
-//    options.Retry.Delay = TimeSpan.FromSeconds(3);
-//    options.Retry.BackoffType = DelayBackoffType.Exponential;
-
-//    // Timeout policy (Polly)
-//    options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(120); // Matches HttpClient timeout
-//});
-
-
-
-//// === Register Semantic Kernel + Plugins ===
-//builder.Services.AddScoped(sp =>
-//{
-//    var dbContext = sp.GetRequiredService<ApplicationDbContext>();
-//    var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
-//    var resilientClient = httpClientFactory.CreateClient("GeminiClient");
-
-//    var kernelBuilder = Kernel.CreateBuilder();
-
-//    // Gemini Chat Completion
-//    kernelBuilder.AddGoogleAIGeminiChatCompletion(
-//        modelId: "gemini-2.5-flash",
-//        apiKey: geminiApiKey,
-//        httpClient: resilientClient
-//    );
-
-//    // Register your plugins
-//    kernelBuilder.Plugins.AddFromObject(new SqlAgentPlugin(dbContext));
-//    kernelBuilder.Plugins.AddFromObject(new RestaurantDataPlugin(dbContext));
-
-//    return kernelBuilder.Build();
-//});
 //builder.WebHost.ConfigureKestrel(options =>
 //{
     // HTTP for testing (optional)
@@ -209,6 +202,7 @@ app.UseCors(MyCors);
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 app.MapHub<OrderHub>("/hubs/orders");
 
 app.MapControllers();

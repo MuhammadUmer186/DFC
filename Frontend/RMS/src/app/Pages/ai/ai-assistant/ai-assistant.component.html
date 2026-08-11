@@ -1,0 +1,86 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-comments"></i> Business Insights Assistant</h2>
+      <p class="dfc-page-subtitle">
+        Read-only — answers come from the same reports/dashboard data, never invented. Single-location system: it can't answer branch-comparison questions, and there's no promotion tracking yet.
+      </p>
+    </div>
+  </div>
+
+  <div class="ai-chat-layout">
+    <aside class="ai-chat-sidebar">
+      <button class="dfc-btn dfc-btn-primary dfc-btn-sm" style="width:100%; margin-bottom:10px;" (click)="newConversation()">
+        <i class="pi pi-plus"></i> New conversation
+      </button>
+      @if (conversations().length === 0) {
+        <div class="dfc-empty" style="padding:16px 8px;">
+          <span style="font-size:12px;">No conversations yet</span>
+        </div>
+      }
+      @for (c of conversations(); track c.id) {
+        <button
+          class="ai-chat-history-item"
+          [class.active]="activeConversationId() === c.id"
+          (click)="openConversation(c.id)"
+        >
+          {{ c.title || 'Untitled' }}
+        </button>
+      }
+    </aside>
+
+    <section class="ai-chat-main">
+      @if (loadingHistory()) {
+        <div class="dfc-loading"><i class="pi pi-spin pi-spinner"></i> Loading conversation…</div>
+      }
+
+      @if (!loadingHistory() && messages().length === 0) {
+        <div class="ai-chat-empty">
+          <p>Try asking:</p>
+          <div class="ai-starter-grid">
+            @for (q of starterQuestions; track q) {
+              <button class="ai-starter-btn" (click)="askStarter(q)">{{ q }}</button>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="ai-chat-messages">
+        @for (m of messages(); track $index) {
+          <div class="ai-chat-message" [class.user]="m.role === 'user'" [class.assistant]="m.role === 'assistant'">
+            <div class="ai-chat-bubble">
+              {{ m.content }}
+              @if (m.toolsUsed && m.toolsUsed.length > 0) {
+                <div class="ai-chat-sources">
+                  <i class="pi pi-database"></i> Sources: {{ m.toolsUsed.join(', ') }}
+                </div>
+              }
+            </div>
+          </div>
+        }
+        @if (asking()) {
+          <div class="ai-chat-message assistant">
+            <div class="ai-chat-bubble"><i class="pi pi-spin pi-spinner"></i> Thinking…</div>
+          </div>
+        }
+      </div>
+
+      <div class="ai-chat-input-row">
+        <input
+          type="text"
+          class="dfc-input"
+          placeholder="Ask about sales, waste, margins, prep plans…"
+          [value]="question()"
+          (input)="setQuestion($any($event.target).value)"
+          (keydown.enter)="ask()"
+          [disabled]="asking()"
+        />
+        <button class="dfc-btn dfc-btn-primary dfc-btn-sm" [disabled]="asking() || !question().trim()" (click)="ask()">
+          <i class="pi pi-send"></i>
+        </button>
+      </div>
+    </section>
+  </div>
+
+</div>

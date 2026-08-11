@@ -32,8 +32,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.2.0" />
-    <PackageReference Include="Microsoft.SemanticKernel" Version="1.68.0" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Google" Version="1.68.0-alpha" />
+    <PackageReference Include="OpenAI" Version="2.13.0" />
     <PackageReference Include="RJCP.SerialPortStream" Version="3.0.4" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     <PackageReference Include="System.Drawing.Common" Version="10.0.7" />

@@ -19,6 +19,17 @@
         <li routerLink="/report" routerLinkActive="active" class="nav-item"><i class="pi pi-chart-bar nav-icon"></i><span class="label">Reports</span></li>
         <li routerLink="/menu-item-report" routerLinkActive="active" class="nav-item"><i class="pi pi-list nav-icon"></i><span class="label">Menu Item Report</span></li>
 
+        <li class="nav-parent" [class.open]="openMenu === 'ai'" (click)="toggleMenu('ai')">
+          <i class="pi pi-sparkles nav-icon"></i><span class="label">AI Insights</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'ai') {
+          <ul class="submenu">
+            <li routerLink="/ai-forecast" routerLinkActive="active"><i class="pi pi-chart-line"></i><span class="label">Demand Forecast</span></li>
+            <li routerLink="/ai-inventory" routerLinkActive="active"><i class="pi pi-box"></i><span class="label">Inventory Recommendations</span></li>
+            <li routerLink="/ai-assistant" routerLinkActive="active"><i class="pi pi-comments"></i><span class="label">Insights Assistant</span></li>
+          </ul>
+        }
+
         <li class="nav-parent" [class.open]="openMenu === 'orders'" (click)="toggleMenu('orders')">
           <i class="pi pi-shopping-cart nav-icon"></i><span class="label">Orders</span><i class="pi pi-chevron-down chevron"></i>
         </li>
@@ -130,6 +141,17 @@
         <li routerLink="/report" routerLinkActive="active" class="nav-item"><i class="pi pi-chart-bar nav-icon"></i><span class="label">Reports</span></li>
         <li routerLink="/menu-item-report" routerLinkActive="active" class="nav-item"><i class="pi pi-list nav-icon"></i><span class="label">Menu Item Report</span></li>
 
+        <li class="nav-parent" [class.open]="openMenu === 'ai'" (click)="toggleMenu('ai')">
+          <i class="pi pi-sparkles nav-icon"></i><span class="label">AI Insights</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'ai') {
+          <ul class="submenu">
+            <li routerLink="/ai-forecast" routerLinkActive="active"><i class="pi pi-chart-line"></i><span class="label">Demand Forecast</span></li>
+            <li routerLink="/ai-inventory" routerLinkActive="active"><i class="pi pi-box"></i><span class="label">Inventory Recommendations</span></li>
+            <li routerLink="/ai-assistant" routerLinkActive="active"><i class="pi pi-comments"></i><span class="label">Insights Assistant</span></li>
+          </ul>
+        }
+
         <li class="nav-parent" [class.open]="openMenu === 'orders'" (click)="toggleMenu('orders')">
           <i class="pi pi-shopping-cart nav-icon"></i><span class="label">Orders</span><i class="pi pi-chevron-down chevron"></i>
         </li>
@@ -236,6 +258,17 @@
         <li routerLink="/dashboard" routerLinkActive="active" class="nav-item"><i class="pi pi-home nav-icon"></i><span class="label">Dashboard</span></li>
         <li routerLink="/report" routerLinkActive="active" class="nav-item"><i class="pi pi-chart-bar nav-icon"></i><span class="label">Reports</span></li>
         <li routerLink="/menu-item-report" routerLinkActive="active" class="nav-item"><i class="pi pi-list nav-icon"></i><span class="label">Menu Item Report</span></li>
+
+        <li class="nav-parent" [class.open]="openMenu === 'ai'" (click)="toggleMenu('ai')">
+          <i class="pi pi-sparkles nav-icon"></i><span class="label">AI Insights</span><i class="pi pi-chevron-down chevron"></i>
+        </li>
+        @if (openMenu === 'ai') {
+          <ul class="submenu">
+            <li routerLink="/ai-forecast" routerLinkActive="active"><i class="pi pi-chart-line"></i><span class="label">Demand Forecast</span></li>
+            <li routerLink="/ai-inventory" routerLinkActive="active"><i class="pi pi-box"></i><span class="label">Inventory Recommendations</span></li>
+            <li routerLink="/ai-assistant" routerLinkActive="active"><i class="pi pi-comments"></i><span class="label">Insights Assistant</span></li>
+          </ul>
+        }
 
         <li class="nav-parent" [class.open]="openMenu === 'orders'" (click)="toggleMenu('orders')">
           <i class="pi pi-shopping-cart nav-icon"></i><span class="label">Orders</span><i class="pi pi-chevron-down chevron"></i>
@@ -363,6 +396,7 @@
             <li routerLink="/VendorLedger" routerLinkActive="active"><i class="pi pi-wallet"></i><span class="label">Vendor Management</span></li>
           </ul>
         }
+        <li routerLink="/ai-inventory" routerLinkActive="active" class="nav-item"><i class="pi pi-sparkles nav-icon"></i><span class="label">AI Inventory Recommendations</span></li>
       }
 
     </ul>
