@@ -236,17 +236,29 @@ this.printService.printReceipt({
     this.setBusy(order.id, true);
     this.onlineOrdersService.updateDeliveryStatus(order.id, status as 'Preparing' | 'Enroute' | 'Delivered').subscribe({
       next: (updated) => {
-        if (status === 'Delivered') {
-          this.queuedOrders.update(list => list.filter(o => o.id !== order.id));
-        } else {
-          this.queuedOrders.update(list => list.map(o => o.id === order.id ? { ...o, deliveryStatus: updated.deliveryStatus } : o));
-        }
+        // Order stays in the Queue (still unpaid) until payment is confirmed separately.
+        this.queuedOrders.update(list => list.map(o => o.id === order.id ? { ...o, deliveryStatus: updated.deliveryStatus } : o));
         this.setBusy(order.id, false);
         this.toast.success(`Order #${order.id} marked ${status}`);
       },
       error: (err) => {
         this.setBusy(order.id, false);
         this.toast.error(err?.error?.message || `Failed to update order #${order.id}`);
+      }
+    });
+  }
+
+  confirmPayment(order: OrderQueueDto) {
+    this.setBusy(order.id, true);
+    this.onlineOrdersService.confirmPayment(order.id).subscribe({
+      next: () => {
+        this.queuedOrders.update(list => list.filter(o => o.id !== order.id));
+        this.setBusy(order.id, false);
+        this.toast.success(`Payment received for order #${order.id}`);
+      },
+      error: (err) => {
+        this.setBusy(order.id, false);
+        this.toast.error(err?.error?.message || `Failed to confirm payment for order #${order.id}`);
       }
     });
   }

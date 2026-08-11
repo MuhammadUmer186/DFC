@@ -49,4 +49,8 @@ export class OnlineOrdersService {
   assignRider(orderId: number, riderId: number): Observable<OrderQueueDto> {
     return this.http.post<OrderQueueDto>(`${this.baseURL}/${orderId}/assign-rider`, { riderId }, { headers: this.headers() });
   }
+
+  confirmPayment(orderId: number): Observable<OrderQueueDto> {
+    return this.http.post<OrderQueueDto>(`${this.baseURL}/${orderId}/confirm-payment`, {}, { headers: this.headers() });
+  }
 }

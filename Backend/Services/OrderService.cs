@@ -682,26 +682,59 @@ namespace RestaurantSystem.Services
 
             order.DeliveryStatus = newStatus;
 
-            // Online orders are created unpaid (cash-on-delivery/pickup model) — delivery/pickup
-            // confirmation IS the payment confirmation moment, so finalize payment here rather than
-            // requiring a separate cashier step in the Queue.
-            bool autoPaid = false;
-            if (newStatus == DeliveryStatus.Delivered && order.OrderSource == "Online" && !order.Paid)
-            {
-                order.Paid = true;
-                order.Status = OrderStatus.Paid;
-                order.PaidAt = DateTime.Now;
-                order.PaymentMethod ??= "Cash";
-                autoPaid = true;
-            }
-
             await _context.SaveChangesAsync();
 
             var dto = await GetByIdAsync(order.Id);
 
             await _hub.Clients.Group("OrderQueue").SendAsync("OrderDeliveryStatusUpdated", dto);
-            if (autoPaid)
-                await _hub.Clients.Group("OrderQueue").SendAsync("OrderPaid", order.Id);
+
+            return dto;
+        }
+
+        // Online orders are created unpaid (cash-on-delivery/pickup model). Delivery no longer
+        // auto-confirms payment — a delivered order sits visibly "Unpaid" until whoever collected
+        // the cash (the rider, from /my-deliveries, or staff from the Queue for pickup orders with
+        // no rider) explicitly confirms it here.
+        public async Task<OrderDto> ConfirmDeliveryPaymentAsync(int orderId, ClaimsPrincipal userClaims)
+        {
+            var role = userClaims.FindFirst(ClaimTypes.Role)?.Value;
+
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
+            if (order == null)
+                throw new Exception("Order not found");
+
+            if (role == "Rider")
+            {
+                var riderIdClaim = userClaims.FindFirst("RiderId")?.Value;
+                if (string.IsNullOrEmpty(riderIdClaim) || order.RiderId != int.Parse(riderIdClaim))
+                    throw new Exception("You are not assigned to this order");
+            }
+            else if (role != "SuperAdmin" && role != "Admin" && role != "Cashier" && role != "MainAdmin")
+            {
+                throw new Exception("Not authorized to confirm payment");
+            }
+
+            if (order.OrderSource != "Online")
+                throw new Exception("Only online orders use this payment-confirmation flow");
+
+            if (order.DeliveryStatus != DeliveryStatus.Delivered)
+                throw new Exception("Order must be delivered before payment can be confirmed");
+
+            if (order.Paid)
+                throw new Exception("Order is already paid");
+
+            order.Paid = true;
+            order.Status = OrderStatus.Paid;
+            order.PaidAt = DateTime.Now;
+            order.PaymentMethod ??= "Cash";
+            order.CashierUserName = userClaims.FindFirst(ClaimTypes.Name)?.Value;
+
+            await _context.SaveChangesAsync();
+
+            var dto = await GetByIdAsync(order.Id);
+
+            await _hub.Clients.Group("OrderQueue").SendAsync("OrderPaid", order.Id);
+            await _hub.Clients.Group("OrderQueue").SendAsync("OrderDeliveryStatusUpdated", dto);
 
             return dto;
         }

@@ -135,6 +135,21 @@ namespace RestaurantSystem.Controllers
             }
         }
 
+        [Authorize(Roles = "SuperAdmin,Admin,Cashier,MainAdmin,Rider")]
+        [HttpPost("{id}/confirm-payment")]
+        public async Task<IActionResult> ConfirmDeliveryPayment(int id)
+        {
+            try
+            {
+                var result = await _service.ConfirmDeliveryPaymentAsync(id, User);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         [Authorize(Roles = "Rider")]
         [HttpGet("my-deliveries")]
         public async Task<IActionResult> GetMyDeliveries()

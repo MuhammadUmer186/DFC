@@ -21,4 +21,9 @@ export class MyDeliveriesService {
     const reqHeader = new HttpHeaders({ 'Authorization': 'Bearer ' + this.authservice.gettoken() });
     return this.http.patch<OrderQueueDto>(`${this.baseURL}/${orderId}/delivery-status`, { status: 'Delivered' }, { headers: reqHeader });
   }
+
+  confirmPayment(orderId: number): Observable<OrderQueueDto> {
+    const reqHeader = new HttpHeaders({ 'Authorization': 'Bearer ' + this.authservice.gettoken() });
+    return this.http.post<OrderQueueDto>(`${this.baseURL}/${orderId}/confirm-payment`, {}, { headers: reqHeader });
+  }
 }

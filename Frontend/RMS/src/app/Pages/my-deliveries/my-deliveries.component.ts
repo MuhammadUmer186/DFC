@@ -55,11 +55,27 @@ export class MyDeliveriesComponent implements OnInit {
     this.service.markDelivered(order.id).subscribe({
       next: () => {
         this.orders.update(list => list.map(o => o.id === order.id ? { ...o, deliveryStatus: 'Delivered' } : o));
+        this.busyIds.update(set => { const next = new Set(set); next.delete(order.id); return next; });
         this.toast.success(`Order #${order.id} marked delivered`);
       },
       error: (err) => {
         this.busyIds.update(set => { const next = new Set(set); next.delete(order.id); return next; });
         this.toast.error(err?.error?.message || `Failed to update order #${order.id}`);
+      }
+    });
+  }
+
+  confirmPayment(order: OrderQueueDto) {
+    this.busyIds.update(set => new Set(set).add(order.id));
+    this.service.confirmPayment(order.id).subscribe({
+      next: () => {
+        this.orders.update(list => list.map(o => o.id === order.id ? { ...o, paid: true } : o));
+        this.busyIds.update(set => { const next = new Set(set); next.delete(order.id); return next; });
+        this.toast.success(`Payment received for order #${order.id}`);
+      },
+      error: (err) => {
+        this.busyIds.update(set => { const next = new Set(set); next.delete(order.id); return next; });
+        this.toast.error(err?.error?.message || `Failed to confirm payment for order #${order.id}`);
       }
     });
   }

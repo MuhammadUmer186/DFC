@@ -30,8 +30,14 @@
         <div class="delivery-card">
           <div class="dc-header">
             <span class="dc-order-no">Order #{{ order.id }}</span>
-            @if (order.deliveryStatus) {
-              <span class="dfc-badge" [class.dfc-badge-success]="order.deliveryStatus === 'Delivered'" [class.dfc-badge-amber]="order.deliveryStatus !== 'Delivered'">{{ order.deliveryStatus }}</span>
+            @if (order.deliveryStatus === 'Delivered') {
+              @if (order.paid) {
+                <span class="dfc-badge dfc-badge-success">Paid</span>
+              } @else {
+                <span class="dfc-badge dfc-badge-danger">Unpaid</span>
+              }
+            } @else if (order.deliveryStatus) {
+              <span class="dfc-badge dfc-badge-amber">{{ order.deliveryStatus }}</span>
             } @else if (order.paid) {
               <span class="dfc-badge dfc-badge-success">Completed</span>
             } @else {
@@ -60,6 +66,11 @@
           @if (order.deliveryStatus === 'Enroute') {
             <button class="dfc-btn dfc-btn-success dfc-btn-sm" style="width:100%; margin-top:10px;" [disabled]="isBusy(order.id)" (click)="markDelivered(order)">
               <i class="pi pi-check"></i> Mark Delivered
+            </button>
+          }
+          @if (order.deliveryStatus === 'Delivered' && !order.paid) {
+            <button class="dfc-btn dfc-btn-success dfc-btn-sm" style="width:100%; margin-top:10px;" [disabled]="isBusy(order.id)" (click)="confirmPayment(order)">
+              <i class="pi pi-money-bill"></i> Payment Received
             </button>
           }
         </div>

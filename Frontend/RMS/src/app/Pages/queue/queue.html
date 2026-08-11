@@ -81,7 +81,13 @@
                   }
                 </td>
                 <td>
-                  @if (order.orderSource === 'Online' && order.deliveryStatus) {
+                  @if (order.orderSource === 'Online' && order.deliveryStatus === 'Delivered') {
+                    @if (order.paid) {
+                      <span class="dfc-badge dfc-badge-success">Paid</span>
+                    } @else {
+                      <span class="dfc-badge dfc-badge-danger">Delivered — Unpaid</span>
+                    }
+                  } @else if (order.orderSource === 'Online' && order.deliveryStatus) {
                     <span class="dfc-badge dfc-badge-amber">{{ order.deliveryStatus }}</span>
                   } @else if (order.paid) {
                     <span class="dfc-badge dfc-badge-success">Paid</span>
@@ -94,6 +100,10 @@
                     @if (nextStatus(order); as status) {
                       <button class="dfc-btn dfc-btn-primary dfc-btn-sm" [disabled]="isBusy(order.id)" (click)="setDeliveryStatus(order, status); $event.stopPropagation()">
                         Mark {{ status }}
+                      </button>
+                    } @else if (order.deliveryStatus === 'Delivered' && !order.paid) {
+                      <button class="dfc-btn dfc-btn-success dfc-btn-sm" [disabled]="isBusy(order.id)" (click)="confirmPayment(order); $event.stopPropagation()">
+                        <i class="pi pi-money-bill"></i> Payment Received
                       </button>
                     }
                   } @else if(!order.paid) {
