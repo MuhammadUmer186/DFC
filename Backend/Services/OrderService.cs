@@ -181,6 +181,7 @@ namespace RestaurantSystem.Services
             try
             {
                 bool isPaid = request.Paid ?? true;
+                var userName = userClaims.FindFirst(ClaimTypes.Name)?.Value;
 
                 var order = new Order
                 {
@@ -190,6 +191,7 @@ namespace RestaurantSystem.Services
                     Status = isPaid ? OrderStatus.Paid : OrderStatus.Queued,
                     TakenByEmployeeId = isPaid ? takenByEmployeeId : null,
                     CashierId = isPaid ? takenByEmployeeId : null,
+                    CashierUserName = isPaid ? userName : null,
                     PaymentMethod = isPaid ? "Cash" : null,
 
                     OrderItems = new List<OrderItem>(),
@@ -595,7 +597,7 @@ namespace RestaurantSystem.Services
             return new ApproveOrderResult { Order = dto, CounterPrinted = counterOk, KitchenPrinted = kitchenOk };
         }
 
-        public async Task<OrderDto> RejectOnlineOrderAsync(int orderId, ClaimsPrincipal userClaims)
+        public async Task<OrderDto> RejectOnlineOrderAsync(int orderId, string? reason, ClaimsPrincipal userClaims)
         {
             var role = userClaims.FindFirst(ClaimTypes.Role)?.Value;
             var employeeIdClaim = userClaims.FindFirst("EmployeeId")?.Value;
@@ -622,12 +624,29 @@ namespace RestaurantSystem.Services
             order.DeliveryStatus = RestaurantSystem.Models.DeliveryStatus.Rejected;
             order.CancelledAt = DateTime.Now;
             order.CancelledByEmployeeId = rejectedByEmployeeId;
+            order.CancelledByUserName = userClaims.FindFirst(ClaimTypes.Name)?.Value;
+            order.RejectReason = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
 
             await _context.SaveChangesAsync();
 
             await _hub.Clients.Group("OrderQueue").SendAsync("OnlineOrderRejected", order.Id);
 
             return await GetByIdAsync(order.Id);
+        }
+
+        // Fulfillment must move one step at a time — Approved → Preparing → (Enroute →) Delivered.
+        // Delivery orders pass through Enroute (rider is on the way); pickup/dine-in orders skip it
+        // since there's no rider leg. Returns null when there is no legal next step.
+        private static DeliveryStatus? GetNextDeliveryStatus(DeliveryStatus current, string? serviceType)
+        {
+            bool isDelivery = (serviceType ?? "Delivery") == "Delivery";
+            return current switch
+            {
+                DeliveryStatus.Approved => DeliveryStatus.Preparing,
+                DeliveryStatus.Preparing => isDelivery ? DeliveryStatus.Enroute : DeliveryStatus.Delivered,
+                DeliveryStatus.Enroute => isDelivery ? DeliveryStatus.Delivered : null,
+                _ => null
+            };
         }
 
         public async Task<OrderDto> UpdateDeliveryStatusAsync(int orderId, DeliveryStatus newStatus, ClaimsPrincipal userClaims)
@@ -649,13 +668,12 @@ namespace RestaurantSystem.Services
             }
             else if (role == "SuperAdmin" || role == "Admin" || role == "Cashier" || role == "MainAdmin")
             {
-                var activeStatuses = new[] { DeliveryStatus.Approved, DeliveryStatus.Preparing, DeliveryStatus.Enroute };
-                if (order.DeliveryStatus == null || !activeStatuses.Contains(order.DeliveryStatus.Value))
+                if (order.DeliveryStatus == null)
                     throw new Exception("This order is not in an active fulfillment state");
 
-                var allowedTargets = new[] { DeliveryStatus.Preparing, DeliveryStatus.Enroute, DeliveryStatus.Delivered };
-                if (!allowedTargets.Contains(newStatus))
-                    throw new Exception("Invalid status");
+                var expectedNext = GetNextDeliveryStatus(order.DeliveryStatus.Value, order.ServiceType);
+                if (expectedNext == null || newStatus != expectedNext.Value)
+                    throw new Exception("Orders must move through fulfillment one step at a time");
             }
             else
             {
@@ -663,11 +681,27 @@ namespace RestaurantSystem.Services
             }
 
             order.DeliveryStatus = newStatus;
+
+            // Online orders are created unpaid (cash-on-delivery/pickup model) — delivery/pickup
+            // confirmation IS the payment confirmation moment, so finalize payment here rather than
+            // requiring a separate cashier step in the Queue.
+            bool autoPaid = false;
+            if (newStatus == DeliveryStatus.Delivered && order.OrderSource == "Online" && !order.Paid)
+            {
+                order.Paid = true;
+                order.Status = OrderStatus.Paid;
+                order.PaidAt = DateTime.Now;
+                order.PaymentMethod ??= "Cash";
+                autoPaid = true;
+            }
+
             await _context.SaveChangesAsync();
 
             var dto = await GetByIdAsync(order.Id);
 
             await _hub.Clients.Group("OrderQueue").SendAsync("OrderDeliveryStatusUpdated", dto);
+            if (autoPaid)
+                await _hub.Clients.Group("OrderQueue").SendAsync("OrderPaid", order.Id);
 
             return dto;
         }
@@ -870,6 +904,7 @@ namespace RestaurantSystem.Services
             order.PaidAt = DateTime.Now;
             order.PaymentMethod = request.PaymentMethod;
             order.CashierId = cashierId;
+            order.CashierUserName = userClaims.FindFirst(ClaimTypes.Name)?.Value;
 
             await _context.SaveChangesAsync();
             await _hub.Clients
@@ -976,6 +1011,7 @@ namespace RestaurantSystem.Services
             order.Status = OrderStatus.Cancelled;
             order.CancelledAt = DateTime.Now;
             order.CancelledByEmployeeId = cancelledByEmployeeId;
+            order.CancelledByUserName = userClaims.FindFirst(ClaimTypes.Name)?.Value;
 
             await _context.SaveChangesAsync();
 
@@ -992,7 +1028,8 @@ namespace RestaurantSystem.Services
                 Status = order.Status,
                 TotalAmount = order.TotalAmount,
                 TakenByEmployeeId = order.TakenByEmployeeId,
-                TakenByEmployeeName = order.TakenByEmployee?.Name
+                TakenByEmployeeName = order.TakenByEmployee?.Name,
+                CancelledByUserName = order.CancelledByUserName
             };
         }
 
@@ -1032,6 +1069,9 @@ namespace RestaurantSystem.Services
                 TakenByEmployeeName = order.TakenByEmployee?.Name,
                 CashierId = order.CashierId,
                 CashierName = order.Cashier?.Name,
+                CashierUserName = order.CashierUserName,
+                CancelledByUserName = order.CancelledByUserName,
+                RejectReason = order.RejectReason,
                 CustomerName = order.CustomerName,
                 PhoneNumber = order.PhoneNumber,
                 Address = order.Address,
@@ -1161,6 +1201,11 @@ namespace RestaurantSystem.Services
 
                     CashierId = o.CashierId,
                     CashierName = o.Cashier.Name,                  // store name when cashier marks payment
+                    CashierUserName = o.CashierUserName,
+                    CancelledByUserName = o.CancelledByUserName,
+                    RejectReason = o.RejectReason,
+                    OrderSource = o.OrderSource,
+                    DeliveryStatus = o.DeliveryStatus,
 
                     Items = new List<OrderItemDto>(),  // placeholder
                     Deals = new List<OrderDealDto>()   // placeholder

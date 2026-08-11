@@ -5,6 +5,8 @@ import { QueueService } from '../../Services/queue';
 import { PrintService, PrinterType } from '../../Services/printservice';
 import { ToastService } from '../../Services/toast.service';
 import { OrderQueueDto, OrderSignalRService } from '../../Services/order-signalr';
+import { OnlineOrdersService } from '../../Services/online-orders.service';
+import { nextDeliveryStatus, DeliveryStatusValue } from '../../Services/delivery-status.util';
 
 @Component({
   selector: 'app-queue',
@@ -18,6 +20,7 @@ export class QueueComponent implements OnDestroy {
   queuedOrders = signal<OrderQueueDto[]>([]);
   loading = signal<boolean>(false);
   paymentMethod = signal<string>('Cash');
+  busyIds = signal<Set<number>>(new Set());
 
   customerPrinter = signal<PrinterType>('usb1');
   kitchenPrinter = signal<PrinterType>('usb2');
@@ -26,10 +29,20 @@ export class QueueComponent implements OnDestroy {
     private queueService: QueueService,
     private printService: PrintService,
     private toast: ToastService,
-    private orderSignalR: OrderSignalRService
+    private orderSignalR: OrderSignalRService,
+    private onlineOrdersService: OnlineOrdersService
   ) {
     this.loadQueuedOrders();
     this.orderSignalR.startConnection();
+
+    // 🔄 Live: delivery-status changed elsewhere (Online Orders page, or a rider's app)
+    effect(() => {
+      const updated = this.orderSignalR.deliveryStatusUpdated();
+      if (!updated) return;
+      this.queuedOrders.update(list => list.map(o =>
+        o.id === updated.id ? { ...o, deliveryStatus: updated.deliveryStatus, riderName: updated.riderName, paid: updated.paid } : o
+      ).filter(o => !o.paid));
+    });
 
     // 🔄 Live SignalR sync
     effect(() => {
@@ -202,6 +215,41 @@ this.printService.printReceipt({
   });
 }
 
+  isBusy(id: number): boolean {
+    return this.busyIds().has(id);
+  }
+
+  private setBusy(id: number, busy: boolean) {
+    this.busyIds.update(set => {
+      const next = new Set(set);
+      if (busy) next.add(id); else next.delete(id);
+      return next;
+    });
+  }
+
+  // Same one-step-at-a-time fulfillment flow as the Online Orders "In Progress" tab.
+  nextStatus(order: OrderQueueDto): DeliveryStatusValue | null {
+    return nextDeliveryStatus(order);
+  }
+
+  setDeliveryStatus(order: OrderQueueDto, status: DeliveryStatusValue) {
+    this.setBusy(order.id, true);
+    this.onlineOrdersService.updateDeliveryStatus(order.id, status as 'Preparing' | 'Enroute' | 'Delivered').subscribe({
+      next: (updated) => {
+        if (status === 'Delivered') {
+          this.queuedOrders.update(list => list.filter(o => o.id !== order.id));
+        } else {
+          this.queuedOrders.update(list => list.map(o => o.id === order.id ? { ...o, deliveryStatus: updated.deliveryStatus } : o));
+        }
+        this.setBusy(order.id, false);
+        this.toast.success(`Order #${order.id} marked ${status}`);
+      },
+      error: (err) => {
+        this.setBusy(order.id, false);
+        this.toast.error(err?.error?.message || `Failed to update order #${order.id}`);
+      }
+    });
+  }
 
   ngOnDestroy() {
     this.orderSignalR.stopConnection();

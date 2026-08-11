@@ -38,8 +38,8 @@ export class OnlineOrdersService {
     return this.http.post<ApproveOrderResult>(`${this.baseURL}/${orderId}/approve`, {}, { headers: this.headers() });
   }
 
-  reject(orderId: number): Observable<OrderQueueDto> {
-    return this.http.post<OrderQueueDto>(`${this.baseURL}/${orderId}/reject`, {}, { headers: this.headers() });
+  reject(orderId: number, reason?: string): Observable<OrderQueueDto> {
+    return this.http.post<OrderQueueDto>(`${this.baseURL}/${orderId}/reject`, { reason }, { headers: this.headers() });
   }
 
   reprintSlip(orderId: number, copy: 'customer' | 'kitchen'): Observable<{ printed: boolean }> {

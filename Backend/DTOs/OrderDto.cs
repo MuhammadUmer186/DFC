@@ -17,6 +17,9 @@ namespace RestaurantSystem.DTOs
 
         public int? CashierId { get; set; }
         public string? CashierName { get; set; }
+        public string? CashierUserName { get; set; }
+        public string? CancelledByUserName { get; set; }
+        public string? RejectReason { get; set; }
         public string? CustomerName { get; set; }
         public string? PhoneNumber { get; set; }
         public string? Address { get; set; }
@@ -110,6 +113,10 @@ namespace RestaurantSystem.DTOs
     public class UpdateDeliveryStatusRequest
     {
         public DeliveryStatus Status { get; set; }
+    }
+    public class RejectOrderRequest
+    {
+        public string? Reason { get; set; }
     }
 
 

@@ -37,7 +37,12 @@ export interface Order {
   takenByEmployeeName?: string;
   cashierId?: number;
   cashierName?: string;
+  cashierUserName?: string;
   cancelledByEmployeeName?: string;
+  cancelledByUserName?: string;
+  rejectReason?: string;
+  orderSource?: string;
+  deliveryStatus?: 'Approved' | 'Preparing' | 'Enroute' | 'Delivered' | 'Rejected' | null;
   items: OrderItem[];
   deals: OrderDeal[];
   totalQuantity: number;

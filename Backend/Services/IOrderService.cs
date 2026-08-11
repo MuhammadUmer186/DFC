@@ -11,7 +11,7 @@ namespace RestaurantSystem.Services
         Task<OrderDto> CreateOnlineOrderAsync(PublicOrderRequest request);
         Task<List<OrderDto>> GetPendingOnlineOrdersAsync();
         Task<ApproveOrderResult> ApproveOnlineOrderAsync(int orderId, ClaimsPrincipal userClaims);
-        Task<OrderDto> RejectOnlineOrderAsync(int orderId, ClaimsPrincipal userClaims);
+        Task<OrderDto> RejectOnlineOrderAsync(int orderId, string? reason, ClaimsPrincipal userClaims);
         Task<List<OrderDto>> GetActiveOnlineOrdersAsync();
         Task<OrderDto> UpdateDeliveryStatusAsync(int orderId, DeliveryStatus newStatus, ClaimsPrincipal userClaims);
         Task<OrderDto> AssignRiderAsync(int orderId, AssignRiderDto dto, ClaimsPrincipal userClaims);

@@ -15,10 +15,10 @@
           <th>Total Amount</th>
           <th>Total Quantity</th>
           <th>Date</th>
-          <th>Waiter</th>
+          <th>Source</th>
           <th>Cashier</th>
           <th>Status</th>
-          <th>Cancelled By</th>
+          <th>Reason</th>
         </tr>
       </thead>
       <tbody>
@@ -29,16 +29,28 @@
             <td>Rs {{ order.totalAmount }}</td>
             <td>{{ order.totalQuantity }}</td>
             <td>{{ order.createdAt | date:'medium' }}</td>
-            <td>{{ order.takenByEmployeeName || '-' }}</td>
-            <td>{{ order.cashierName || '-' }}</td>
             <td>
-              @if (order.paid) {
+              @if (order.orderSource === 'Online') {
+                <span class="dfc-badge dfc-badge-info">Online</span>
+              } @else {
+                <span class="dfc-badge dfc-badge-navy">Site</span>
+              }
+            </td>
+            <td>{{ (order.status === 3 ? order.cancelledByUserName : (order.cashierUserName || order.cashierName)) || '-' }}</td>
+            <td>
+              @if (order.status === 3) {
+                @if (order.deliveryStatus === 'Rejected') {
+                  <span class="dfc-badge dfc-badge-danger">Rejected</span>
+                } @else {
+                  <span class="dfc-badge dfc-badge-danger">Cancelled</span>
+                }
+              } @else if (order.paid) {
                 <span class="dfc-badge dfc-badge-success">Paid</span>
               } @else {
                 <span class="dfc-badge dfc-badge-danger">Unpaid</span>
               }
             </td>
-            <td>{{ order.cancelledByEmployeeName || '-' }}</td>
+            <td>{{ order.rejectReason || '-' }}</td>
           </tr>
 
           <!-- Expanded Row (Items & Deals) -->

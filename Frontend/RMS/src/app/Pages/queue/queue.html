@@ -73,19 +73,30 @@
                     <span class="dfc-badge dfc-badge-info">Online</span>
                     <span class="dfc-badge dfc-badge-navy">{{ serviceTypeLabel(order.serviceType) }}</span>
                     <div class="online-customer-info">{{ order.customerName }} — {{ order.address }}</div>
+                    @if (order.riderName) {
+                      <div class="online-customer-info"><i class="pi pi-car"></i> {{ order.riderName }}</div>
+                    }
                   } @else {
                     {{ order.takenByEmployeeName }}
                   }
                 </td>
                 <td>
-                  @if (order.paid) {
+                  @if (order.orderSource === 'Online' && order.deliveryStatus) {
+                    <span class="dfc-badge dfc-badge-amber">{{ order.deliveryStatus }}</span>
+                  } @else if (order.paid) {
                     <span class="dfc-badge dfc-badge-success">Paid</span>
                   } @else {
                     <span class="dfc-badge dfc-badge-amber">Queued</span>
                   }
                 </td>
                 <td class="actions">
-                  @if(!order.paid) {
+                  @if (order.orderSource === 'Online') {
+                    @if (nextStatus(order); as status) {
+                      <button class="dfc-btn dfc-btn-primary dfc-btn-sm" [disabled]="isBusy(order.id)" (click)="setDeliveryStatus(order, status); $event.stopPropagation()">
+                        Mark {{ status }}
+                      </button>
+                    }
+                  } @else if(!order.paid) {
                     <button class="dfc-btn dfc-btn-success dfc-btn-sm" (click)="confirmPay(order); $event.stopPropagation()"><i class="pi pi-check"></i> Pay &amp; Print</button>
                     <button class="dfc-btn dfc-btn-danger dfc-btn-sm" (click)="cancelOrder(order); $event.stopPropagation()"><i class="pi pi-times"></i> Cancel</button>
                   }

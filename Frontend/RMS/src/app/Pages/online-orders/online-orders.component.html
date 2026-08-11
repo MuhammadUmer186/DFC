@@ -295,7 +295,7 @@
               }
 
               <div class="ooc-actions">
-                @for (status of statusOptions(order); track status) {
+                @if (nextStatus(order); as status) {
                   <button class="dfc-btn dfc-btn-primary dfc-btn-sm" [disabled]="isBusy(order.id)" (click)="setDeliveryStatus(order, status)">
                     Mark {{ status }}
                   </button>

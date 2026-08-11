@@ -25,6 +25,12 @@ namespace RestaurantSystem.Models
         public Employee? Cashier { get; set; }
         public DateTime? CancelledAt { get; set; }
         public int? CancelledByEmployeeId { get; set; }
+        public string? CancelledByUserName { get; set; }
+        public string? RejectReason { get; set; }
+
+        // ✅ Login username of whoever finalized payment (works for Cashier employees
+        // and role-only accounts like Admin/SuperAdmin who have no Employee record)
+        public string? CashierUserName { get; set; }
 
         public string? CustomerName { get; set; }
         public string? PhoneNumber { get; set; }

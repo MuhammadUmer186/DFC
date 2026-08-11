@@ -100,11 +100,11 @@ namespace RestaurantSystem.Controllers
 
         [Authorize(Roles = "SuperAdmin,Admin,Cashier,MainAdmin")]
         [HttpPost("{id}/reject")]
-        public async Task<IActionResult> RejectOnlineOrder(int id)
+        public async Task<IActionResult> RejectOnlineOrder(int id, [FromBody] RejectOrderRequest? request)
         {
             try
             {
-                var result = await _service.RejectOnlineOrderAsync(id, User);
+                var result = await _service.RejectOnlineOrderAsync(id, request?.Reason, User);
                 return Ok(result);
             }
             catch (Exception ex)

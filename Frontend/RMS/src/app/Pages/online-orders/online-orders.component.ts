@@ -6,6 +6,7 @@ import { OrderQueueDto, OrderSignalRService } from '../../Services/order-signalr
 import { ToastService } from '../../Services/toast.service';
 import { RiderService } from '../../Services/rider.service';
 import { Rider } from '../../Models/rider.model';
+import { nextDeliveryStatus, DeliveryStatusValue } from '../../Services/delivery-status.util';
 
 interface RiderAssignmentDraft {
   riderId: number | null;
@@ -15,7 +16,6 @@ type ServiceTab = 'all' | 'delivery' | 'pickup';
 type StatusFilter = 'all' | 'pending' | 'riderAssigned';
 type SortOrder = 'newest' | 'oldest';
 type ViewMode = 'pending' | 'inProgress';
-type DeliveryStatusValue = 'Approved' | 'Preparing' | 'Enroute' | 'Delivered' | 'Rejected';
 
 @Component({
   selector: 'app-online-orders',
@@ -173,13 +173,9 @@ export class OnlineOrdersComponent implements OnDestroy {
     this.viewMode.set(mode);
   }
 
-  // Staff can move a delivery/pickup order freely between these — not strictly sequential,
-  // since real kitchens sometimes skip a stage (e.g. an instant order going straight to Enroute).
-  statusOptions(order: OrderQueueDto): DeliveryStatusValue[] {
-    const all: DeliveryStatusValue[] = this.isDelivery(order)
-      ? ['Preparing', 'Enroute', 'Delivered']
-      : ['Preparing', 'Delivered']; // pickup orders never go Enroute — no rider involved
-    return all.filter(s => s !== order.deliveryStatus);
+  // Fulfillment moves one step at a time — only the single next status is offered.
+  nextStatus(order: OrderQueueDto): DeliveryStatusValue | null {
+    return nextDeliveryStatus(order);
   }
 
   setDeliveryStatus(order: OrderQueueDto, status: DeliveryStatusValue) {
@@ -404,10 +400,11 @@ export class OnlineOrdersComponent implements OnDestroy {
   }
 
   reject(order: OrderQueueDto) {
-    if (!confirm(`Reject order #${order.id} from ${order.customerName || 'this customer'}?`)) return;
+    const reason = prompt(`Reject order #${order.id} from ${order.customerName || 'this customer'}?\nReason for rejection (optional):`);
+    if (reason === null) return; // cancelled the prompt
 
     this.setBusy(order.id, true);
-    this.onlineOrdersService.reject(order.id).subscribe({
+    this.onlineOrdersService.reject(order.id, reason.trim() || undefined).subscribe({
       next: () => {
         this.pendingOrders.update(list => list.filter(o => o.id !== order.id));
         this.setBusy(order.id, false);
