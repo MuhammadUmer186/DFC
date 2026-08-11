@@ -52,7 +52,9 @@
 
           <div class="dc-footer">
             <span>{{ order.totalQuantity }} item(s) — Rs {{ order.totalAmount }}</span>
-            <span class="dc-cost">Your cost: Rs {{ order.riderCost }}</span>
+            @if (order.riderCost != null) {
+              <span class="dc-cost">Your cost: Rs {{ order.riderCost }}</span>
+            }
           </div>
 
           @if (order.deliveryStatus === 'Enroute') {

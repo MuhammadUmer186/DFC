@@ -106,7 +106,6 @@ namespace RestaurantSystem.DTOs
     public class AssignRiderDto
     {
         public int RiderId { get; set; }
-        public decimal RiderCost { get; set; }
     }
     public class UpdateDeliveryStatusRequest
     {

@@ -18,8 +18,7 @@ export class RegisterComponent {
     userName: new FormControl('', [Validators.required, Validators.minLength(5)]),
     password: new FormControl('', [Validators.required, Validators.minLength(5)]),
     roles: new FormControl('', Validators.required),
-    employeeId: new FormControl(''),
-    riderId: new FormControl('')
+    employeeId: new FormControl('')
   });
 
   constructor(
@@ -27,10 +26,6 @@ export class RegisterComponent {
     private router: Router,
     private toast: ToastService
   ) {}
-
-  get isRiderRole(): boolean {
-    return this.userform.controls['roles'].value === 'Rider';
-  }
 
   get isAdminRole(): boolean {
     return this.userform.controls['roles'].value === 'Admin';
@@ -49,14 +44,7 @@ export class RegisterComponent {
       roles: this.userform.value.roles
     };
 
-    if (this.isRiderRole) {
-      const riderId = Number(this.userform.value.riderId);
-      if (!riderId) {
-        this.toast.error('Rider ID is required');
-        return;
-      }
-      payload.riderId = riderId;
-    } else if (!this.isAdminRole) {
+    if (!this.isAdminRole) {
       const employeeId = Number(this.userform.value.employeeId);
       if (!employeeId) {
         this.toast.error('Employee ID is required');

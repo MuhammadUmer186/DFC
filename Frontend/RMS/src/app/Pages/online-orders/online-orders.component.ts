@@ -9,7 +9,6 @@ import { Rider } from '../../Models/rider.model';
 
 interface RiderAssignmentDraft {
   riderId: number | null;
-  cost: number | null;
 }
 
 type ServiceTab = 'all' | 'delivery' | 'pickup';
@@ -140,7 +139,7 @@ export class OnlineOrdersComponent implements OnDestroy {
       const updated = this.orderSignalR.riderAssigned();
       if (!updated) return;
       this.pendingOrders.update(list => list.map(o =>
-        o.id === updated.id ? { ...o, riderId: updated.riderId, riderName: updated.riderName, riderCost: updated.riderCost } : o
+        o.id === updated.id ? { ...o, riderId: updated.riderId, riderName: updated.riderName } : o
       ));
     });
 
@@ -329,7 +328,7 @@ export class OnlineOrdersComponent implements OnDestroy {
   private draft(orderId: number): RiderAssignmentDraft {
     let d = this.assignDrafts.get(orderId);
     if (!d) {
-      d = { riderId: null, cost: null };
+      d = { riderId: null };
       this.assignDrafts.set(orderId, d);
     }
     return d;
@@ -343,14 +342,6 @@ export class OnlineOrdersComponent implements OnDestroy {
     this.draft(order.id).riderId = value ? Number(value) : null;
   }
 
-  getDraftCost(order: OrderQueueDto): number | null {
-    return this.draft(order.id).cost;
-  }
-
-  setDraftCost(order: OrderQueueDto, value: string) {
-    this.draft(order.id).cost = value ? Number(value) : null;
-  }
-
   isEditingRider(order: OrderQueueDto): boolean {
     return !order.riderId || this.editingRiderIds().has(order.id);
   }
@@ -361,16 +352,12 @@ export class OnlineOrdersComponent implements OnDestroy {
       this.toast.error('Select a rider first');
       return;
     }
-    if (d.cost == null || d.cost < 0) {
-      this.toast.error('Enter the rider cost for this delivery');
-      return;
-    }
 
     this.setBusy(order.id, true);
-    this.onlineOrdersService.assignRider(order.id, d.riderId, d.cost).subscribe({
+    this.onlineOrdersService.assignRider(order.id, d.riderId).subscribe({
       next: (updated) => {
         this.pendingOrders.update(list => list.map(o =>
-          o.id === order.id ? { ...o, riderId: updated.riderId, riderName: updated.riderName, riderCost: updated.riderCost } : o
+          o.id === order.id ? { ...o, riderId: updated.riderId, riderName: updated.riderName } : o
         ));
         this.assignDrafts.delete(order.id);
         this.editingRiderIds.update(set => {
@@ -389,7 +376,7 @@ export class OnlineOrdersComponent implements OnDestroy {
   }
 
   changeRider(order: OrderQueueDto) {
-    this.assignDrafts.set(order.id, { riderId: order.riderId ?? null, cost: order.riderCost ?? null });
+    this.assignDrafts.set(order.id, { riderId: order.riderId ?? null });
     this.editingRiderIds.update(set => new Set(set).add(order.id));
   }
 

@@ -146,14 +146,6 @@
                         <option [value]="r.id">{{ r.name }} ({{ r.phoneNumber }})</option>
                       }
                     </select>
-                    <input
-                      type="number"
-                      min="0"
-                      class="dfc-input"
-                      placeholder="Rider cost (Rs)"
-                      [value]="getDraftCost(order) ?? ''"
-                      (input)="setDraftCost(order, $any($event.target).value)"
-                    />
                     <button class="dfc-btn dfc-btn-primary dfc-btn-sm" [disabled]="isBusy(order.id)" (click)="assignRider(order)">
                       <i class="pi pi-car"></i> Allot Rider
                     </button>
@@ -164,7 +156,7 @@
                       <i class="pi pi-car"></i>
                       <div>
                         <span class="ooc-rider-caption">Rider</span>
-                        <span class="ooc-rider-name">{{ order.riderName }} — Rs {{ order.riderCost }}</span>
+                        <span class="ooc-rider-name">{{ order.riderName }}</span>
                       </div>
                     </div>
                     <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" (click)="changeRider(order)">

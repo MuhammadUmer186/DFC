@@ -1,7 +1,7 @@
 <div class="signup-screen">
   <div class="signup-card">
     <h2><i class="pi pi-user-plus" style="color: var(--dfc-amber-600); margin-right: 8px;"></i>Create an Account</h2>
-    <p class="signup-subtitle">Register a new staff login (Admin, Cashier, Waiter, Store Keeper or Rider)</p>
+    <p class="signup-subtitle">Register a new staff login (Admin, Cashier, Waiter or Store Keeper). Riders are created from the Riders page.</p>
 
     <form (ngSubmit)="OnUserSave()" [formGroup]="userform">
 
@@ -33,7 +33,6 @@
           <option value="Cashier">Cashier</option>
           <option value="Waiter">Waiter</option>
           <option value="StoreKeeper">StoreKeeper</option>
-          <option value="Rider">Rider</option>
         </select>
         @if(userform.controls["roles"].touched){
           <div class="dfc-field-error">
@@ -44,12 +43,7 @@
         }
       </div>
 
-      @if (isRiderRole) {
-        <div class="dfc-field">
-          <label>Rider ID</label>
-          <input class="dfc-input" type="number" formControlName="riderId" placeholder="Enter Rider ID (from the Riders page)">
-        </div>
-      } @else if (!isAdminRole) {
+      @if (!isAdminRole) {
         <div class="dfc-field">
           <label>Employee ID</label>
           <input class="dfc-input" type="number" formControlName="employeeId" placeholder="Enter Employee ID">

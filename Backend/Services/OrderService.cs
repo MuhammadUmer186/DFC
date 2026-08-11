@@ -155,14 +155,14 @@ namespace RestaurantSystem.Services
             var userRole = userClaims.FindFirst(ClaimTypes.Role)?.Value;
             var employeeIdClaim = userClaims.FindFirst("EmployeeId")?.Value;
 
-            var allowedRoles = new[] { "Waiter", "Cashier", "Admin", "MainAdmin" };
+            var allowedRoles = new[] { "Waiter", "Cashier", "Admin", "MainAdmin", "SuperAdmin" };
 
             if (!allowedRoles.Contains(userRole))
                 throw new Exception("Invalid or unauthorized user");
             int? takenByEmployeeId = null;
 
             // Admin does not need employee id
-            if (userRole != "Admin" && userRole != "MainAdmin")
+            if (userRole != "Admin" && userRole != "MainAdmin" && userRole != "SuperAdmin")
             {
                 if (string.IsNullOrEmpty(employeeIdClaim))
                     throw new Exception("EmployeeId missing in token");
@@ -551,7 +551,7 @@ namespace RestaurantSystem.Services
         public async Task<ApproveOrderResult> ApproveOnlineOrderAsync(int orderId, ClaimsPrincipal userClaims)
         {
             var role = userClaims.FindFirst(ClaimTypes.Role)?.Value;
-            if (role != "Cashier" && role != "Admin" && role != "MainAdmin")
+            if (role != "Cashier" && role != "Admin" && role != "MainAdmin" && role != "SuperAdmin")
                 throw new Exception("Only cashier or admin can approve orders");
 
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -600,10 +600,10 @@ namespace RestaurantSystem.Services
             var role = userClaims.FindFirst(ClaimTypes.Role)?.Value;
             var employeeIdClaim = userClaims.FindFirst("EmployeeId")?.Value;
 
-            if (role != "Cashier" && role != "Admin" && role != "MainAdmin")
+            if (role != "Cashier" && role != "Admin" && role != "MainAdmin" && role != "SuperAdmin")
                 throw new Exception("Only cashier or admin can reject orders");
 
-            bool isAdmin = role == "Admin" || role == "MainAdmin";
+            bool isAdmin = role == "Admin" || role == "MainAdmin" || role == "SuperAdmin";
 
             if (!isAdmin && string.IsNullOrEmpty(employeeIdClaim))
                 throw new Exception("EmployeeId missing in token");
@@ -675,11 +675,8 @@ namespace RestaurantSystem.Services
         public async Task<OrderDto> AssignRiderAsync(int orderId, AssignRiderDto dto, ClaimsPrincipal userClaims)
         {
             var role = userClaims.FindFirst(ClaimTypes.Role)?.Value;
-            if (role != "Cashier" && role != "Admin" && role != "MainAdmin")
+            if (role != "Cashier" && role != "Admin" && role != "MainAdmin" && role != "SuperAdmin")
                 throw new Exception("Only cashier or admin can assign a rider");
-
-            if (dto.RiderCost < 0)
-                throw new Exception("Rider cost cannot be negative");
 
             var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
             if (order == null)
@@ -695,7 +692,6 @@ namespace RestaurantSystem.Services
                 throw new Exception("This rider is not active");
 
             order.RiderId = dto.RiderId;
-            order.RiderCost = dto.RiderCost;
 
             await _context.SaveChangesAsync();
 
@@ -837,13 +833,13 @@ namespace RestaurantSystem.Services
             var role = userClaims.FindFirst(ClaimTypes.Role)?.Value;
             var employeeIdClaim = userClaims.FindFirst("EmployeeId")?.Value;
 
-            if (role != "Cashier" && role != "Admin" && role != "MainAdmin")
+            if (role != "Cashier" && role != "Admin" && role != "MainAdmin" && role != "SuperAdmin")
                 throw new Exception("Only cashier or admin can pay orders");
 
-            if (role != "Admin" && role != "MainAdmin" && string.IsNullOrEmpty(employeeIdClaim))
+            if (role != "Admin" && role != "MainAdmin" && role != "SuperAdmin" && string.IsNullOrEmpty(employeeIdClaim))
                 throw new Exception("EmployeeId missing in token");
 
-            int? cashierId = (role == "Admin" || role == "MainAdmin")
+            int? cashierId = (role == "Admin" || role == "MainAdmin" || role == "SuperAdmin")
                  ? null
                     : int.Parse(employeeIdClaim);
 
@@ -939,12 +935,12 @@ namespace RestaurantSystem.Services
             var role = userClaims.FindFirst(ClaimTypes.Role)?.Value;
             var employeeIdClaim = userClaims.FindFirst("EmployeeId")?.Value;
 
-            var allowedRoles = new[] { "Waiter", "Cashier", "Admin", "MainAdmin" };
+            var allowedRoles = new[] { "Waiter", "Cashier", "Admin", "MainAdmin", "SuperAdmin" };
 
             if (!allowedRoles.Contains(role))
                 throw new Exception("Unauthorized user");
 
-            bool isAdmin = role == "Admin" || role == "MainAdmin";
+            bool isAdmin = role == "Admin" || role == "MainAdmin" || role == "SuperAdmin";
 
             if (!isAdmin && string.IsNullOrEmpty(employeeIdClaim))
                 throw new Exception("EmployeeId missing in token");

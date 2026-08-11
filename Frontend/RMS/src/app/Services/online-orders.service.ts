@@ -46,7 +46,7 @@ export class OnlineOrdersService {
     return this.http.post<{ printed: boolean }>(`${this.baseURL}/${orderId}/reprint-delivery-slip?copy=${copy}`, {}, { headers: this.headers() });
   }
 
-  assignRider(orderId: number, riderId: number, riderCost: number): Observable<OrderQueueDto> {
-    return this.http.post<OrderQueueDto>(`${this.baseURL}/${orderId}/assign-rider`, { riderId, riderCost }, { headers: this.headers() });
+  assignRider(orderId: number, riderId: number): Observable<OrderQueueDto> {
+    return this.http.post<OrderQueueDto>(`${this.baseURL}/${orderId}/assign-rider`, { riderId }, { headers: this.headers() });
   }
 }
