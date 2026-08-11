@@ -5,5 +5,7 @@ namespace RestaurantSystem.Models
         public int Id { get; set; }
         public string? HeroImageUrl { get; set; }
         public string? WhatsAppNumber { get; set; }
+        public string? RestaurantName { get; set; }
+        public string? LogoUrl { get; set; }
     }
 }

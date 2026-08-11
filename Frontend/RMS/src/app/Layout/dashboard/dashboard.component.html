@@ -10,46 +10,6 @@
 
   <app-date-range-filter (rangeChange)="onRangeChange($event)"></app-date-range-filter>
 
-  @if(periodSummary()) {
-    <h3 class="dfc-section-title" style="margin-top: 18px;">{{ selectedRangeLabel() }} Summary</h3>
-    <div class="kpi-grid">
-      <div class="kpi-card kpi-success">
-        <div class="kpi-card-head">
-          <span class="kpi-icon"><i class="pi pi-money-bill"></i></span>
-          <h4>Sales &amp; Costs</h4>
-        </div>
-        <div class="kpi-row"><span>Sales</span> <strong>Rs {{ periodSummary().sales }}</strong></div>
-        <div class="kpi-row"><span>Purchases</span> <strong>Rs {{ periodSummary().purchaseOrdersCost }}</strong></div>
-        <div class="kpi-row"><span>Kitchen Cost</span> <strong>Rs {{ periodSummary().kitchenCost }}</strong></div>
-        <div class="kpi-row"><span>Waste</span> <strong>Rs {{ periodSummary().wasteCost }}</strong></div>
-      </div>
-
-      <div class="kpi-card kpi-profit">
-        <div class="kpi-card-head">
-          <span class="kpi-icon"><i class="pi pi-chart-line"></i></span>
-          <h4>Profit</h4>
-        </div>
-        <div class="kpi-row"><span>Salary Paid</span> <strong>Rs {{ periodSummary().salaryPaid }}</strong></div>
-        <div class="kpi-row"><span>Vendor Payments</span> <strong>Rs {{ periodSummary().vendorPayments }}</strong></div>
-        <div class="kpi-row"><span>Net Profit</span> <strong>Rs {{ periodSummary().profit | number:'1.0-2' }}</strong></div>
-      </div>
-
-      <div class="kpi-card kpi-info">
-        <div class="kpi-card-head">
-          <span class="kpi-icon"><i class="pi pi-shopping-cart"></i></span>
-          <h4>Activity</h4>
-        </div>
-        <div class="kpi-row"><span>Orders</span> <strong>{{ periodSummary().orders?.length || 0 }}</strong></div>
-        <div class="kpi-row"><span>Purchase Orders</span> <strong>{{ periodSummary().purchaseOrders?.length || 0 }}</strong></div>
-        <div class="kpi-row"><span>Kitchen Outs</span> <strong>{{ periodSummary().kitchenOuts?.length || 0 }}</strong></div>
-      </div>
-    </div>
-  }
-
-  @if(loading()){
-    <div class="loading-state"><i class="pi pi-spin pi-spinner"></i> Loading dashboard…</div>
-  }
-
   @if(lowStock().length > 0){
     <div class="ticker ticker-danger">
       <div class="ticker-track">
@@ -79,6 +39,50 @@
     </div>
   }
 
+  @if(periodSummary()) {
+    <h3 class="dfc-section-title" style="margin-top: 18px;">{{ selectedRangeLabel() }} Summary</h3>
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-success">
+        <div class="kpi-card-head">
+          <span class="kpi-icon"><i class="pi pi-money-bill"></i></span>
+          <h4>Sales &amp; Costs</h4>
+        </div>
+        <div class="kpi-row"><span>Sales (United)</span> <strong>Rs {{ periodSummary().sales }}</strong></div>
+        <div class="kpi-row"><span>— Online</span> <strong>Rs {{ periodSummary().onlineSales }}</strong></div>
+        <div class="kpi-row"><span>— Site</span> <strong>Rs {{ periodSummary().siteSales }}</strong></div>
+        <div class="kpi-row"><span>Purchases</span> <strong>Rs {{ periodSummary().purchaseOrdersCost }}</strong></div>
+        <div class="kpi-row"><span>Kitchen Cost</span> <strong>Rs {{ periodSummary().kitchenCost }}</strong></div>
+        <div class="kpi-row"><span>Waste</span> <strong>Rs {{ periodSummary().wasteCost }}</strong></div>
+      </div>
+
+      <div class="kpi-card kpi-profit">
+        <div class="kpi-card-head">
+          <span class="kpi-icon"><i class="pi pi-chart-line"></i></span>
+          <h4>Profit</h4>
+        </div>
+        <div class="kpi-row"><span>Salary Paid</span> <strong>Rs {{ periodSummary().salaryPaid }}</strong></div>
+        <div class="kpi-row"><span>Vendor Payments</span> <strong>Rs {{ periodSummary().vendorPayments }}</strong></div>
+        <div class="kpi-row"><span>Net Profit</span> <strong>Rs {{ periodSummary().profit | number:'1.0-2' }}</strong></div>
+      </div>
+
+      <div class="kpi-card kpi-info">
+        <div class="kpi-card-head">
+          <span class="kpi-icon"><i class="pi pi-shopping-cart"></i></span>
+          <h4>Activity</h4>
+        </div>
+        <div class="kpi-row"><span>Orders (United)</span> <strong>{{ periodSummary().orders?.length || 0 }}</strong></div>
+        <div class="kpi-row"><span>— Online</span> <strong>{{ countBySource(periodSummary().orders, 'Online') }}</strong></div>
+        <div class="kpi-row"><span>— Site</span> <strong>{{ countBySource(periodSummary().orders, 'Site') }}</strong></div>
+        <div class="kpi-row"><span>Purchase Orders</span> <strong>{{ periodSummary().purchaseOrders?.length || 0 }}</strong></div>
+        <div class="kpi-row"><span>Kitchen Outs</span> <strong>{{ periodSummary().kitchenOuts?.length || 0 }}</strong></div>
+      </div>
+    </div>
+  }
+
+  @if(loading()){
+    <div class="loading-state"><i class="pi pi-spin pi-spinner"></i> Loading dashboard…</div>
+  }
+
   <!-- ================= MAIN SUMMARY CARDS ================= -->
   @if(mainSummary())
 {
@@ -92,7 +96,13 @@
         <h4>Sales &amp; Expenses</h4>
       </div>
       <div class="kpi-row">
-        <span>Today Sales</span> <strong>Rs {{ mainSummary().todaySales }}</strong>
+        <span>Today Sales (United)</span> <strong>Rs {{ mainSummary().todaySales }}</strong>
+      </div>
+      <div class="kpi-row">
+        <span>— Online</span> <strong>Rs {{ mainSummary().todayOnlineSales }}</strong>
+      </div>
+      <div class="kpi-row">
+        <span>— Site</span> <strong>Rs {{ mainSummary().todaySiteSales }}</strong>
       </div>
       <div class="kpi-row">
         <span>Today Purchases</span> <strong>Rs {{ mainSummary().todayPurchases }}</strong>
@@ -162,13 +172,31 @@
         <h4>Orders &amp; Utility</h4>
       </div>
       <div class="kpi-row">
-        <span>Today's Orders</span> <strong>{{ orderCountSummary()?.todayOrders }}</strong>
+        <span>Today's Orders (United)</span> <strong>{{ orderCountSummary()?.todayOrders }}</strong>
       </div>
       <div class="kpi-row">
-        <span>Weekly Orders</span> <strong>{{ orderCountSummary()?.weeklyOrders }}</strong>
+        <span>— Online</span> <strong>{{ orderCountSummary()?.todayOnlineOrders }}</strong>
       </div>
       <div class="kpi-row">
-        <span>Monthly Orders</span> <strong>{{ orderCountSummary()?.monthlyOrders }}</strong>
+        <span>— Site</span> <strong>{{ orderCountSummary()?.todaySiteOrders }}</strong>
+      </div>
+      <div class="kpi-row">
+        <span>Weekly Orders (United)</span> <strong>{{ orderCountSummary()?.weeklyOrders }}</strong>
+      </div>
+      <div class="kpi-row">
+        <span>— Online</span> <strong>{{ orderCountSummary()?.weeklyOnlineOrders }}</strong>
+      </div>
+      <div class="kpi-row">
+        <span>— Site</span> <strong>{{ orderCountSummary()?.weeklySiteOrders }}</strong>
+      </div>
+      <div class="kpi-row">
+        <span>Monthly Orders (United)</span> <strong>{{ orderCountSummary()?.monthlyOrders }}</strong>
+      </div>
+      <div class="kpi-row">
+        <span>— Online</span> <strong>{{ orderCountSummary()?.monthlyOnlineOrders }}</strong>
+      </div>
+      <div class="kpi-row">
+        <span>— Site</span> <strong>{{ orderCountSummary()?.monthlySiteOrders }}</strong>
       </div>
       <div class="kpi-row">
         <span>Monthly Utility Bills</span> <strong>Rs {{ utility()?.monthlyUtilityBills }}</strong>

@@ -11,7 +11,7 @@ export class SiteSettingService {
 
   get() {
     const reqHeader = new HttpHeaders({ 'Authorization': 'Bearer ' + this.authservice.gettoken() });
-    return this.http.get<{ heroImageUrl: string | null; whatsAppNumber: string | null }>(this.api, { headers: reqHeader });
+    return this.http.get<{ heroImageUrl: string | null; whatsAppNumber: string | null; restaurantName: string | null; logoUrl: string | null }>(this.api, { headers: reqHeader });
   }
 
   uploadHeroImage(file: File) {
@@ -24,5 +24,17 @@ export class SiteSettingService {
   updateWhatsAppNumber(whatsAppNumber: string) {
     const reqHeader = new HttpHeaders({ 'Authorization': 'Bearer ' + this.authservice.gettoken() });
     return this.http.put<{ whatsAppNumber: string | null }>(`${this.api}/whatsapp-number`, { whatsAppNumber }, { headers: reqHeader });
+  }
+
+  updateRestaurantName(restaurantName: string) {
+    const reqHeader = new HttpHeaders({ 'Authorization': 'Bearer ' + this.authservice.gettoken() });
+    return this.http.put<{ restaurantName: string | null }>(`${this.api}/restaurant-name`, { restaurantName }, { headers: reqHeader });
+  }
+
+  uploadLogo(file: File) {
+    const reqHeader = new HttpHeaders({ 'Authorization': 'Bearer ' + this.authservice.gettoken() });
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ logoUrl: string }>(`${this.api}/logo`, formData, { headers: reqHeader });
   }
 }

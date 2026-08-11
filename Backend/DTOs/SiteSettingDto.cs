@@ -4,4 +4,8 @@ namespace RestaurantSystem.DTOs
     {
         public string? WhatsAppNumber { get; set; }
     }
+    public class UpdateRestaurantNameDto
+    {
+        public string? RestaurantName { get; set; }
+    }
 }

@@ -160,6 +160,14 @@ namespace RestaurantSystem.Services
                 .Where(o => o.CreatedAt >= todayStart && o.CreatedAt < todayEnd)
                 .SumAsync(o => (decimal?)o.TotalAmount) ?? 0,
 
+            TodayOnlineSales = await _context.Orders
+                .Where(o => o.CreatedAt >= todayStart && o.CreatedAt < todayEnd && o.OrderSource == "Online")
+                .SumAsync(o => (decimal?)o.TotalAmount) ?? 0,
+
+            TodaySiteSales = await _context.Orders
+                .Where(o => o.CreatedAt >= todayStart && o.CreatedAt < todayEnd && o.OrderSource != "Online")
+                .SumAsync(o => (decimal?)o.TotalAmount) ?? 0,
+
             TodayPurchases = await _context.PurchaseOrders
                 .Where(p => p.PurchaseDate >= todayStart && p.PurchaseDate < todayEnd)
                 .SumAsync(p => (decimal?)p.TotalAmount) ?? 0
@@ -337,7 +345,22 @@ public async Task<OrderCountSummaryDto> GetOrderCountSummaryAsync()
                 .CountAsync(o => o.CreatedAt >= weekStartStart && o.CreatedAt < todayEnd),
 
             MonthlyOrders = await _context.Orders
-                .CountAsync(o => o.CreatedAt >= monthStartStart && o.CreatedAt < todayEnd)
+                .CountAsync(o => o.CreatedAt >= monthStartStart && o.CreatedAt < todayEnd),
+
+            TodayOnlineOrders = await _context.Orders
+                .CountAsync(o => o.CreatedAt >= todayStart && o.CreatedAt < todayEnd && o.OrderSource == "Online"),
+            TodaySiteOrders = await _context.Orders
+                .CountAsync(o => o.CreatedAt >= todayStart && o.CreatedAt < todayEnd && o.OrderSource != "Online"),
+
+            WeeklyOnlineOrders = await _context.Orders
+                .CountAsync(o => o.CreatedAt >= weekStartStart && o.CreatedAt < todayEnd && o.OrderSource == "Online"),
+            WeeklySiteOrders = await _context.Orders
+                .CountAsync(o => o.CreatedAt >= weekStartStart && o.CreatedAt < todayEnd && o.OrderSource != "Online"),
+
+            MonthlyOnlineOrders = await _context.Orders
+                .CountAsync(o => o.CreatedAt >= monthStartStart && o.CreatedAt < todayEnd && o.OrderSource == "Online"),
+            MonthlySiteOrders = await _context.Orders
+                .CountAsync(o => o.CreatedAt >= monthStartStart && o.CreatedAt < todayEnd && o.OrderSource != "Online")
         };
     }
 

@@ -131,6 +131,18 @@ namespace RestaurantSystem.DTOs
         public int TodayOrders { get; set; }
         public int WeeklyOrders { get; set; }
         public int MonthlyOrders { get; set; }
+
+        public int TodayOnlineOrders { get; set; }
+        public int TodaySiteOrders { get; set; }
+        public int WeeklyOnlineOrders { get; set; }
+        public int WeeklySiteOrders { get; set; }
+        public int MonthlyOnlineOrders { get; set; }
+        public int MonthlySiteOrders { get; set; }
+    }
+    public class TodayOnlineSummaryDto
+    {
+        public int OrderCount { get; set; }
+        public decimal Sales { get; set; }
     }
     public class PagedResult<T>
     {

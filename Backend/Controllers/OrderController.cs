@@ -84,6 +84,13 @@ namespace RestaurantSystem.Controllers
         }
 
         [Authorize(Roles = "SuperAdmin,Admin,Cashier,MainAdmin")]
+        [HttpGet("today-online-summary")]
+        public async Task<IActionResult> GetTodayOnlineSummary()
+        {
+            return Ok(await _service.GetTodayOnlineSummaryAsync());
+        }
+
+        [Authorize(Roles = "SuperAdmin,Admin,Cashier,MainAdmin")]
         [HttpPost("{id}/approve")]
         public async Task<IActionResult> ApproveOnlineOrder(int id)
         {

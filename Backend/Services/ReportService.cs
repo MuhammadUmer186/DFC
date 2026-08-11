@@ -109,6 +109,16 @@ namespace RestaurantSystem.Services
                 .Where(o => o.CreatedAt >= start && o.CreatedAt < end && o.Status == OrderStatus.Paid)
                 .SumAsync(o => (decimal?)o.TotalAmount) ?? 0;
 
+            report.OnlineSales = await _context.Orders
+                .Where(o => o.CreatedAt >= start && o.CreatedAt < end && o.Status == OrderStatus.Paid && o.OrderSource == "Online")
+                .SumAsync(o => (decimal?)o.TotalAmount) ?? 0;
+            report.SiteSales = report.Sales - report.OnlineSales;
+
+            report.OnlineOrderCount = await _context.Orders
+                .CountAsync(o => o.CreatedAt >= start && o.CreatedAt < end && o.Status == OrderStatus.Paid && o.OrderSource == "Online");
+            report.SiteOrderCount = await _context.Orders
+                .CountAsync(o => o.CreatedAt >= start && o.CreatedAt < end && o.Status == OrderStatus.Paid && o.OrderSource != "Online");
+
             // ================= PURCHASE ORDERS =================
             report.PurchaseOrdersCost = await _context.PurchaseOrders
                 .Where(p => p.PurchaseDate >= start && p.PurchaseDate <= end)
@@ -188,6 +198,16 @@ namespace RestaurantSystem.Services
             report.Sales = await _context.Orders
                 .Where(o => o.CreatedAt >= start && o.CreatedAt < end && o.Status == OrderStatus.Paid)
                 .SumAsync(o => (decimal?)o.TotalAmount) ?? 0;
+
+            report.OnlineSales = await _context.Orders
+                .Where(o => o.CreatedAt >= start && o.CreatedAt < end && o.Status == OrderStatus.Paid && o.OrderSource == "Online")
+                .SumAsync(o => (decimal?)o.TotalAmount) ?? 0;
+            report.SiteSales = report.Sales - report.OnlineSales;
+
+            report.OnlineOrderCount = await _context.Orders
+                .CountAsync(o => o.CreatedAt >= start && o.CreatedAt < end && o.Status == OrderStatus.Paid && o.OrderSource == "Online");
+            report.SiteOrderCount = await _context.Orders
+                .CountAsync(o => o.CreatedAt >= start && o.CreatedAt < end && o.Status == OrderStatus.Paid && o.OrderSource != "Online");
 
             // ================= PURCHASE ORDERS =================
             report.PurchaseOrdersCost = await _context.PurchaseOrders

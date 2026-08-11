@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, effect } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 import { CartService } from './services/cart.service';
 import { LocationPickerModalComponent } from './components/location-picker-modal/location-picker-modal.component';
 import { WhatsappFloatComponent } from './components/whatsapp-float/whatsapp-float.component';
+import { SiteSettingService } from './services/site-setting.service';
 
 @Component({
   selector: 'app-root',
@@ -11,5 +13,9 @@ import { WhatsappFloatComponent } from './components/whatsapp-float/whatsapp-flo
   styleUrl: './app.css'
 })
 export class App {
-  constructor(public cart: CartService) {}
+  constructor(public cart: CartService, public siteSettings: SiteSettingService, private titleService: Title) {
+    effect(() => {
+      this.titleService.setTitle(`${this.siteSettings.restaurantName()} — Order Online`);
+    });
+  }
 }

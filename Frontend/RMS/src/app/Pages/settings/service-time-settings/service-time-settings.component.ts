@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { ServiceTimeSetting } from '../../../Models/service-time-setting.model';
 import { ServiceTimeSettingService } from '../../../Services/service-time-setting.service';
 import { SiteSettingService } from '../../../Services/site-setting.service';
+import { BrandingService } from '../../../Services/branding.service';
 import { ToastService } from '../../../Services/toast.service';
 import { environment } from '../../../../environments/environment';
 
@@ -28,11 +29,17 @@ export class ServiceTimeSettingsComponent implements OnInit {
   whatsAppNumber = signal('');
   savingWhatsApp = signal(false);
 
+  restaurantName = signal('');
+  savingRestaurantName = signal(false);
+  logoUrl = signal<string | null>(null);
+  uploadingLogo = signal(false);
+
   editValues = new Map<string, { min: number; max: number; enabled: boolean }>();
 
   constructor(
     private service: ServiceTimeSettingService,
     private siteSettingService: SiteSettingService,
+    private branding: BrandingService,
     private toast: ToastService
   ) {}
 
@@ -48,6 +55,8 @@ export class ServiceTimeSettingsComponent implements OnInit {
       next: (res) => {
         this.heroImageUrl.set(res.heroImageUrl);
         this.whatsAppNumber.set(res.whatsAppNumber ?? '');
+        this.restaurantName.set(res.restaurantName ?? '');
+        this.logoUrl.set(res.logoUrl);
       },
       error: (err) => this.handleLoadError(err)
     });
@@ -68,6 +77,65 @@ export class ServiceTimeSettingsComponent implements OnInit {
       error: (err) => {
         this.savingWhatsApp.set(false);
         this.toast.error(err?.error || 'Failed to update WhatsApp number');
+      }
+    });
+  }
+
+  setRestaurantName(value: string) {
+    this.restaurantName.set(value);
+  }
+
+  saveRestaurantName() {
+    const name = this.restaurantName().trim();
+    if (!name) {
+      this.toast.error('Restaurant name is required');
+      return;
+    }
+    this.savingRestaurantName.set(true);
+    this.siteSettingService.updateRestaurantName(name).subscribe({
+      next: (res) => {
+        this.restaurantName.set(res.restaurantName ?? '');
+        this.savingRestaurantName.set(false);
+        this.toast.success('Restaurant name updated');
+        this.branding.restaurantName.set(res.restaurantName ?? name);
+      },
+      error: (err) => {
+        this.savingRestaurantName.set(false);
+        this.toast.error(err?.error || 'Failed to update restaurant name');
+      }
+    });
+  }
+
+  fullLogoUrl(): string | null {
+    const url = this.logoUrl();
+    return url ? `${environment.apihub}${url}` : null;
+  }
+
+  onLogoFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const maxBytes = 5 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      this.toast.error(`Image is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Please use a file under 5 MB.`);
+      input.value = '';
+      return;
+    }
+
+    this.uploadingLogo.set(true);
+    this.siteSettingService.uploadLogo(file).subscribe({
+      next: (res) => {
+        this.logoUrl.set(res.logoUrl);
+        this.uploadingLogo.set(false);
+        this.toast.success('Logo updated');
+        this.branding.logoUrl.set(`${environment.apihub}${res.logoUrl}`);
+        input.value = '';
+      },
+      error: (err) => {
+        this.uploadingLogo.set(false);
+        this.toast.error(this.describeUploadError(err));
+        input.value = '';
       }
     });
   }

@@ -10,6 +10,12 @@ namespace RestaurantSystem.DTOs
         [Precision(18, 2)]
         public decimal Sales { get; set; }
         [Precision(18, 2)]
+        public decimal OnlineSales { get; set; }
+        [Precision(18, 2)]
+        public decimal SiteSales { get; set; }
+        public int OnlineOrderCount { get; set; }
+        public int SiteOrderCount { get; set; }
+        [Precision(18, 2)]
         public decimal PurchaseOrdersCost { get; set; }
         [Precision(18, 2)]
         public decimal KitchenCost { get; set; }

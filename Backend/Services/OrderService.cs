@@ -891,6 +891,30 @@ namespace RestaurantSystem.Services
             return orderDtos;
         }
 
+        // Powers the Online Orders page's "Today's Online Sales" stat card — deliberately counts
+        // every online order placed today regardless of status (except Rejected/Cancelled, which
+        // never became real sales), not just the still-pending ones, since pending orders get
+        // approved quickly and a pending-only figure would almost always read close to zero.
+        public async Task<TodayOnlineSummaryDto> GetTodayOnlineSummaryAsync()
+        {
+            var today = BusinessDayHelper.GetBusinessToday();
+            var start = BusinessDayHelper.GetStart(today);
+            var end = BusinessDayHelper.GetEnd(today);
+
+            var orders = await _context.Orders
+                .Where(o => o.OrderSource == "Online"
+                    && o.CreatedAt >= start && o.CreatedAt < end
+                    && o.Status != OrderStatus.Cancelled)
+                .AsNoTracking()
+                .ToListAsync();
+
+            return new TodayOnlineSummaryDto
+            {
+                OrderCount = orders.Count,
+                Sales = orders.Sum(o => o.TotalAmount)
+            };
+        }
+
 
         public async Task<OrderDto> PayOrderAsync(
     PayOrderRequest request,

@@ -5,8 +5,8 @@
     </button>
 
     <div class="brand-inline">
-      <img src="assets/DFC.jpg" alt="DFC" class="brand-inline-logo" />
-      <span class="brand-inline-text">Data Finger Chips</span>
+      <img [src]="branding.logoUrl() || 'assets/DFC.jpg'" [alt]="branding.restaurantName()" class="brand-inline-logo" />
+      <span class="brand-inline-text">{{ branding.restaurantName() }}</span>
     </div>
   </div>
 

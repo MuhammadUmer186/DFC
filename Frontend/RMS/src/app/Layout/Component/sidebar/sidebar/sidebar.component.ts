@@ -5,6 +5,7 @@ import { forkJoin } from 'rxjs';
 import { AuthService } from '../../../../Services/auth.service';
 import { DashboardService } from '../../../../Services/dashboard.service';
 import { OrderSignalRService } from '../../../../Services/order-signalr';
+import { BrandingService } from '../../../../Services/branding.service';
 
 interface TodaySummary {
   orders: number;
@@ -34,8 +35,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
   constructor(
     private auth: AuthService,
     private dashboardService: DashboardService,
-    private orderSignalR: OrderSignalRService
+    private orderSignalR: OrderSignalRService,
+    public branding: BrandingService
   ) {
+    this.branding.load();
     // The sidebar stays mounted for the whole session (it's outside the router-outlet),
     // so without this it would load Today's Summary once at login and never again —
     // every order taken/paid/approved anywhere in the app would look stale until a hard

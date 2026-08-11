@@ -26,6 +26,10 @@ export class OnlineOrdersService {
     return this.http.get<OrderQueueDto[]>(`${this.baseURL}/pending-online`, { headers: this.headers() });
   }
 
+  getTodaySummary(): Observable<{ orderCount: number; sales: number }> {
+    return this.http.get<{ orderCount: number; sales: number }>(`${this.baseURL}/today-online-summary`, { headers: this.headers() });
+  }
+
   getActive(): Observable<OrderQueueDto[]> {
     return this.http.get<OrderQueueDto[]>(`${this.baseURL}/active-online`, { headers: this.headers() });
   }

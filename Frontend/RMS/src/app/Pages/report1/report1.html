@@ -22,8 +22,17 @@
     <!-- SUMMARY CARDS -->
     <div class="kpi-grid">
       <div class="kpi-card kpi-success">
-        <div class="kpi-card-head"><span class="kpi-icon"><i class="pi pi-money-bill"></i></span><h4>Total Sales</h4></div>
+        <div class="kpi-card-head"><span class="kpi-icon"><i class="pi pi-money-bill"></i></span><h4>Total Sales (United)</h4></div>
         <div class="kpi-row"><span>Amount</span><strong>Rs {{ report()?.sales }}</strong></div>
+        <div class="kpi-row"><span>— Online</span><strong>Rs {{ report()?.onlineSales }}</strong></div>
+        <div class="kpi-row"><span>— Site</span><strong>Rs {{ report()?.siteSales }}</strong></div>
+      </div>
+
+      <div class="kpi-card kpi-success">
+        <div class="kpi-card-head"><span class="kpi-icon"><i class="pi pi-shopping-cart"></i></span><h4>Paid Orders (United)</h4></div>
+        <div class="kpi-row"><span>Count</span><strong>{{ (report()?.onlineOrderCount || 0) + (report()?.siteOrderCount || 0) }}</strong></div>
+        <div class="kpi-row"><span>— Online</span><strong>{{ report()?.onlineOrderCount }}</strong></div>
+        <div class="kpi-row"><span>— Site</span><strong>{{ report()?.siteOrderCount }}</strong></div>
       </div>
 
       <div class="kpi-card kpi-info">

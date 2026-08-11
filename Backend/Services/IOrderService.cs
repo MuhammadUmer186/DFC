@@ -22,6 +22,7 @@ namespace RestaurantSystem.Services
         Task<List<OrderDto>> GetAllAsync();
         Task<PagedResult<OrderDto>> GetPagedAsync(int page = 0, int pageSize = 5);
         Task<List<OrderDto>> GetQueuedOrdersAsync();
+        Task<TodayOnlineSummaryDto> GetTodayOnlineSummaryAsync();
         Task<OrderDto> PayOrderAsync(PayOrderRequest request,ClaimsPrincipal userClaims);
         Task<OrderDto> CancelOrderAsync(int orderId, ClaimsPrincipal userClaims);
         Task<bool> CancelOrderAsync(CancelOrderRequest request);

@@ -4,6 +4,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../Services/auth.service';
 import { ToastService } from '../../Services/toast.service';
+import { BrandingService } from '../../Services/branding.service';
 //import { ProgressSpinnerComponent } from 'primeng/progressspinner';
 
 
@@ -18,7 +19,7 @@ export class LoginComponent implements OnInit {
   showPassword = false;
   currentYear = new Date().getFullYear();
 
-  constructor(private service: AuthService, private router: Router,private toast:ToastService) {}
+  constructor(private service: AuthService, private router: Router, private toast: ToastService, public branding: BrandingService) {}
 
   loginform: FormGroup = new FormGroup({
     userName: new FormControl("", [Validators.required, Validators.minLength(3)]),
@@ -26,6 +27,7 @@ export class LoginComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.branding.load();
     if (this.service.IsloggedIn()) {
 
       const role = this.service.getRole();

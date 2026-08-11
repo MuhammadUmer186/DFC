@@ -26,6 +26,12 @@ export interface OrderCountSummary {
   todayOrders: number;
   weeklyOrders: number;
   monthlyOrders: number;
+  todayOnlineOrders: number;
+  todaySiteOrders: number;
+  weeklyOnlineOrders: number;
+  weeklySiteOrders: number;
+  monthlyOnlineOrders: number;
+  monthlySiteOrders: number;
 }
 
 export interface StockUsagePercentage {
@@ -40,6 +46,10 @@ export interface DailyReport {
   date: string;
 
   sales: number;
+  onlineSales: number;
+  siteSales: number;
+  onlineOrderCount: number;
+  siteOrderCount: number;
   purchaseOrdersCost: number;
   kitchenCost: number;
   wasteCost: number;

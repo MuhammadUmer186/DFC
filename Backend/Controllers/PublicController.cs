@@ -101,7 +101,13 @@ namespace RestaurantSystem.Controllers
         public async Task<IActionResult> GetSiteSettings()
         {
             var setting = await _context.SiteSettings.FirstOrDefaultAsync(s => s.Id == 1);
-            return Ok(new { heroImageUrl = setting?.HeroImageUrl, whatsAppNumber = setting?.WhatsAppNumber });
+            return Ok(new
+            {
+                heroImageUrl = setting?.HeroImageUrl,
+                whatsAppNumber = setting?.WhatsAppNumber,
+                restaurantName = setting?.RestaurantName,
+                logoUrl = setting?.LogoUrl
+            });
         }
 
         // ===============================

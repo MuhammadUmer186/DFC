@@ -4,8 +4,8 @@
   <div class="brand-panel">
     <div class="brand-panel-glow"></div>
     <div class="brand-panel-content">
-      <img src="assets/DFC.jpg" alt="DFC — Data Finger Chips" class="brand-panel-logo" />
-      <h1 class="brand-panel-title">Data Finger Chips</h1>
+      <img [src]="branding.logoUrl() || 'assets/DFC.jpg'" [alt]="branding.restaurantName()" class="brand-panel-logo" />
+      <h1 class="brand-panel-title">{{ branding.restaurantName() }}</h1>
       <p class="brand-panel-tagline">Restaurant Management System</p>
 
       <ul class="brand-panel-points">
@@ -20,7 +20,7 @@
   <div class="form-panel">
     <div class="login-box">
       <div class="login-box-header">
-        <img src="assets/DFC.jpg" alt="DFC" class="login-mobile-logo" />
+        <img [src]="branding.logoUrl() || 'assets/DFC.jpg'" [alt]="branding.restaurantName()" class="login-mobile-logo" />
         <h2>Welcome back</h2>
         <p>Sign in to continue to your dashboard</p>
       </div>
@@ -81,7 +81,7 @@
       </form>
     </div>
 
-    <p class="footnote">© {{ currentYear }} Data Finger Chips — All rights reserved</p>
+    <p class="footnote">© {{ currentYear }} {{ branding.restaurantName() }} — All rights reserved</p>
   </div>
 </div>
 <router-outlet></router-outlet>

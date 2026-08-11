@@ -2,9 +2,9 @@
 
   <!-- ================= BRAND ================= -->
   <div class="brand">
-    <img src="assets/DFC.jpg" alt="DFC" class="brand-logo" />
+    <img [src]="branding.logoUrl() || 'assets/DFC.jpg'" [alt]="branding.restaurantName()" class="brand-logo" />
     <div class="brand-text">
-      <span class="brand-title">DFC</span>
+      <span class="brand-title">{{ branding.restaurantName() }}</span>
       <span class="brand-subtitle">Restaurant System</span>
     </div>
   </div>

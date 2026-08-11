@@ -58,12 +58,11 @@ export class OnlineOrdersComponent implements OnDestroy {
     this.pendingOrders().filter(o => !this.isDelivery(o) || !!o.riderId).length
   );
 
-  todaysOnlineSales = computed(() => {
-    const todayKey = new Date().toDateString();
-    return this.pendingOrders()
-      .filter(o => new Date(o.createdAt).toDateString() === todayKey)
-      .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
-  });
+  // Sourced from a dedicated backend summary (all of today's online orders, any status)
+  // rather than derived from pendingOrders(), which only holds still-unapproved orders
+  // and would read close to zero once orders get approved.
+  todaysOnlineSales = signal<number>(0);
+  todaysOnlineOrderCount = signal<number>(0);
 
   visibleOrders = computed(() => {
     this.nowTick();
@@ -104,6 +103,7 @@ export class OnlineOrdersComponent implements OnDestroy {
     this.loadPending();
     this.loadActive();
     this.loadRiders();
+    this.loadTodaySummary();
     this.orderSignalR.startConnection();
     this.tickHandle = setInterval(() => this.nowTick.set(Date.now()), 30000);
 
@@ -125,6 +125,8 @@ export class OnlineOrdersComponent implements OnDestroy {
         live.forEach(o => existingMap.set(o.id, { ...o, expanded: existingMap.get(o.id)?.expanded ?? false }));
         return Array.from(existingMap.values());
       });
+
+      if (freshOnes.length > 0) this.loadTodaySummary();
     });
 
     // 🔄 Live: another tab approved/rejected one of these orders
@@ -132,6 +134,7 @@ export class OnlineOrdersComponent implements OnDestroy {
       const resolvedId = this.orderSignalR.onlineOrderResolved();
       if (resolvedId == null) return;
       this.pendingOrders.update(list => list.filter(o => o.id !== resolvedId));
+      this.loadTodaySummary();
     });
 
     // 🔄 Live: another tab assigned a rider to one of these orders
@@ -232,6 +235,18 @@ export class OnlineOrdersComponent implements OnDestroy {
       error: () => {
         this.toast.error('Failed to load pending online orders');
         this.loading.set(false);
+      }
+    });
+  }
+
+  loadTodaySummary() {
+    this.onlineOrdersService.getTodaySummary().subscribe({
+      next: (summary) => {
+        this.todaysOnlineSales.set(summary.sales);
+        this.todaysOnlineOrderCount.set(summary.orderCount);
+      },
+      error: () => {
+        // Non-critical stat card — fail silently rather than toast-spamming on every load.
       }
     });
   }

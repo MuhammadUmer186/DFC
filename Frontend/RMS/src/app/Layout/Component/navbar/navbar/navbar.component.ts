@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../../Services/auth.service';
+import { BrandingService } from '../../../../Services/branding.service';
 
 @Component({
   selector: 'app-navbar',
@@ -12,8 +13,9 @@ export class NavbarComponent {
 
   roleName = '';
 
-  constructor(private router: Router,public auth:AuthService) {
+  constructor(private router: Router, public auth: AuthService, public branding: BrandingService) {
     this.roleName = localStorage.getItem('role') ?? '';
+    this.branding.load();
   }
 
   toggle() {

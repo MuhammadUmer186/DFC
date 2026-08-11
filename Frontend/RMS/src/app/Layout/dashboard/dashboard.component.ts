@@ -165,6 +165,13 @@ stockUsageChartOptions = signal<any>(null);
     return new Date().toLocaleString("en-US", { month: "long", year: "numeric" });
   }
 
+  countBySource(orders: any[] | undefined | null, source: 'Online' | 'Site'): number {
+    if (!orders) return 0;
+    return source === 'Online'
+      ? orders.filter(o => o.orderSource === 'Online').length
+      : orders.filter(o => o.orderSource !== 'Online').length;
+  }
+
   // ================= DATE RANGE FILTER =================
   onRangeChange(range: DateRange) {
     this.rangeFrom.set(range.from);
