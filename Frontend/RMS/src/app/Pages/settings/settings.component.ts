@@ -6,6 +6,7 @@ import { SiteSettingService } from '../../Services/site-setting.service';
 import { BrandingService } from '../../Services/branding.service';
 import { ToastService } from '../../Services/toast.service';
 import { environment } from '../../../environments/environment';
+import { COUNTRY_TIMEZONES } from '../../Shared/country-timezones';
 
 const SERVICE_TYPE_LABELS: Record<string, string> = {
   DineIn: 'Dine-in',
@@ -46,6 +47,11 @@ export class SettingsComponent implements OnInit {
   menuQrDataUrl = signal<string | null>(null);
   generatingQr = signal(false);
 
+  countryTimeZones = COUNTRY_TIMEZONES;
+  country = signal('');
+  timeZoneId = signal('');
+  savingCountryTimeZone = signal(false);
+
   editValues = new Map<string, { min: number; max: number; enabled: boolean }>();
 
   constructor(
@@ -74,8 +80,45 @@ export class SettingsComponent implements OnInit {
         // Backend sends "HH:mm:ss" — <input type="time"> wants "HH:mm"
         this.orderSerialResetTime.set((res.orderSerialResetTime ?? '00:00:00').slice(0, 5));
         this.menuPdfUrl.set(res.menuPdfUrl);
+        this.country.set(res.country ?? 'Pakistan');
+        this.timeZoneId.set(res.timeZoneId ?? 'Asia/Karachi');
       },
       error: (err) => this.handleLoadError(err)
+    });
+  }
+
+  // Selecting a country auto-fills its primary time zone; the admin can still fine-tune the
+  // time zone afterwards (e.g. a country spanning multiple zones) before saving.
+  onCountrySelected(value: string) {
+    this.country.set(value);
+    const match = this.countryTimeZones.find(c => c.country === value);
+    if (match) this.timeZoneId.set(match.timeZoneId);
+  }
+
+  setTimeZoneId(value: string) {
+    this.timeZoneId.set(value);
+  }
+
+  saveCountryTimeZone() {
+    if (!this.country().trim() || !this.timeZoneId().trim()) {
+      this.toast.error('Select a country and time zone');
+      return;
+    }
+
+    this.savingCountryTimeZone.set(true);
+    this.siteSettingService.updateCountryTimeZone(this.country().trim(), this.timeZoneId().trim()).subscribe({
+      next: (res) => {
+        this.country.set(res.country);
+        this.timeZoneId.set(res.timeZoneId);
+        this.branding.country.set(res.country);
+        this.branding.timeZoneId.set(res.timeZoneId);
+        this.savingCountryTimeZone.set(false);
+        this.toast.success('Country & time zone updated');
+      },
+      error: (err) => {
+        this.savingCountryTimeZone.set(false);
+        this.toast.error(err?.error || 'Failed to update country & time zone');
+      }
     });
   }
 

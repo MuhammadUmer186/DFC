@@ -32,8 +32,45 @@ namespace RestaurantSystem.Controllers
                 menuPdfUrl = setting?.MenuPdfUrl,
                 orderSerialPrefix = setting?.OrderSerialPrefix ?? string.Empty,
                 orderSerialStartingNumber = setting?.OrderSerialStartingNumber ?? 1,
-                orderSerialResetTime = setting?.OrderSerialResetTime ?? TimeSpan.Zero
+                orderSerialResetTime = setting?.OrderSerialResetTime ?? TimeSpan.Zero,
+                country = setting?.Country ?? "Pakistan",
+                timeZoneId = setting?.TimeZoneId ?? "Asia/Karachi"
             });
+        }
+
+        [HttpPut("country-timezone")]
+        public async Task<IActionResult> UpdateCountryTimeZone([FromBody] UpdateCountryTimeZoneDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.Country))
+                return BadRequest("Country is required");
+
+            if (string.IsNullOrWhiteSpace(dto.TimeZoneId))
+                return BadRequest("Time zone is required");
+
+            try
+            {
+                // Validates the IANA id is actually recognized on this server before saving it —
+                // an unrecognized id would otherwise silently break the dashboard clock later.
+                TimeZoneInfo.FindSystemTimeZoneById(dto.TimeZoneId);
+            }
+            catch (TimeZoneNotFoundException)
+            {
+                return BadRequest("Unrecognized time zone");
+            }
+
+            var setting = await _context.SiteSettings.FirstOrDefaultAsync(s => s.Id == 1);
+            if (setting == null)
+            {
+                setting = new Models.SiteSetting { Id = 1 };
+                _context.SiteSettings.Add(setting);
+            }
+
+            setting.Country = dto.Country.Trim();
+            setting.TimeZoneId = dto.TimeZoneId.Trim();
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { country = setting.Country, timeZoneId = setting.TimeZoneId });
         }
 
         [HttpPut("restaurant-name")]

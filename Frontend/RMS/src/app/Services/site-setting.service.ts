@@ -20,7 +20,18 @@ export class SiteSettingService {
       orderSerialPrefix: string;
       orderSerialStartingNumber: number;
       orderSerialResetTime: string;
+      country: string;
+      timeZoneId: string;
     }>(this.api, { headers: reqHeader });
+  }
+
+  updateCountryTimeZone(country: string, timeZoneId: string) {
+    const reqHeader = new HttpHeaders({ 'Authorization': 'Bearer ' + this.authservice.gettoken() });
+    return this.http.put<{ country: string; timeZoneId: string }>(
+      `${this.api}/country-timezone`,
+      { country, timeZoneId },
+      { headers: reqHeader }
+    );
   }
 
   updateOrderSerialSetting(prefix: string, startingNumber: number, resetTime: string) {

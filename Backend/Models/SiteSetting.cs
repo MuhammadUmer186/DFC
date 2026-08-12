@@ -8,6 +8,12 @@ namespace RestaurantSystem.Models
         public string? RestaurantName { get; set; }
         public string? LogoUrl { get; set; }
 
+        // ✅ COUNTRY & TIME ZONE — which country the restaurant operates in and the IANA time
+        // zone (e.g. "Asia/Karachi") used to display "system time" (dashboard clock, etc.)
+        // regardless of where the browser viewing it physically is.
+        public string Country { get; set; } = "Pakistan";
+        public string TimeZoneId { get; set; } = "Asia/Karachi";
+
         // ✅ MENU PDF — the currently active menu PDF file. The QR code printed for customers
         // encodes a stable redirect endpoint (Public/menu-pdf), not this URL directly, so
         // re-uploading a new PDF (a new GUID filename) never invalidates already-printed QR codes.

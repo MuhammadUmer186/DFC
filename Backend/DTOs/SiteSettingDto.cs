@@ -14,4 +14,9 @@ namespace RestaurantSystem.DTOs
         public int StartingNumber { get; set; }
         public TimeSpan ResetTime { get; set; }
     }
+    public class UpdateCountryTimeZoneDto
+    {
+        public string? Country { get; set; }
+        public string? TimeZoneId { get; set; }
+    }
 }

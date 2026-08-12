@@ -10,13 +10,14 @@ import { filter } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
 import { ChartModule } from 'primeng/chart';
 import { DateRangeFilterComponent, DateRange } from '../../Shared/date-range-filter/date-range-filter.component';
+import { LiveClockComponent } from '../../Shared/live-clock/live-clock.component';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule,ChartModule,DateRangeFilterComponent],
+  imports: [CommonModule,ChartModule,DateRangeFilterComponent,LiveClockComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })

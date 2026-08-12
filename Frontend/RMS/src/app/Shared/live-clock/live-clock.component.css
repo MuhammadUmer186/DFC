@@ -1,0 +1,31 @@
+.live-clock {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: #0f172a;
+  color: #fff;
+  border-radius: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.live-clock i {
+  font-size: 18px;
+  color: #38bdf8;
+}
+
+.live-clock-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.live-clock-time {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.live-clock-date {
+  font-size: 11px;
+  color: #94a3b8;
+}

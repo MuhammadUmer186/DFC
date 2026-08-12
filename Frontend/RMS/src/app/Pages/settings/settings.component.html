@@ -63,6 +63,54 @@
     </button>
   </div>
 
+  <!-- COUNTRY & TIME ZONE -->
+  <div class="dfc-page-header" style="margin-top: 24px;">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title" style="font-size: 16px;"><i class="pi pi-globe"></i> Country &amp; Time Zone</h2>
+      <p class="dfc-page-subtitle">
+        Sets which country's clock the system follows — the Dashboard clock and other "current time" displays
+        always show this time zone, regardless of where the device viewing them is physically located.
+      </p>
+    </div>
+  </div>
+
+  <div class="dfc-toolbar">
+    <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:#64748b;">
+      Country
+      <select
+        class="dfc-input"
+        style="min-width: 220px;"
+        [value]="country()"
+        (change)="onCountrySelected($any($event.target).value)"
+      >
+        @for (c of countryTimeZones; track c.country) {
+          <option [value]="c.country">{{ c.country }}</option>
+        }
+      </select>
+    </label>
+
+    <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:#64748b;">
+      Time Zone (IANA)
+      <input
+        type="text"
+        class="dfc-input"
+        placeholder="e.g. Asia/Karachi"
+        style="min-width: 220px;"
+        [value]="timeZoneId()"
+        (input)="setTimeZoneId($any($event.target).value)"
+      />
+    </label>
+
+    <button class="dfc-btn dfc-btn-primary dfc-btn-sm" style="align-self: flex-end;" [disabled]="savingCountryTimeZone()" (click)="saveCountryTimeZone()">
+      @if (savingCountryTimeZone()) {
+        <i class="pi pi-spin pi-spinner"></i>
+      } @else {
+        <i class="pi pi-check"></i>
+      }
+      Save
+    </button>
+  </div>
+
   <!-- HERO BANNER IMAGE -->
   <div class="dfc-page-header" style="margin-top: 24px;">
     <div class="dfc-page-header-text">

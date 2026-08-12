@@ -106,7 +106,9 @@ namespace RestaurantSystem.Controllers
                 heroImageUrl = setting?.HeroImageUrl,
                 whatsAppNumber = setting?.WhatsAppNumber,
                 restaurantName = setting?.RestaurantName,
-                logoUrl = setting?.LogoUrl
+                logoUrl = setting?.LogoUrl,
+                country = setting?.Country ?? "Pakistan",
+                timeZoneId = setting?.TimeZoneId ?? "Asia/Karachi"
             });
         }
 

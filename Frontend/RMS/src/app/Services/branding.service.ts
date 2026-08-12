@@ -14,19 +14,25 @@ export class BrandingService {
 
   restaurantName = signal<string>('DFC');
   logoUrl = signal<string | null>(null);
+  // Admin-selected IANA time zone (Settings → Country & Time Zone) — drives the dashboard
+  // clock so it shows the restaurant's local time regardless of the viewer's device/location.
+  timeZoneId = signal<string>('Asia/Karachi');
+  country = signal<string>('Pakistan');
 
   constructor(private http: HttpClient, private titleService: Title) {}
 
   load() {
     if (this.loaded) return;
     this.loaded = true;
-    this.http.get<{ restaurantName: string | null; logoUrl: string | null }>(this.api).subscribe({
+    this.http.get<{ restaurantName: string | null; logoUrl: string | null; country: string | null; timeZoneId: string | null }>(this.api).subscribe({
       next: (res) => {
         if (res.restaurantName) {
           this.restaurantName.set(res.restaurantName);
           this.titleService.setTitle(`${res.restaurantName} — RMS`);
         }
         if (res.logoUrl) this.logoUrl.set(`${environment.apihub}${res.logoUrl}`);
+        if (res.country) this.country.set(res.country);
+        if (res.timeZoneId) this.timeZoneId.set(res.timeZoneId);
       },
       error: () => {
         // Non-critical — falls back to the default name/logo baked into each template.
