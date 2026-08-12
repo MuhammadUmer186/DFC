@@ -414,7 +414,7 @@ sendToQueue() {
     .subscribe({
       next: (order: any) => {
 
-        this.toast.success(`Order #${order.id} sent to queue!`);
+        this.toast.success(`Order #${order.orderNumber || order.id} sent to queue!`);
 
         // 🔄 RESET CART
         this.cart.set([]);

@@ -2,8 +2,8 @@
 
   <div class="dfc-page-header">
     <div class="dfc-page-header-text">
-      <h2 class="dfc-page-title"><i class="pi pi-cog"></i> Customer Site Settings</h2>
-      <p class="dfc-page-subtitle">Control what customers see on the ordering website</p>
+      <h2 class="dfc-page-title"><i class="pi pi-cog"></i> Settings</h2>
+      <p class="dfc-page-subtitle">Manage branding, ordering site content, order numbering and service settings</p>
     </div>
   </div>
 
@@ -112,6 +112,125 @@
     />
     <button class="dfc-btn dfc-btn-primary dfc-btn-sm" [disabled]="savingWhatsApp()" (click)="saveWhatsAppNumber()">
       @if (savingWhatsApp()) {
+        <i class="pi pi-spin pi-spinner"></i>
+      } @else {
+        <i class="pi pi-check"></i>
+      }
+      Save
+    </button>
+  </div>
+
+  <!-- MENU PDF & QR CODE -->
+  <div class="dfc-page-header" style="margin-top: 24px;">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title" style="font-size: 16px;"><i class="pi pi-file-pdf"></i> Menu PDF &amp; QR Code</h2>
+      <p class="dfc-page-subtitle">
+        Upload your menu as a PDF, then generate a QR code that opens it. The QR always points to this stable link
+        below — re-uploading a new PDF (or moving the app to a different server, as long as this domain still points
+        to it) never breaks a QR code you've already printed.
+      </p>
+    </div>
+  </div>
+
+  <div class="dfc-toolbar" style="align-items: flex-start;">
+    @if (fullMenuPdfUrl()) {
+      <a [href]="fullMenuPdfUrl()" target="_blank" rel="noopener" class="dfc-btn dfc-btn-ghost dfc-btn-sm">
+        <i class="pi pi-eye"></i> View current menu PDF
+      </a>
+    } @else {
+      <div style="font-size: 13px; color: #94a3b8;">No menu PDF uploaded yet</div>
+    }
+
+    <label class="dfc-btn dfc-btn-primary dfc-btn-sm">
+      @if (uploadingMenuPdf()) {
+        <i class="pi pi-spin pi-spinner"></i> Uploading…
+      } @else {
+        <i class="pi pi-upload"></i> {{ menuPdfUrl() ? 'Replace Menu PDF' : 'Upload Menu PDF' }}
+      }
+      <input type="file" accept="application/pdf" hidden (change)="onMenuPdfFileSelected($event)">
+    </label>
+  </div>
+
+  <div class="dfc-toolbar" style="margin-top: 10px; align-items: flex-start;">
+    <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:#64748b; flex:1;">
+      QR Code Link (edit if your public domain is different)
+      <input
+        type="text"
+        class="dfc-input"
+        style="width: 100%; min-width: 320px;"
+        [value]="menuQrTargetUrl()"
+        (input)="setMenuQrTargetUrl($any($event.target).value)"
+      />
+    </label>
+
+    <button class="dfc-btn dfc-btn-primary dfc-btn-sm" style="align-self: flex-end;" [disabled]="generatingQr()" (click)="generateMenuQr()">
+      @if (generatingQr()) {
+        <i class="pi pi-spin pi-spinner"></i>
+      } @else {
+        <i class="pi pi-qrcode"></i>
+      }
+      Generate QR
+    </button>
+  </div>
+
+  @if (menuQrDataUrl()) {
+    <div class="dfc-toolbar" style="margin-top: 10px; align-items: center;">
+      <img [src]="menuQrDataUrl()" alt="Menu QR code" style="width: 160px; height: 160px; background: #fff; border-radius: 8px; padding: 8px;">
+      <button class="dfc-btn dfc-btn-primary dfc-btn-sm" (click)="downloadMenuQr()">
+        <i class="pi pi-download"></i> Download QR
+      </button>
+    </div>
+  }
+
+  <!-- ORDER SERIAL -->
+  <div class="dfc-page-header" style="margin-top: 24px;">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title" style="font-size: 16px;"><i class="pi pi-hashtag"></i> Order Serial</h2>
+      <p class="dfc-page-subtitle">
+        Controls the order number shown on receipts and tracking (e.g. "{{ orderSerialPrefix() || 'DFC-' }}{{ orderSerialStartingNumber() }}").
+        The counter resets back to the starting number once per day at the reset time.
+      </p>
+    </div>
+  </div>
+
+  <div class="dfc-toolbar">
+    <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:#64748b;">
+      Prefix
+      <input
+        type="text"
+        class="dfc-input"
+        placeholder="e.g. DFC-"
+        style="width: 140px;"
+        [value]="orderSerialPrefix()"
+        (input)="setOrderSerialPrefix($any($event.target).value)"
+      />
+    </label>
+
+    <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:#64748b;">
+      Starting Number
+      <input
+        type="number"
+        min="0"
+        class="dfc-input"
+        style="width: 120px;"
+        [value]="orderSerialStartingNumber()"
+        (input)="setOrderSerialStartingNumber($any($event.target).value)"
+      />
+    </label>
+
+    <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:#64748b;">
+      Daily Reset Time
+      <input
+        type="time"
+        class="dfc-input"
+        style="width: 120px;"
+        [value]="orderSerialResetTime()"
+        (input)="setOrderSerialResetTime($any($event.target).value)"
+      />
+    </label>
+
+    <button class="dfc-btn dfc-btn-primary dfc-btn-sm" style="align-self: flex-end;" [disabled]="savingOrderSerial()" (click)="saveOrderSerialSetting()">
+      @if (savingOrderSerial()) {
         <i class="pi pi-spin pi-spinner"></i>
       } @else {
         <i class="pi pi-check"></i>

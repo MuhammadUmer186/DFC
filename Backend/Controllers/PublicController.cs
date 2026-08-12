@@ -111,6 +111,21 @@ namespace RestaurantSystem.Controllers
         }
 
         // ===============================
+        // 1c-2. MENU PDF — stable QR target. This URL never changes even when the PDF is
+        // re-uploaded (a new file with a new GUID name), so a printed QR code stays valid
+        // indefinitely — it always redirects to whatever the current file is.
+        // ===============================
+        [HttpGet("menu-pdf")]
+        public async Task<IActionResult> GetMenuPdf()
+        {
+            var setting = await _context.SiteSettings.FirstOrDefaultAsync(s => s.Id == 1);
+            if (string.IsNullOrEmpty(setting?.MenuPdfUrl))
+                return NotFound("No menu PDF has been uploaded yet");
+
+            return Redirect(setting.MenuPdfUrl);
+        }
+
+        // ===============================
         // 1d. GET DELIVERY AREAS (CUSTOMER SIDE)
         // ===============================
         [HttpGet("areas")]

@@ -28,7 +28,11 @@ namespace RestaurantSystem.Controllers
                 heroImageUrl = setting?.HeroImageUrl,
                 whatsAppNumber = setting?.WhatsAppNumber,
                 restaurantName = setting?.RestaurantName,
-                logoUrl = setting?.LogoUrl
+                logoUrl = setting?.LogoUrl,
+                menuPdfUrl = setting?.MenuPdfUrl,
+                orderSerialPrefix = setting?.OrderSerialPrefix ?? string.Empty,
+                orderSerialStartingNumber = setting?.OrderSerialStartingNumber ?? 1,
+                orderSerialResetTime = setting?.OrderSerialResetTime ?? TimeSpan.Zero
             });
         }
 
@@ -110,6 +114,36 @@ namespace RestaurantSystem.Controllers
             return Ok(new { whatsAppNumber = setting.WhatsAppNumber });
         }
 
+        [HttpPut("order-serial")]
+        public async Task<IActionResult> UpdateOrderSerialSetting([FromBody] UpdateOrderSerialSettingDto dto)
+        {
+            if (dto.StartingNumber < 0)
+                return BadRequest("Starting number cannot be negative");
+
+            if (dto.ResetTime < TimeSpan.Zero || dto.ResetTime >= TimeSpan.FromDays(1))
+                return BadRequest("Reset time must be a valid time of day");
+
+            var setting = await _context.SiteSettings.FirstOrDefaultAsync(s => s.Id == 1);
+            if (setting == null)
+            {
+                setting = new Models.SiteSetting { Id = 1 };
+                _context.SiteSettings.Add(setting);
+            }
+
+            setting.OrderSerialPrefix = dto.Prefix ?? string.Empty;
+            setting.OrderSerialStartingNumber = dto.StartingNumber;
+            setting.OrderSerialResetTime = dto.ResetTime;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                orderSerialPrefix = setting.OrderSerialPrefix,
+                orderSerialStartingNumber = setting.OrderSerialStartingNumber,
+                orderSerialResetTime = setting.OrderSerialResetTime
+            });
+        }
+
         [HttpPost("hero-image")]
         [RequestSizeLimit(15_000_000)] // 15 MB
         public async Task<IActionResult> UploadHeroImage(IFormFile file)
@@ -148,6 +182,49 @@ namespace RestaurantSystem.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { heroImageUrl = url });
+        }
+
+        [HttpPost("menu-pdf")]
+        [RequestSizeLimit(20_000_000)] // 20 MB
+        public async Task<IActionResult> UploadMenuPdf(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded");
+
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (ext != ".pdf")
+                return BadRequest("Unsupported file type. Please upload a PDF.");
+
+            var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "site");
+            Directory.CreateDirectory(folder);
+
+            // A fresh GUID filename on every upload — the QR code customers scan points at the
+            // stable Public/menu-pdf redirect (never this URL directly), so re-uploading here
+            // never breaks an already-printed QR code.
+            var fileName = $"menu_{Guid.NewGuid():N}{ext}";
+            var fullPath = Path.Combine(folder, fileName);
+
+            using (var stream = new FileStream(fullPath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var url = $"/uploads/site/{fileName}";
+
+            var setting = await _context.SiteSettings.FirstOrDefaultAsync(s => s.Id == 1);
+            if (setting == null)
+            {
+                setting = new Models.SiteSetting { Id = 1, MenuPdfUrl = url };
+                _context.SiteSettings.Add(setting);
+            }
+            else
+            {
+                setting.MenuPdfUrl = url;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { menuPdfUrl = url });
         }
     }
 }

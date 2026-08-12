@@ -7,6 +7,9 @@ namespace RestaurantSystem.Models
     {
         public int Id { get; set; }
 
+        // ✅ Customer-facing order number (Prefix + daily-resetting serial), e.g. "DFC-0007"
+        public string? OrderNumber { get; set; }
+
         public decimal TotalAmount { get; set; }
 
         public DateTime CreatedAt { get; set; }

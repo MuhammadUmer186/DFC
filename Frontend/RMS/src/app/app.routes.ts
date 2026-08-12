@@ -46,7 +46,7 @@ import { MenuItemReportComponent } from './Pages/menu-item-report/menu-item-repo
 import { MenuRecipeComponent } from './Pages/menu-recipe/menu-recipe';
 import { MyMenuComponent } from './Pages/my-menu/my-menu.component';
 import { DealsComponent } from './Pages/deals/deals.component';
-import { ServiceTimeSettingsComponent } from './Pages/settings/service-time-settings/service-time-settings.component';
+import { SettingsComponent } from './Pages/settings/settings.component';
 import { RiderListComponent } from './Pages/riders/rider-list/rider-list.component';
 import { AreaListComponent } from './Pages/areas/area-list/area-list.component';
 import { MyDeliveriesComponent } from './Pages/my-deliveries/my-deliveries.component';
@@ -244,7 +244,7 @@ export const routes: Routes = [
             data: { roles: ['SuperAdmin', 'MainAdmin'] }
             },
             {
-                path:"service-time-settings",component:ServiceTimeSettingsComponent,canActivate: [AuthGuard],
+                path:"settings",component:SettingsComponent,canActivate: [AuthGuard],
             data: { roles: ['SuperAdmin'] }
             },
             {

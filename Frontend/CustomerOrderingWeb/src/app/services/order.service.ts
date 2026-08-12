@@ -18,6 +18,7 @@ export interface PlaceOrderRequest {
 
 export interface PlaceOrderResponse {
   id: number;
+  orderNumber?: string | null;
   totalAmount: number;
   status: number;
   serviceType?: string;
@@ -29,6 +30,7 @@ export interface PlaceOrderResponse {
 
 export interface OrderStatusResponse {
   id: number;
+  orderNumber?: string | null;
   statusLabel: string;
   createdAt: string;
   totalAmount: number;

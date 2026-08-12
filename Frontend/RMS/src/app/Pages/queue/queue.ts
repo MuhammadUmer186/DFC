@@ -167,9 +167,9 @@ this.printService.printReceipt({
           list.filter(o => o.id !== order.id)
         );
 
-        this.toast.success(`Order #${order.id} marked as paid`);
+        this.toast.success(`Order #${order.orderNumber || order.id} marked as paid`);
       },
-      error: () => this.toast.error(`Failed to pay Order #${order.id}`)
+      error: () => this.toast.error(`Failed to pay Order #${order.orderNumber || order.id}`)
     });
   }
 
@@ -188,7 +188,7 @@ this.printService.printReceipt({
         finalTotal: 0,
         items: [
           {
-            name: `ORDER #${order.id} CANCELLED`,
+            name: `ORDER #${order.orderNumber || order.id} CANCELLED`,
             quantity: 1,
             price: 0
           }
@@ -209,9 +209,9 @@ this.printService.printReceipt({
         list.filter(o => o.id !== order.id)
       );
 
-      this.toast.warn(`Order #${order.id} canceled`);
+      this.toast.warn(`Order #${order.orderNumber || order.id} canceled`);
     },
-    error: () => this.toast.error(`Failed to cancel Order #${order.id}`)
+    error: () => this.toast.error(`Failed to cancel Order #${order.orderNumber || order.id}`)
   });
 }
 
@@ -239,11 +239,11 @@ this.printService.printReceipt({
         // Order stays in the Queue (still unpaid) until payment is confirmed separately.
         this.queuedOrders.update(list => list.map(o => o.id === order.id ? { ...o, deliveryStatus: updated.deliveryStatus } : o));
         this.setBusy(order.id, false);
-        this.toast.success(`Order #${order.id} marked ${status}`);
+        this.toast.success(`Order #${order.orderNumber || order.id} marked ${status}`);
       },
       error: (err) => {
         this.setBusy(order.id, false);
-        this.toast.error(err?.error?.message || `Failed to update order #${order.id}`);
+        this.toast.error(err?.error?.message || `Failed to update order #${order.orderNumber || order.id}`);
       }
     });
   }

@@ -99,7 +99,7 @@
 
             <div class="ooc-header">
               <div class="ooc-header-left">
-                <span class="ooc-order-no">#{{ order.id }}</span>
+                <span class="ooc-order-no">#{{ order.orderNumber || order.id }}</span>
                 <span class="ooc-time"><i class="pi pi-clock"></i> {{ timeAgo(order.createdAt) }}</span>
               </div>
               <div class="ooc-header-badges">
@@ -236,7 +236,7 @@
             <div class="online-order-card">
               <div class="ooc-header">
                 <div class="ooc-header-left">
-                  <span class="ooc-order-no">#{{ order.id }}</span>
+                  <span class="ooc-order-no">#{{ order.orderNumber || order.id }}</span>
                   <span class="ooc-time"><i class="pi pi-clock"></i> {{ timeAgo(order.createdAt) }}</span>
                 </div>
                 <div class="ooc-header-badges">

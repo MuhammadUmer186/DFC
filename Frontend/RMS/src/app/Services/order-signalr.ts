@@ -4,6 +4,7 @@ import { environment } from '../../environments/environment';
  // create interface file if needed
 export interface OrderQueueDto {
   id: number;
+  orderNumber?: string | null;
   totalAmount: number;
   createdAt: string;
   paid: boolean;
@@ -12,6 +13,8 @@ export interface OrderQueueDto {
   customerName?: string | null;
   phoneNumber?: string | null;
   address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   orderSource?: string | null;
   serviceType?: string | null;
   paymentMethod?: string | null;

@@ -5,6 +5,7 @@ namespace RestaurantSystem.DTOs
     public class OrderDto
     {
         public int Id { get; set; }
+        public string? OrderNumber { get; set; }
         public decimal TotalAmount { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool Paid { get; set; }
@@ -77,6 +78,7 @@ namespace RestaurantSystem.DTOs
     public class PublicOrderResponse
     {
         public int OrderId { get; set; }
+        public string? OrderNumber { get; set; }
         public string Message { get; set; }
     }
     public class ApproveOrderResult
@@ -88,6 +90,7 @@ namespace RestaurantSystem.DTOs
     public class PublicOrderStatusDto
     {
         public int Id { get; set; }
+        public string? OrderNumber { get; set; }
         public string StatusLabel { get; set; }
         public DateTime CreatedAt { get; set; }
         public decimal TotalAmount { get; set; }

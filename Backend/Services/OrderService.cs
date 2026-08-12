@@ -137,6 +137,32 @@ namespace RestaurantSystem.Services
         }
 
         // CREATE ORDER
+        // Customer-facing order number (Prefix + a running counter that resets to the configured
+        // starting number once per "business day" — the window between OrderSerialResetTime on one
+        // day and the next). The counter itself is incremented via a single atomic UPDATE (not a
+        // C# read-modify-write) so concurrent order creation can't race and hand out duplicates;
+        // this runs inside CreateAsync's own transaction, so the row lock holds until it commits.
+        private async Task<string> GenerateOrderNumberAsync()
+        {
+            var settings = await _context.SiteSettings.AsNoTracking().FirstOrDefaultAsync(s => s.Id == 1);
+            var prefix = settings?.OrderSerialPrefix ?? string.Empty;
+            var startingNumber = settings?.OrderSerialStartingNumber ?? 1;
+            var resetTime = settings?.OrderSerialResetTime ?? TimeSpan.Zero;
+
+            var now = DateTime.Now;
+            var businessDate = now.TimeOfDay < resetTime ? now.Date.AddDays(-1) : now.Date;
+
+            var numbers = await _context.Database.SqlQueryRaw<int>(
+                @"UPDATE SiteSettings
+                  SET OrderSerialCurrentNumber = CASE WHEN OrderSerialCurrentDate = {0} THEN OrderSerialCurrentNumber + 1 ELSE {1} END,
+                      OrderSerialCurrentDate = {0}
+                  OUTPUT INSERTED.OrderSerialCurrentNumber
+                  WHERE Id = 1",
+                businessDate, startingNumber).ToListAsync();
+
+            return $"{prefix}{numbers.First()}";
+        }
+
         public async Task<OrderDto> CreateAsync(
     CreateOrderRequest request,
     decimal discount,
@@ -295,6 +321,7 @@ namespace RestaurantSystem.Services
 
 
                 // ================= SAVE =================
+                order.OrderNumber = await GenerateOrderNumberAsync();
                 _context.Orders.Add(order);
                 await _context.SaveChangesAsync();
                 var dto = await GetByIdAsync(order.Id);
@@ -451,6 +478,7 @@ namespace RestaurantSystem.Services
             return new PublicOrderStatusDto
             {
                 Id = order.Id,
+                OrderNumber = order.OrderNumber,
                 StatusLabel = statusLabel,
                 CreatedAt = order.CreatedAt,
                 TotalAmount = order.TotalAmount,
@@ -508,6 +536,7 @@ namespace RestaurantSystem.Services
         private static OrderDto ToOnlineOrderDto(Order order) => new OrderDto
         {
             Id = order.Id,
+            OrderNumber = order.OrderNumber,
             CreatedAt = order.CreatedAt,
             TotalAmount = order.TotalAmount,
             Paid = order.Paid,
@@ -845,6 +874,7 @@ namespace RestaurantSystem.Services
             var orderDtos = orders.Select(o => new OrderDto
             {
                 Id = o.Id,
+                OrderNumber = o.OrderNumber,
                 CreatedAt = o.CreatedAt,
                 Paid = o.Paid,
                 TotalAmount = o.TotalAmount,
@@ -973,6 +1003,7 @@ namespace RestaurantSystem.Services
             return new OrderDto
             {
                 Id = order.Id,
+                OrderNumber = order.OrderNumber,
                 CreatedAt = order.CreatedAt,
                 Paid = order.Paid,
                 TotalAmount = order.TotalAmount,
@@ -1080,6 +1111,7 @@ namespace RestaurantSystem.Services
             return new OrderDto
             {
                 Id = order.Id,
+                OrderNumber = order.OrderNumber,
                 CreatedAt = order.CreatedAt,
                 Paid = order.Paid,
                 Status = order.Status,
@@ -1116,6 +1148,7 @@ namespace RestaurantSystem.Services
             return new OrderDto
             {
                 Id = order.Id,
+                OrderNumber = order.OrderNumber,
                 CreatedAt = order.CreatedAt,
                 TotalAmount = order.TotalAmount,
                 Discount = discountAmount,
@@ -1206,6 +1239,7 @@ namespace RestaurantSystem.Services
             return orders.Select(order => new OrderDto
             {
                 Id = order.Id,
+                OrderNumber = order.OrderNumber,
                 CreatedAt = order.CreatedAt,
                 TotalAmount = order.TotalAmount,
                 Items = order.OrderItems.Select(i => new OrderItemDto
@@ -1247,6 +1281,7 @@ namespace RestaurantSystem.Services
                 .Select(o => new OrderDto
                 {
                     Id = o.Id,
+                    OrderNumber = o.OrderNumber,
                     CreatedAt = o.CreatedAt,
                     Paid = o.Paid,
                     TotalAmount = o.TotalAmount,
@@ -1360,6 +1395,7 @@ namespace RestaurantSystem.Services
                 .Select(o => new OrderDto
                 {
                     Id = o.Id,
+                    OrderNumber = o.OrderNumber,
                     CreatedAt = o.CreatedAt,
                     TotalAmount = o.TotalAmount,
                     Paid = o.Paid,
@@ -1420,6 +1456,7 @@ namespace RestaurantSystem.Services
                 .Select(o => new OrderDto
                 {
                     Id = o.Id,
+                    OrderNumber = o.OrderNumber,
                     CreatedAt = o.CreatedAt,
                     Paid = o.Paid,
                     TotalAmount = o.TotalAmount,

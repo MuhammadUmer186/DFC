@@ -1,7 +1,7 @@
 <div class="confirmation">
   <div class="check-badge">✓</div>
   <h2>Order Received!</h2>
-  <p class="order-no">Order #{{ orderId }} · {{ serviceTypeLabel }}</p>
+  <p class="order-no">Order #{{ order?.orderNumber || orderId }} · {{ serviceTypeLabel }}</p>
   <p class="sub-text">We've got your order and it's awaiting confirmation from the restaurant. You'll receive updates on WhatsApp shortly.</p>
 
   @if (order) {

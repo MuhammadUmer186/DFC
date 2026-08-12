@@ -8,4 +8,10 @@ namespace RestaurantSystem.DTOs
     {
         public string? RestaurantName { get; set; }
     }
+    public class UpdateOrderSerialSettingDto
+    {
+        public string? Prefix { get; set; }
+        public int StartingNumber { get; set; }
+        public TimeSpan ResetTime { get; set; }
+    }
 }

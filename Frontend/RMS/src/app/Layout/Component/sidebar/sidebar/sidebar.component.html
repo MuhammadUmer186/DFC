@@ -128,7 +128,7 @@
           </ul>
         }
 
-        <li routerLink="/service-time-settings" routerLinkActive="active" class="nav-item"><i class="pi pi-cog nav-icon"></i><span class="label">Site Settings</span></li>
+        <li routerLink="/settings" routerLinkActive="active" class="nav-item"><i class="pi pi-cog nav-icon"></i><span class="label">Settings</span></li>
         <li routerLink="/riders-list" routerLinkActive="active" class="nav-item"><i class="pi pi-car nav-icon"></i><span class="label">Riders</span></li>
         <li routerLink="/areas" routerLinkActive="active" class="nav-item"><i class="pi pi-map nav-icon"></i><span class="label">Delivery Areas</span></li>
         <li routerLink="/signup" routerLinkActive="active" class="nav-item"><i class="pi pi-user-plus nav-icon"></i><span class="label">Register</span></li>
@@ -375,11 +375,6 @@
             <li routerLink="/ORDERCREATE" routerLinkActive="active"><i class="pi pi-plus-circle"></i><span class="label">Order Creation</span></li>
           </ul>
         }
-      }
-
-      <!-- ================= RIDER ================= -->
-      @if (role === 'Rider') {
-        <li routerLink="/my-deliveries" routerLinkActive="active" class="nav-item"><i class="pi pi-car nav-icon"></i><span class="label">My Deliveries</span></li>
       }
 
       <!-- ================= STORE KEEPER ================= -->

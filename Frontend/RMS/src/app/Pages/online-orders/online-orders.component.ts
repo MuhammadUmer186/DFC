@@ -191,11 +191,11 @@ export class OnlineOrdersComponent implements OnDestroy {
           this.activeOrders.update(list => list.map(o => o.id === order.id ? { ...o, deliveryStatus: updated.deliveryStatus } : o));
         }
         this.setBusy(order.id, false);
-        this.toast.success(`Order #${order.id} marked ${status}`);
+        this.toast.success(`Order #${order.orderNumber || order.id} marked ${status}`);
       },
       error: (err) => {
         this.setBusy(order.id, false);
-        this.toast.error(err?.error?.message || `Failed to update order #${order.id}`);
+        this.toast.error(err?.error?.message || `Failed to update order #${order.orderNumber || order.id}`);
       }
     });
   }
@@ -377,11 +377,11 @@ export class OnlineOrdersComponent implements OnDestroy {
           return next;
         });
         this.setBusy(order.id, false);
-        this.toast.success(`Order #${order.id} assigned to ${updated.riderName}`);
+        this.toast.success(`Order #${order.orderNumber || order.id} assigned to ${updated.riderName}`);
       },
       error: (err) => {
         this.setBusy(order.id, false);
-        this.toast.error(err?.error?.message || `Failed to assign rider to order #${order.id}`);
+        this.toast.error(err?.error?.message || `Failed to assign rider to order #${order.orderNumber || order.id}`);
       }
     });
   }
@@ -400,22 +400,22 @@ export class OnlineOrdersComponent implements OnDestroy {
         this.setBusy(order.id, false);
 
         if (result.counterPrinted && result.kitchenPrinted) {
-          this.toast.success(`Order #${order.id} approved — both slips printed`);
+          this.toast.success(`Order #${order.orderNumber || order.id} approved — both slips printed`);
         } else if (!result.counterPrinted && !result.kitchenPrinted) {
-          this.toast.warn(`Order #${order.id} approved, but both prints failed — use Reprint from Order Queue`);
+          this.toast.warn(`Order #${order.orderNumber || order.id} approved, but both prints failed — use Reprint from Order Queue`);
         } else {
-          this.toast.warn(`Order #${order.id} approved, but ${result.counterPrinted ? 'kitchen' : 'counter'} print failed — use Reprint from Order Queue`);
+          this.toast.warn(`Order #${order.orderNumber || order.id} approved, but ${result.counterPrinted ? 'kitchen' : 'counter'} print failed — use Reprint from Order Queue`);
         }
       },
       error: (err) => {
         this.setBusy(order.id, false);
-        this.toast.error(err?.error?.message || `Failed to approve order #${order.id}`);
+        this.toast.error(err?.error?.message || `Failed to approve order #${order.orderNumber || order.id}`);
       }
     });
   }
 
   reject(order: OrderQueueDto) {
-    const reason = prompt(`Reject order #${order.id} from ${order.customerName || 'this customer'}?\nReason for rejection (optional):`);
+    const reason = prompt(`Reject order #${order.orderNumber || order.id} from ${order.customerName || 'this customer'}?\nReason for rejection (optional):`);
     if (reason === null) return; // cancelled the prompt
 
     this.setBusy(order.id, true);
@@ -423,11 +423,11 @@ export class OnlineOrdersComponent implements OnDestroy {
       next: () => {
         this.pendingOrders.update(list => list.filter(o => o.id !== order.id));
         this.setBusy(order.id, false);
-        this.toast.warn(`Order #${order.id} rejected`);
+        this.toast.warn(`Order #${order.orderNumber || order.id} rejected`);
       },
       error: (err) => {
         this.setBusy(order.id, false);
-        this.toast.error(err?.error?.message || `Failed to reject order #${order.id}`);
+        this.toast.error(err?.error?.message || `Failed to reject order #${order.orderNumber || order.id}`);
       }
     });
   }

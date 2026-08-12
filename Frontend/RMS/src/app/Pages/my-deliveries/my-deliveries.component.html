@@ -29,7 +29,7 @@
       @for (order of orders(); track order.id) {
         <div class="delivery-card">
           <div class="dc-header">
-            <span class="dc-order-no">Order #{{ order.id }}</span>
+            <span class="dc-order-no">Order #{{ order.orderNumber || order.id }}</span>
             @if (order.deliveryStatus === 'Delivered') {
               @if (order.paid) {
                 <span class="dfc-badge dfc-badge-success">Paid</span>
@@ -53,7 +53,19 @@
             </div>
           }
           @if (order.address) {
-            <div class="dc-row"><i class="pi pi-map-marker"></i> {{ order.address }}</div>
+            <div class="dc-row">
+              <i class="pi pi-map-marker"></i>
+              @if (mapsLink(order)) {
+                <a [href]="mapsLink(order)" target="_blank" rel="noopener">{{ order.address }}</a>
+              } @else {
+                {{ order.address }}
+              }
+            </div>
+          } @else if (mapsLink(order)) {
+            <div class="dc-row">
+              <i class="pi pi-map-marker"></i>
+              <a [href]="mapsLink(order)" target="_blank" rel="noopener">Open pinned location in Google Maps</a>
+            </div>
           }
 
           <div class="dc-footer">

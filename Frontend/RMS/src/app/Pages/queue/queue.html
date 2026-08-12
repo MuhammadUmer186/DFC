@@ -65,7 +65,7 @@
           <tbody>
             @for(order of queuedOrders(); track $index) {
               <tr class="order-row" (click)="toggleExpand(order)" [class.expanded]="order.expanded">
-                <td>{{ order.id }}</td>
+                <td>{{ order.orderNumber || order.id }}</td>
                 <td>Rs {{ order.totalAmount }}</td>
                 <td>{{ order.totalQuantity }}</td>
                 <td>

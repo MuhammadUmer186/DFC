@@ -1,8 +1,10 @@
 <nav class="topbar">
   <div class="left">
-    <button class="icon-btn" (click)="toggle()" title="Toggle sidebar">
-      <i class="pi pi-bars"></i>
-    </button>
+    @if (auth.getRole() !== 'Rider') {
+      <button class="icon-btn" (click)="toggle()" title="Toggle sidebar">
+        <i class="pi pi-bars"></i>
+      </button>
+    }
 
     <div class="brand-inline">
       <img [src]="branding.logoUrl() || 'assets/DFC.jpg'" [alt]="branding.restaurantName()" class="brand-inline-logo" />

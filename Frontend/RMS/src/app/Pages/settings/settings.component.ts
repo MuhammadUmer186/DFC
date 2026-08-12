@@ -1,10 +1,11 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { ServiceTimeSetting } from '../../../Models/service-time-setting.model';
-import { ServiceTimeSettingService } from '../../../Services/service-time-setting.service';
-import { SiteSettingService } from '../../../Services/site-setting.service';
-import { BrandingService } from '../../../Services/branding.service';
-import { ToastService } from '../../../Services/toast.service';
-import { environment } from '../../../../environments/environment';
+import QRCode from 'qrcode';
+import { ServiceTimeSetting } from '../../Models/service-time-setting.model';
+import { ServiceTimeSettingService } from '../../Services/service-time-setting.service';
+import { SiteSettingService } from '../../Services/site-setting.service';
+import { BrandingService } from '../../Services/branding.service';
+import { ToastService } from '../../Services/toast.service';
+import { environment } from '../../../environments/environment';
 
 const SERVICE_TYPE_LABELS: Record<string, string> = {
   DineIn: 'Dine-in',
@@ -13,13 +14,13 @@ const SERVICE_TYPE_LABELS: Record<string, string> = {
 };
 
 @Component({
-  selector: 'app-service-time-settings',
+  selector: 'app-settings',
   standalone: true,
   imports: [],
-  templateUrl: './service-time-settings.component.html',
-  styleUrl: './service-time-settings.component.css'
+  templateUrl: './settings.component.html',
+  styleUrl: './settings.component.css'
 })
-export class ServiceTimeSettingsComponent implements OnInit {
+export class SettingsComponent implements OnInit {
   settings = signal<ServiceTimeSetting[]>([]);
   savingType = signal<string | null>(null);
 
@@ -33,6 +34,17 @@ export class ServiceTimeSettingsComponent implements OnInit {
   savingRestaurantName = signal(false);
   logoUrl = signal<string | null>(null);
   uploadingLogo = signal(false);
+
+  orderSerialPrefix = signal('');
+  orderSerialStartingNumber = signal(1);
+  orderSerialResetTime = signal('00:00');
+  savingOrderSerial = signal(false);
+
+  menuPdfUrl = signal<string | null>(null);
+  uploadingMenuPdf = signal(false);
+  menuQrTargetUrl = signal(this.defaultMenuQrTargetUrl());
+  menuQrDataUrl = signal<string | null>(null);
+  generatingQr = signal(false);
 
   editValues = new Map<string, { min: number; max: number; enabled: boolean }>();
 
@@ -57,8 +69,128 @@ export class ServiceTimeSettingsComponent implements OnInit {
         this.whatsAppNumber.set(res.whatsAppNumber ?? '');
         this.restaurantName.set(res.restaurantName ?? '');
         this.logoUrl.set(res.logoUrl);
+        this.orderSerialPrefix.set(res.orderSerialPrefix ?? '');
+        this.orderSerialStartingNumber.set(res.orderSerialStartingNumber ?? 1);
+        // Backend sends "HH:mm:ss" — <input type="time"> wants "HH:mm"
+        this.orderSerialResetTime.set((res.orderSerialResetTime ?? '00:00:00').slice(0, 5));
+        this.menuPdfUrl.set(res.menuPdfUrl);
       },
       error: (err) => this.handleLoadError(err)
+    });
+  }
+
+  // Absolute URL of the stable Public/menu-pdf redirect — this is what the QR code encodes.
+  // It never changes even if the uploaded PDF is replaced, so a printed QR stays valid forever
+  // as long as this domain keeps pointing at the backend (survives VPS/server changes, not domain changes).
+  private defaultMenuQrTargetUrl(): string {
+    const base = environment.apiBaseUrl.startsWith('http')
+      ? environment.apiBaseUrl
+      : `${window.location.origin}${environment.apiBaseUrl}`;
+    return `${base}/public/menu-pdf`;
+  }
+
+  fullMenuPdfUrl(): string | null {
+    const url = this.menuPdfUrl();
+    return url ? `${environment.apihub}${url}` : null;
+  }
+
+  onMenuPdfFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const maxBytes = 20 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      this.toast.error(`File is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Please use a file under 20 MB.`);
+      input.value = '';
+      return;
+    }
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      this.toast.error('Please upload a PDF file');
+      input.value = '';
+      return;
+    }
+
+    this.uploadingMenuPdf.set(true);
+    this.siteSettingService.uploadMenuPdf(file).subscribe({
+      next: (res) => {
+        this.menuPdfUrl.set(res.menuPdfUrl);
+        this.uploadingMenuPdf.set(false);
+        this.toast.success('Menu PDF updated — the QR code (if already printed) still points to it automatically');
+        input.value = '';
+      },
+      error: (err) => {
+        this.uploadingMenuPdf.set(false);
+        this.toast.error(this.describeUploadError(err));
+        input.value = '';
+      }
+    });
+  }
+
+  setMenuQrTargetUrl(value: string) {
+    this.menuQrTargetUrl.set(value);
+  }
+
+  async generateMenuQr() {
+    const url = this.menuQrTargetUrl().trim();
+    if (!url) {
+      this.toast.error('Enter the URL the QR code should open');
+      return;
+    }
+
+    this.generatingQr.set(true);
+    try {
+      const dataUrl = await QRCode.toDataURL(url, { width: 512, margin: 2 });
+      this.menuQrDataUrl.set(dataUrl);
+    } catch {
+      this.toast.error('Failed to generate QR code');
+    } finally {
+      this.generatingQr.set(false);
+    }
+  }
+
+  downloadMenuQr() {
+    const dataUrl = this.menuQrDataUrl();
+    if (!dataUrl) return;
+
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = 'menu-qr.png';
+    link.click();
+  }
+
+  setOrderSerialPrefix(value: string) {
+    this.orderSerialPrefix.set(value);
+  }
+
+  setOrderSerialStartingNumber(value: string) {
+    this.orderSerialStartingNumber.set(Number(value));
+  }
+
+  setOrderSerialResetTime(value: string) {
+    this.orderSerialResetTime.set(value);
+  }
+
+  saveOrderSerialSetting() {
+    if (this.orderSerialStartingNumber() < 0) {
+      this.toast.error('Starting number cannot be negative');
+      return;
+    }
+
+    this.savingOrderSerial.set(true);
+    const resetTimeSeconds = `${this.orderSerialResetTime()}:00`;
+    this.siteSettingService.updateOrderSerialSetting(this.orderSerialPrefix().trim(), this.orderSerialStartingNumber(), resetTimeSeconds).subscribe({
+      next: (res) => {
+        this.orderSerialPrefix.set(res.orderSerialPrefix ?? '');
+        this.orderSerialStartingNumber.set(res.orderSerialStartingNumber ?? 1);
+        this.orderSerialResetTime.set((res.orderSerialResetTime ?? '00:00:00').slice(0, 5));
+        this.savingOrderSerial.set(false);
+        this.toast.success('Order serial setting updated');
+      },
+      error: (err) => {
+        this.savingOrderSerial.set(false);
+        this.toast.error(err?.error || 'Failed to update order serial setting');
+      }
     });
   }
 
@@ -191,12 +323,12 @@ export class ServiceTimeSettingsComponent implements OnInit {
       return 'Your session has expired or you no longer have permission. Please log out and log back in, then try again.';
     }
     if (err?.status === 413) {
-      return 'Image is too large for the server to accept. Please use a file under 15 MB.';
+      return 'File is too large for the server to accept.';
     }
     if (typeof err?.error === 'string' && err.error) {
       return err.error;
     }
-    return `Failed to upload hero banner image (status ${err?.status ?? 'unknown'}). Please try again or check with support.`;
+    return `Upload failed (status ${err?.status ?? 'unknown'}). Please try again or check with support.`;
   }
 
   load() {
