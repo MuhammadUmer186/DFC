@@ -18,12 +18,14 @@ namespace RestaurantSystem.Services
         private readonly IHubContext<OrderHub> _hub;
         private readonly IKitchenOutService _kitchenOutService;
         private readonly PrintSvc _printService;
-        public OrderService(ApplicationDbContext context, IHubContext<OrderHub> hub, IKitchenOutService kitchenOutService, PrintSvc printService)
+        private readonly IRestaurantClock _clock;
+        public OrderService(ApplicationDbContext context, IHubContext<OrderHub> hub, IKitchenOutService kitchenOutService, PrintSvc printService, IRestaurantClock clock)
         {
             _context = context;
             _hub = hub;
             _kitchenOutService = kitchenOutService;
             _printService = printService;
+            _clock = clock;
         }
 
         // Shared by CreateAsync and ApproveOnlineOrderAsync — expands items/deals into raw-item quantities via recipes
@@ -107,9 +109,10 @@ namespace RestaurantSystem.Services
 
         // Prints both delivery-slip copies (counter=usb1, kitchen=usb2). Failures are caught per-copy —
         // a printer being offline should not block the approval itself.
-        private (bool CounterPrinted, bool KitchenPrinted) PrintDeliverySlips(Order order)
+        private async Task<(bool CounterPrinted, bool KitchenPrinted)> PrintDeliverySlips(Order order)
         {
             var items = BuildDeliveryReceiptItems(order);
+            var printedAt = await _clock.GetLocalNowAsync();
 
             PrintReceiptDto BuildDto(string copyType) => new PrintReceiptDto
             {
@@ -122,7 +125,8 @@ namespace RestaurantSystem.Services
                 OrderTypeLabel = ServiceTypeSlipLabel(order.ServiceType),
                 CustomerName = order.CustomerName,
                 CustomerPhone = order.PhoneNumber,
-                CustomerAddress = order.Address
+                CustomerAddress = order.Address,
+                PrintedAt = printedAt
             };
 
             bool counterOk = false, kitchenOk = false;
@@ -149,7 +153,9 @@ namespace RestaurantSystem.Services
             var startingNumber = settings?.OrderSerialStartingNumber ?? 1;
             var resetTime = settings?.OrderSerialResetTime ?? TimeSpan.Zero;
 
-            var now = DateTime.Now;
+            // The reset time is configured in the restaurant's local time (Settings), so "now"
+            // here must be the restaurant's local time too, not the server host's own clock.
+            var now = await _clock.GetLocalNowAsync();
             var businessDate = now.TimeOfDay < resetTime ? now.Date.AddDays(-1) : now.Date;
 
             var numbers = await _context.Database.SqlQueryRaw<int>(
@@ -211,9 +217,9 @@ namespace RestaurantSystem.Services
 
                 var order = new Order
                 {
-                    CreatedAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
                     Paid = isPaid,
-                    PaidAt = isPaid ? DateTime.Now : null,
+                    PaidAt = isPaid ? DateTime.UtcNow : null,
                     Status = isPaid ? OrderStatus.Paid : OrderStatus.Queued,
                     TakenByEmployeeId = isPaid ? takenByEmployeeId : null,
                     CashierId = isPaid ? takenByEmployeeId : null,
@@ -314,7 +320,7 @@ namespace RestaurantSystem.Services
 
                     await _kitchenOutService.ConsumeAsync(
                         rawItemConsumption,
-                        DateTime.Now,
+                        DateTime.UtcNow,
                         takenByEmployeeId
                     );
                 }
@@ -602,7 +608,7 @@ namespace RestaurantSystem.Services
                     throw new Exception("Order is not pending approval");
 
                 var rawItemConsumption = await BuildRawItemConsumptionAsync(order.OrderItems, order.OrderDeals);
-                await _kitchenOutService.ConsumeAsync(rawItemConsumption, DateTime.Now, null);
+                await _kitchenOutService.ConsumeAsync(rawItemConsumption, DateTime.UtcNow, null);
 
                 order.Status = OrderStatus.Queued;
                 order.DeliveryStatus = RestaurantSystem.Models.DeliveryStatus.Approved;
@@ -621,7 +627,7 @@ namespace RestaurantSystem.Services
             await _hub.Clients.Group("OrderQueue").SendAsync("OrderQueued", dto);
             await _hub.Clients.Group("OrderQueue").SendAsync("OnlineOrderApproved", order.Id);
 
-            var (counterOk, kitchenOk) = PrintDeliverySlips(order);
+            var (counterOk, kitchenOk) = await PrintDeliverySlips(order);
 
             return new ApproveOrderResult { Order = dto, CounterPrinted = counterOk, KitchenPrinted = kitchenOk };
         }
@@ -651,7 +657,7 @@ namespace RestaurantSystem.Services
 
             order.Status = OrderStatus.Cancelled;
             order.DeliveryStatus = RestaurantSystem.Models.DeliveryStatus.Rejected;
-            order.CancelledAt = DateTime.Now;
+            order.CancelledAt = DateTime.UtcNow;
             order.CancelledByEmployeeId = rejectedByEmployeeId;
             order.CancelledByUserName = userClaims.FindFirst(ClaimTypes.Name)?.Value;
             order.RejectReason = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
@@ -754,7 +760,7 @@ namespace RestaurantSystem.Services
 
             order.Paid = true;
             order.Status = OrderStatus.Paid;
-            order.PaidAt = DateTime.Now;
+            order.PaidAt = DateTime.UtcNow;
             order.PaymentMethod ??= "Cash";
             order.CashierUserName = userClaims.FindFirst(ClaimTypes.Name)?.Value;
 
@@ -836,6 +842,7 @@ namespace RestaurantSystem.Services
 
             var items = BuildDeliveryReceiptItems(order);
             var copyType = copy == "kitchen" ? "kitchen" : "customer";
+            var printedAt = await _clock.GetLocalNowAsync();
 
             var dto = new PrintReceiptDto
             {
@@ -848,7 +855,8 @@ namespace RestaurantSystem.Services
                 OrderTypeLabel = ServiceTypeSlipLabel(order.ServiceType),
                 CustomerName = order.CustomerName,
                 CustomerPhone = order.PhoneNumber,
-                CustomerAddress = order.Address
+                CustomerAddress = order.Address,
+                PrintedAt = printedAt
             };
 
             var printerType = copyType == "kitchen" ? PrinterKind.Usb2 : PrinterKind.Usb1;
@@ -927,9 +935,10 @@ namespace RestaurantSystem.Services
         // approved quickly and a pending-only figure would almost always read close to zero.
         public async Task<TodayOnlineSummaryDto> GetTodayOnlineSummaryAsync()
         {
-            var today = BusinessDayHelper.GetBusinessToday();
-            var start = BusinessDayHelper.GetStart(today);
-            var end = BusinessDayHelper.GetEnd(today);
+            var tz = await _clock.GetTimeZoneAsync();
+            var today = BusinessDayHelper.GetBusinessToday(tz);
+            var start = BusinessDayHelper.GetStart(today, tz);
+            var end = BusinessDayHelper.GetEnd(today, tz);
 
             var orders = await _context.Orders
                 .Where(o => o.OrderSource == "Online"
@@ -988,7 +997,7 @@ namespace RestaurantSystem.Services
             // ================= PAY =================
             order.Paid = true;
             order.Status = OrderStatus.Paid;
-            order.PaidAt = DateTime.Now;
+            order.PaidAt = DateTime.UtcNow;
             order.PaymentMethod = request.PaymentMethod;
             order.CashierId = cashierId;
             order.CashierUserName = userClaims.FindFirst(ClaimTypes.Name)?.Value;
@@ -1097,7 +1106,7 @@ namespace RestaurantSystem.Services
 
             // ================= CANCEL =================
             order.Status = OrderStatus.Cancelled;
-            order.CancelledAt = DateTime.Now;
+            order.CancelledAt = DateTime.UtcNow;
             order.CancelledByEmployeeId = cancelledByEmployeeId;
             order.CancelledByUserName = userClaims.FindFirst(ClaimTypes.Name)?.Value;
 
@@ -1387,8 +1396,9 @@ namespace RestaurantSystem.Services
 
         public async Task<List<OrderDto>> GetByDateAsync(DateOnly date)
         {
-            var start = BusinessDayHelper.GetStart(date);
-            var end = BusinessDayHelper.GetEnd(date);
+            var tz = await _clock.GetTimeZoneAsync();
+            var start = BusinessDayHelper.GetStart(date, tz);
+            var end = BusinessDayHelper.GetEnd(date, tz);
 
             return await _context.Orders
                 .Where(o => o.CreatedAt >= start && o.CreatedAt < end)

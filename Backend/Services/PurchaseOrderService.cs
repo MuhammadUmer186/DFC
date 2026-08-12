@@ -25,7 +25,7 @@ namespace RestaurantSystem.Services
                 {
                     BillNo = dto.BillNo,
                     VendorId = dto.VendorId,
-                    PurchaseDate = DateTime.Now,
+                    PurchaseDate = DateTime.UtcNow,
                     PurchaseOrderItems = new List<PurchaseOrderItem>()
                 };
 
@@ -56,7 +56,7 @@ namespace RestaurantSystem.Services
                             RawItemId = item.RawItemId,
                             VendorId = dto.VendorId,
                             Quantity = item.Quantity,
-                            LastUpdated = DateTime.Now
+                            LastUpdated = DateTime.UtcNow
                         };
 
                         _context.StoreStocks.Add(stock);
@@ -65,7 +65,7 @@ namespace RestaurantSystem.Services
                     {
                         // Update Existing stock
                         stock.Quantity += item.Quantity;
-                        stock.LastUpdated = DateTime.Now;
+                        stock.LastUpdated = DateTime.UtcNow;
                     }
                 }
 

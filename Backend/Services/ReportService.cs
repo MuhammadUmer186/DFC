@@ -13,19 +13,22 @@ namespace RestaurantSystem.Services
         private readonly IOrderService _orderService;
         private readonly IPurchaseOrderService _purchaseOrderService;
         private readonly IWasteService _wasteService;
+        private readonly IRestaurantClock _clock;
 
         public ReportService(
             ApplicationDbContext context,
             IKitchenOutService kitchenOutService,
             IOrderService orderService,
             IPurchaseOrderService purchaseOrderService,
-            IWasteService wasteService)
+            IWasteService wasteService,
+            IRestaurantClock clock)
         {
             _context = context;
             _kitchenOutService = kitchenOutService;
             _orderService = orderService;
             _purchaseOrderService = purchaseOrderService;
             _wasteService = wasteService;
+            _clock = clock;
         }
 
         // 🔹 PROFIT REPORT
@@ -98,8 +101,9 @@ namespace RestaurantSystem.Services
 
         public async Task<DailyReportDto> GetDailyReportAsync(DateOnly date)
         {
-            var start = BusinessDayHelper.GetStart(date);
-            var end = BusinessDayHelper.GetEnd(date);
+            var tz = await _clock.GetTimeZoneAsync();
+            var start = BusinessDayHelper.GetStart(date, tz);
+            var end = BusinessDayHelper.GetEnd(date, tz);
 
             var report = new DailyReportDto();
             report.Date = date;
@@ -189,8 +193,9 @@ namespace RestaurantSystem.Services
         // 🔹 RANGE REPORT (Today / Yesterday / This Week / This Month / This Year / Overall / Custom)
         public async Task<RangeReportDto> GetReportByRangeAsync(DateOnly from, DateOnly to)
         {
-            var start = BusinessDayHelper.GetStart(from);
-            var end = BusinessDayHelper.GetEnd(to);
+            var tz = await _clock.GetTimeZoneAsync();
+            var start = BusinessDayHelper.GetStart(from, tz);
+            var end = BusinessDayHelper.GetEnd(to, tz);
 
             var report = new RangeReportDto { From = from, To = to };
 

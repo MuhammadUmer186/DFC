@@ -9,6 +9,11 @@
         public decimal FinalTotal { get; set; }
         public List<PrintItemDto> Items { get; set; } = [];
 
+        // Restaurant-local time to print on the slip — the printing server's own OS clock may run
+        // in a different zone (e.g. UTC), so callers must resolve this via IRestaurantClock rather
+        // than leaving the builder to call DateTime.Now itself.
+        public DateTime PrintedAt { get; set; }
+
         // Delivery/online order extras — null for regular POS receipts (no change in output)
         public string? OrderTypeLabel { get; set; }
         public string? CustomerName { get; set; }

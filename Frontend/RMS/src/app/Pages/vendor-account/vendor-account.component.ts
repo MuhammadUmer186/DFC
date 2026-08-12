@@ -4,10 +4,11 @@ import { VendorAccountService } from '../../Services/vendor-account.service';
 import { CommonModule } from '@angular/common';
 import { VendorService } from '../../Services/vendor.service';
 import { ToastService } from '../../Services/toast.service';
+import { RmsDatePipe } from '../../Shared/pipes/rms-date.pipe';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RmsDatePipe],
   selector: 'app-vendor-account',
   templateUrl: './vendor-account.component.html',
   styleUrls: ['./vendor-account.component.css']

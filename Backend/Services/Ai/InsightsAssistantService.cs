@@ -59,8 +59,8 @@ namespace RestaurantSystem.Services.Ai
             {
                 conversation = new AiConversation
                 {
-                    CreatedAt = DateTime.Now,
-                    LastMessageAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
+                    LastMessageAt = DateTime.UtcNow,
                     UserId = userId,
                     UserName = userName,
                     Title = Truncate(sanitizedQuestion, 60)
@@ -69,7 +69,7 @@ namespace RestaurantSystem.Services.Ai
                 await _context.SaveChangesAsync(ct);
             }
 
-            _context.AiMessageRecords.Add(new AiMessageRecord { ConversationId = conversation.Id, CreatedAt = DateTime.Now, Role = "user", Content = sanitizedQuestion });
+            _context.AiMessageRecords.Add(new AiMessageRecord { ConversationId = conversation.Id, CreatedAt = DateTime.UtcNow, Role = "user", Content = sanitizedQuestion });
             await _context.SaveChangesAsync(ct);
 
             var recentHistory = conversation.Messages.OrderBy(m => m.CreatedAt).TakeLast(MaxHistoryMessages).ToList();
@@ -115,7 +115,7 @@ namespace RestaurantSystem.Services.Ai
                     _context.AiToolExecutionRecords.Add(new AiToolExecutionRecord
                     {
                         ConversationId = conversation.Id,
-                        CreatedAt = DateTime.Now,
+                        CreatedAt = DateTime.UtcNow,
                         ToolName = call.Name,
                         ArgumentsJson = call.ArgumentsJson,
                         Success = result.Success,
@@ -140,8 +140,8 @@ namespace RestaurantSystem.Services.Ai
 
             finalAnswer ??= "Sorry, I couldn't answer that right now. Please try again, or rephrase the question.";
 
-            _context.AiMessageRecords.Add(new AiMessageRecord { ConversationId = conversation.Id, CreatedAt = DateTime.Now, Role = "assistant", Content = finalAnswer });
-            conversation.LastMessageAt = DateTime.Now;
+            _context.AiMessageRecords.Add(new AiMessageRecord { ConversationId = conversation.Id, CreatedAt = DateTime.UtcNow, Role = "assistant", Content = finalAnswer });
+            conversation.LastMessageAt = DateTime.UtcNow;
             await _context.SaveChangesAsync(ct);
 
             sw.Stop();

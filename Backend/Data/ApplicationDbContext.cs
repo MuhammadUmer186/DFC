@@ -10,6 +10,14 @@ namespace RestaurantSystem.Data
         {
         }
 
+        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        {
+            // See UtcDateTimeConverters.cs for why this exists — every DateTime read from the
+            // database is stamped Kind=Utc so it round-trips through JSON correctly.
+            configurationBuilder.Properties<DateTime>().HaveConversion<UtcDateTimeConverter>();
+            configurationBuilder.Properties<DateTime?>().HaveConversion<UtcNullableDateTimeConverter>();
+        }
+
         public DbSet<User> Users { get; set; }
         public DbSet<Order> Orders { get; set; } = null!;
         public DbSet<OrderItem> OrderItems { get; set; } = null!;

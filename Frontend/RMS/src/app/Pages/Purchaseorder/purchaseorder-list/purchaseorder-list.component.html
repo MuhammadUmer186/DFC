@@ -37,7 +37,7 @@
               <td>{{ i + 1 }}</td>
               <td>{{ o.billNo }}</td>
               <td>{{ o.vendorName }}</td>
-              <td>{{ o.purchaseDate | date:'medium' }}</td>
+              <td>{{ o.purchaseDate | rmsDate:'medium' }}</td>
               <td>{{ o.totalAmount | rmsCurrency }}</td>
               <td>
                 <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" (click)="toggleDetails(o.id)">

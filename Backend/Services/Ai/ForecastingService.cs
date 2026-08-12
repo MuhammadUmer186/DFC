@@ -19,11 +19,13 @@ namespace RestaurantSystem.Services.Ai
 
         private readonly ApplicationDbContext _context;
         private readonly ILogger<ForecastingService> _logger;
+        private readonly IRestaurantClock _clock;
 
-        public ForecastingService(ApplicationDbContext context, ILogger<ForecastingService> logger)
+        public ForecastingService(ApplicationDbContext context, ILogger<ForecastingService> logger, IRestaurantClock clock)
         {
             _context = context;
             _logger = logger;
+            _clock = clock;
         }
 
         private record OrderPoint(DateTime CreatedAt, decimal TotalAmount);
@@ -31,14 +33,15 @@ namespace RestaurantSystem.Services.Ai
 
         public async Task<AiForecastRun> GenerateForecastAsync(int horizonDays = 7, CancellationToken ct = default)
         {
-            var today = BusinessDayHelper.GetBusinessToday();
+            var tz = await _clock.GetTimeZoneAsync();
+            var today = BusinessDayHelper.GetBusinessToday(tz);
             var forecastFrom = today.AddDays(1);
             var forecastTo = today.AddDays(horizonDays);
 
             // Training window: strictly BEFORE "today" — no future information ever leaks in,
             // and this run's own outputs are never read back into itself.
-            var trainingStart = BusinessDayHelper.GetStart(today.AddDays(-(LookbackWeeks * 7)));
-            var trainingEnd = BusinessDayHelper.GetStart(today);
+            var trainingStart = BusinessDayHelper.GetStart(today.AddDays(-(LookbackWeeks * 7)), tz);
+            var trainingEnd = BusinessDayHelper.GetStart(today, tz);
 
             var historicalOrders = await _context.Orders
                 .Where(o => o.CreatedAt >= trainingStart && o.CreatedAt < trainingEnd && o.Status == OrderStatus.Paid)
@@ -54,7 +57,7 @@ namespace RestaurantSystem.Services.Ai
 
             var run = new AiForecastRun
             {
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 ModelVersion = ModelVersion,
                 ForecastFrom = forecastFrom,
                 ForecastTo = forecastTo,
@@ -145,7 +148,8 @@ namespace RestaurantSystem.Services.Ai
         /// Safe to call repeatedly (idempotent recompute).
         public async Task BackfillAccuracyAsync(CancellationToken ct = default)
         {
-            var today = BusinessDayHelper.GetBusinessToday();
+            var tz = await _clock.GetTimeZoneAsync();
+            var today = BusinessDayHelper.GetBusinessToday(tz);
 
             var runsToBackfill = await _context.AiForecastRuns
                 .Where(r => r.ForecastTo < today && r.Mae == null)
@@ -163,8 +167,8 @@ namespace RestaurantSystem.Services.Ai
 
                 foreach (var row in dayLevelRows)
                 {
-                    var start = BusinessDayHelper.GetStart(row.ForecastDate);
-                    var end = BusinessDayHelper.GetEnd(row.ForecastDate);
+                    var start = BusinessDayHelper.GetStart(row.ForecastDate, tz);
+                    var end = BusinessDayHelper.GetEnd(row.ForecastDate, tz);
 
                     var actualOrders = await _context.Orders
                         .Where(o => o.CreatedAt >= start && o.CreatedAt < end && o.Status == OrderStatus.Paid)

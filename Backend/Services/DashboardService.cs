@@ -9,10 +9,12 @@ namespace RestaurantSystem.Services
     public class DashboardService : IDashboardService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IRestaurantClock _clock;
 
-        public DashboardService(ApplicationDbContext context)
+        public DashboardService(ApplicationDbContext context, IRestaurantClock clock)
         {
             _context = context;
+            _clock = clock;
         }
 
         // ===========================
@@ -20,11 +22,13 @@ namespace RestaurantSystem.Services
         // ===========================
         public async Task<DashboardSummaryDto> GetSalesSummaryAsync()
         {
-            // Business "today" (03:00 AM cutoff)
-            var today = BusinessDayHelper.GetBusinessToday();
+            var tz = await _clock.GetTimeZoneAsync();
 
-            var todayStart = BusinessDayHelper.GetStart(today);
-            var todayEnd = BusinessDayHelper.GetEnd(today);
+            // Business "today" (03:00 AM cutoff, in the restaurant's local time)
+            var today = BusinessDayHelper.GetBusinessToday(tz);
+
+            var todayStart = BusinessDayHelper.GetStart(today, tz);
+            var todayEnd = BusinessDayHelper.GetEnd(today, tz);
 
             var weekStart = today.AddDays(-6); // last 7 business days
             var monthStart = new DateOnly(today.Year, today.Month, 1);
@@ -37,13 +41,13 @@ namespace RestaurantSystem.Services
 
                 WeeklyTotal = await _context.Orders
                     .Where(o =>
-                        o.CreatedAt >= BusinessDayHelper.GetStart(weekStart) &&
+                        o.CreatedAt >= BusinessDayHelper.GetStart(weekStart, tz) &&
                         o.CreatedAt < todayEnd)
                     .SumAsync(o => (decimal?)o.TotalAmount) ?? 0,
 
                 MonthlyTotal = await _context.Orders
                     .Where(o =>
-                        o.CreatedAt >= BusinessDayHelper.GetStart(monthStart) &&
+                        o.CreatedAt >= BusinessDayHelper.GetStart(monthStart, tz) &&
                         o.CreatedAt < todayEnd)
                     .SumAsync(o => (decimal?)o.TotalAmount) ?? 0
             };
@@ -55,8 +59,9 @@ namespace RestaurantSystem.Services
 
         public async Task<List<DateAmountDto>> GetSalesByDateRangeAsync(DateOnly from, DateOnly to)
         {
-            var start = BusinessDayHelper.GetStart(from);
-            var end = BusinessDayHelper.GetEnd(to);
+            var tz = await _clock.GetTimeZoneAsync();
+            var start = BusinessDayHelper.GetStart(from, tz);
+            var end = BusinessDayHelper.GetEnd(to, tz);
 
             // Fetch all orders in the range
             var ordersInRange = await _context.Orders
@@ -65,7 +70,7 @@ namespace RestaurantSystem.Services
 
             // Group by business day
             var grouped = ordersInRange
-                .GroupBy(o => BusinessDayHelper.GetBusinessToday(o.CreatedAt))
+                .GroupBy(o => BusinessDayHelper.GetBusinessToday(o.CreatedAt, tz))
                 .Select(g => new DateAmountDto
                 {
                     Date = g.Key.ToDateTime(TimeOnly.MinValue),
@@ -84,18 +89,20 @@ namespace RestaurantSystem.Services
 
         public async Task<DashboardSummaryDto> GetPurchaseSummaryAsync()
         {
-            // Business "today" (03:00 AM cutoff)
-            var today = BusinessDayHelper.GetBusinessToday();
-            var todayStart = BusinessDayHelper.GetStart(today);
-            var todayEnd = BusinessDayHelper.GetEnd(today);
+            var tz = await _clock.GetTimeZoneAsync();
+
+            // Business "today" (03:00 AM cutoff, in the restaurant's local time)
+            var today = BusinessDayHelper.GetBusinessToday(tz);
+            var todayStart = BusinessDayHelper.GetStart(today, tz);
+            var todayEnd = BusinessDayHelper.GetEnd(today, tz);
 
             // Last 7 business days
             var weekStart = today.AddDays(-6);
-            var weekStartStart = BusinessDayHelper.GetStart(weekStart);
+            var weekStartStart = BusinessDayHelper.GetStart(weekStart, tz);
 
             // Start of the month
             var monthStart = new DateOnly(today.Year, today.Month, 1);
-            var monthStartStart = BusinessDayHelper.GetStart(monthStart);
+            var monthStartStart = BusinessDayHelper.GetStart(monthStart, tz);
 
             return new DashboardSummaryDto
             {
@@ -119,8 +126,9 @@ namespace RestaurantSystem.Services
 
         public async Task<List<DateAmountDto>> GetPurchasesByDateRangeAsync(DateOnly from, DateOnly to)
         {
-            var start = BusinessDayHelper.GetStart(from);
-            var end = BusinessDayHelper.GetEnd(to);
+            var tz = await _clock.GetTimeZoneAsync();
+            var start = BusinessDayHelper.GetStart(from, tz);
+            var end = BusinessDayHelper.GetEnd(to, tz);
 
             // Fetch data first
             var purchases = await _context.PurchaseOrders
@@ -129,7 +137,7 @@ namespace RestaurantSystem.Services
 
             // Group by business day
             var grouped = purchases
-                .GroupBy(p => BusinessDayHelper.GetBusinessToday(p.PurchaseDate))
+                .GroupBy(p => BusinessDayHelper.GetBusinessToday(p.PurchaseDate, tz))
                 .Select(g => new DateAmountDto
                 {
                     Date = g.Key.ToDateTime(TimeOnly.MinValue),
@@ -144,9 +152,10 @@ namespace RestaurantSystem.Services
 
         public async Task<DashboardMainSummaryDto> GetMainSummaryAsync()
     {
-        var today = BusinessDayHelper.GetBusinessToday();
-        var todayStart = BusinessDayHelper.GetStart(today);
-        var todayEnd = BusinessDayHelper.GetEnd(today);
+        var tz = await _clock.GetTimeZoneAsync();
+        var today = BusinessDayHelper.GetBusinessToday(tz);
+        var todayStart = BusinessDayHelper.GetStart(today, tz);
+        var todayEnd = BusinessDayHelper.GetEnd(today, tz);
 
         return new DashboardMainSummaryDto
         {
@@ -209,8 +218,9 @@ namespace RestaurantSystem.Services
 
 public async Task<ProfitDto> GetProfitAsync(DateOnly from, DateOnly to)
     {
-        var start = BusinessDayHelper.GetStart(from);
-        var end = BusinessDayHelper.GetEnd(to);
+        var tz = await _clock.GetTimeZoneAsync();
+        var start = BusinessDayHelper.GetStart(from, tz);
+        var end = BusinessDayHelper.GetEnd(to, tz);
 
         var sales = await _context.Orders
             .Where(o => o.CreatedAt >= start && o.CreatedAt < end)
@@ -229,8 +239,9 @@ public async Task<ProfitDto> GetProfitAsync(DateOnly from, DateOnly to)
 
         public async Task<List<ProfitDto>> GetDailyProfitAsync(DateOnly from, DateOnly to)
         {
-            var start = BusinessDayHelper.GetStart(from);
-            var end = BusinessDayHelper.GetEnd(to);
+            var tz = await _clock.GetTimeZoneAsync();
+            var start = BusinessDayHelper.GetStart(from, tz);
+            var end = BusinessDayHelper.GetEnd(to, tz);
 
             // Fetch sales/purchases in range first
             var sales = await _context.Orders
@@ -246,11 +257,11 @@ public async Task<ProfitDto> GetProfitAsync(DateOnly from, DateOnly to)
             for (var date = from; date <= to; date = date.AddDays(1))
             {
                 var sale = sales
-                    .Where(x => BusinessDayHelper.GetBusinessToday(x.CreatedAt) == date)
+                    .Where(x => BusinessDayHelper.GetBusinessToday(x.CreatedAt, tz) == date)
                     .Sum(x => x.TotalAmount);
 
                 var purchase = purchases
-                    .Where(x => BusinessDayHelper.GetBusinessToday(x.PurchaseDate) == date)
+                    .Where(x => BusinessDayHelper.GetBusinessToday(x.PurchaseDate, tz) == date)
                     .Sum(x => x.TotalAmount);
 
                 result.Add(new ProfitDto
@@ -267,7 +278,8 @@ public async Task<ProfitDto> GetProfitAsync(DateOnly from, DateOnly to)
 public async Task<ProfitSummaryDto> GetProfitSummaryAsync()
     {
         // Use business-day helper
-        var today = BusinessDayHelper.GetBusinessToday();
+        var tz = await _clock.GetTimeZoneAsync();
+        var today = BusinessDayHelper.GetBusinessToday(tz);
         var weekStart = today.AddDays(-6); // last 7 business days
         var monthStart = new DateOnly(today.Year, today.Month, 1);
 
@@ -325,15 +337,16 @@ public async Task<ProfitSummaryDto> GetProfitSummaryAsync()
 
 public async Task<OrderCountSummaryDto> GetOrderCountSummaryAsync()
     {
-        var today = BusinessDayHelper.GetBusinessToday();
-        var todayStart = BusinessDayHelper.GetStart(today);
-        var todayEnd = BusinessDayHelper.GetEnd(today);
+        var tz = await _clock.GetTimeZoneAsync();
+        var today = BusinessDayHelper.GetBusinessToday(tz);
+        var todayStart = BusinessDayHelper.GetStart(today, tz);
+        var todayEnd = BusinessDayHelper.GetEnd(today, tz);
 
         var weekStart = today.AddDays(-6); // last 7 business days
-        var weekStartStart = BusinessDayHelper.GetStart(weekStart);
+        var weekStartStart = BusinessDayHelper.GetStart(weekStart, tz);
 
         var monthStart = new DateOnly(today.Year, today.Month, 1);
-        var monthStartStart = BusinessDayHelper.GetStart(monthStart);
+        var monthStartStart = BusinessDayHelper.GetStart(monthStart, tz);
 
         return new OrderCountSummaryDto
         {
@@ -393,8 +406,9 @@ public async Task<OrderCountSummaryDto> GetOrderCountSummaryAsync()
         {
             var dto = new DashboardDto();
 
-            var currentMonth = DateTime.Now.Month;
-            var currentYear = DateTime.Now.Year;
+            var localNow = await _clock.GetLocalNowAsync();
+            var currentMonth = localNow.Month;
+            var currentYear = localNow.Year;
 
             dto.MonthlyUtilityBills = await _context.UtilityBills
                 .Where(x => x.BillDate.Month == currentMonth && x.BillDate.Year == currentYear)

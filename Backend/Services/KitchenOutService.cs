@@ -11,10 +11,12 @@ namespace RestaurantSystem.Services
     public class KitchenOutService : IKitchenOutService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IRestaurantClock _clock;
 
-        public KitchenOutService(ApplicationDbContext context)
+        public KitchenOutService(ApplicationDbContext context, IRestaurantClock clock)
         {
             _context = context;
+            _clock = clock;
         }
 
         public async Task CreateAsync(KitchenOutCreateDto dto)
@@ -25,7 +27,7 @@ namespace RestaurantSystem.Services
             {
                 var kitchenOut = new KitchenOut
                 {
-                    IssuedAt = DateTime.Now
+                    IssuedAt = DateTime.UtcNow
                 };
 
                 foreach (var item in dto.Items)
@@ -38,7 +40,7 @@ namespace RestaurantSystem.Services
                         throw new Exception($"Insufficient stock for RawItemId {item.RawItemId}");
 
                     stock.Quantity -= item.Quantity;
-                    stock.LastUpdated = DateTime.Now;
+                    stock.LastUpdated = DateTime.UtcNow;
 
                     // Add to KitchenOutItems
                     kitchenOut.KitchenOutItems.Add(new KitchenOutItem
@@ -85,8 +87,9 @@ namespace RestaurantSystem.Services
     int page = 0,
     int pageSize = 5)
         {
-            var start = BusinessDayHelper.GetStart(date);
-            var end = BusinessDayHelper.GetEnd(date);
+            var tz = await _clock.GetTimeZoneAsync();
+            var start = BusinessDayHelper.GetStart(date, tz);
+            var end = BusinessDayHelper.GetEnd(date, tz);
 
             var query = _context.KitchenOuts
                 .Include(k => k.KitchenOutItems)
@@ -184,8 +187,9 @@ namespace RestaurantSystem.Services
         {
             var avgPrices = await GetAverageCostsAsync();
 
-            var start = BusinessDayHelper.GetStart(date);
-            var end = BusinessDayHelper.GetEnd(date);
+            var tz = await _clock.GetTimeZoneAsync();
+            var start = BusinessDayHelper.GetStart(date, tz);
+            var end = BusinessDayHelper.GetEnd(date, tz);
 
             var kitchenOut = await _context.KitchenOuts
                 .Include(k => k.KitchenOutItems)

@@ -7,11 +7,12 @@ import { PurchaseOrder, PurchaseOrderService } from '../../Services/purchaseorde
 import { KitchenOut, KitchenOutService } from '../../Services/kitchenout.service';
 import { DateRangeFilterComponent, DateRange } from '../../Shared/date-range-filter/date-range-filter.component';
 import { RmsCurrencyPipe } from '../../Shared/pipes/currency-symbol.pipe';
+import { RmsDatePipe } from '../../Shared/pipes/rms-date.pipe';
 
 @Component({
   selector: 'app-report',
   standalone: true,
-  imports: [CommonModule, FormsModule, DateRangeFilterComponent, RmsCurrencyPipe],
+  imports: [CommonModule, FormsModule, DateRangeFilterComponent, RmsCurrencyPipe, RmsDatePipe],
   templateUrl: './report1.html',
   styleUrls: ['./report1.css']
 })

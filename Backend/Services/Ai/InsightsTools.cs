@@ -31,16 +31,18 @@ namespace RestaurantSystem.Services.Ai
         private readonly IReportService _reportService;
         private readonly IMenuProfitService _menuProfitService;
         private readonly ILogger<InsightsTools> _logger;
+        private readonly IRestaurantClock _clock;
 
         private static readonly DateOnly EarliestAllowedDate = new(2000, 1, 1);
         private const int MaxRangeDays = 366;
 
-        public InsightsTools(ApplicationDbContext context, IReportService reportService, IMenuProfitService menuProfitService, ILogger<InsightsTools> logger)
+        public InsightsTools(ApplicationDbContext context, IReportService reportService, IMenuProfitService menuProfitService, ILogger<InsightsTools> logger, IRestaurantClock clock)
         {
             _context = context;
             _reportService = reportService;
             _menuProfitService = menuProfitService;
             _logger = logger;
+            _clock = clock;
         }
 
         public List<AiToolDefinition> GetToolDefinitions() => new()
@@ -114,7 +116,7 @@ namespace RestaurantSystem.Services.Ai
 
             var report = await _reportService.GetReportByRangeAsync(from!.Value, to!.Value);
 
-            var text = $"Sales summary {from:yyyy-MM-dd} to {to:yyyy-MM-dd} (data as of {DateTime.Now:yyyy-MM-dd HH:mm}):\n" +
+            var text = $"Sales summary {from:yyyy-MM-dd} to {to:yyyy-MM-dd} (data as of {DateTime.UtcNow:yyyy-MM-dd HH:mm}):\n" +
                        $"- Total sales (united): Rs {report.Sales:0.##} across {report.OnlineOrderCount + report.SiteOrderCount} paid orders\n" +
                        $"- Online: Rs {report.OnlineSales:0.##} ({report.OnlineOrderCount} orders)\n" +
                        $"- Site/POS: Rs {report.SiteSales:0.##} ({report.SiteOrderCount} orders)\n" +
@@ -128,7 +130,7 @@ namespace RestaurantSystem.Services.Ai
 
         private async Task<AiToolExecutionResult> GetWeekOverWeekChangesAsync(CancellationToken ct)
         {
-            var today = BusinessDayHelper.GetBusinessToday();
+            var today = BusinessDayHelper.GetBusinessToday(await _clock.GetTimeZoneAsync());
             var thisWeek = await _reportService.GetReportByRangeAsync(today.AddDays(-6), today);
             var lastWeek = await _reportService.GetReportByRangeAsync(today.AddDays(-13), today.AddDays(-7));
 
@@ -161,8 +163,9 @@ namespace RestaurantSystem.Services.Ai
             if (error != null) return Fail(error);
             var topN = TryParseTopN(argumentsJson);
 
-            var start = BusinessDayHelper.GetStart(from!.Value);
-            var end = BusinessDayHelper.GetEnd(to!.Value);
+            var tz = await _clock.GetTimeZoneAsync();
+            var start = BusinessDayHelper.GetStart(from!.Value, tz);
+            var end = BusinessDayHelper.GetEnd(to!.Value, tz);
 
             var items = await _context.WasteItems
                 .Where(w => w.WasteRecord.WasteDate >= start && w.WasteRecord.WasteDate < end)
@@ -184,9 +187,10 @@ namespace RestaurantSystem.Services.Ai
             if (error != null) return Fail(error);
             var topN = TryParseTopN(argumentsJson);
 
+            var tz = await _clock.GetTimeZoneAsync();
             var profits = await _menuProfitService.GetMenuProfitAsync(
-                BusinessDayHelper.GetStart(from!.Value),
-                BusinessDayHelper.GetEnd(to!.Value));
+                BusinessDayHelper.GetStart(from!.Value, tz),
+                BusinessDayHelper.GetEnd(to!.Value, tz));
 
             if (profits.Count == 0) return Ok($"No menu-item sales data between {from:yyyy-MM-dd} and {to:yyyy-MM-dd}.");
 
@@ -206,7 +210,7 @@ namespace RestaurantSystem.Services.Ai
 
         private async Task<AiToolExecutionResult> GetPrepPlanAsync(string argumentsJson, CancellationToken ct)
         {
-            DateOnly date = BusinessDayHelper.GetBusinessToday().AddDays(1);
+            DateOnly date = BusinessDayHelper.GetBusinessToday(await _clock.GetTimeZoneAsync()).AddDays(1);
             if (!string.IsNullOrWhiteSpace(argumentsJson) && argumentsJson != "{}")
             {
                 try

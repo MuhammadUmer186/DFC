@@ -33,7 +33,7 @@
             <!-- Main Row -->
             <tr>
               <td>{{ i + 1 }}</td>
-              <td>{{ k.issuedAt | date:'short' }}</td>
+              <td>{{ k.issuedAt | rmsDate:'short' }}</td>
               <td>
                 <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" (click)="toggleKitchenDetails(k.id)">
                   <i class="pi" [ngClass]="expandedKitchenId() === k.id ? 'pi-chevron-up' : 'pi-eye'"></i>

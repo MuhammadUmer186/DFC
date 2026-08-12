@@ -28,7 +28,7 @@
             <td>{{ order.id }}</td>
             <td>{{ order.totalAmount | rmsCurrency }}</td>
             <td>{{ order.totalQuantity }}</td>
-            <td>{{ order.createdAt | date:'medium' }}</td>
+            <td>{{ order.createdAt | rmsDate:'medium' }}</td>
             <td>
               @if (order.orderSource === 'Online') {
                 <span class="dfc-badge dfc-badge-info">Online</span>

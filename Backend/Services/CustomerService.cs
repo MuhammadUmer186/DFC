@@ -42,7 +42,7 @@ namespace RestaurantSystem.Services
                 customer = new Customer
                 {
                     PhoneNumber = dto.PhoneNumber,
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.UtcNow
                 };
                 _context.Customers.Add(customer);
             }
@@ -51,7 +51,7 @@ namespace RestaurantSystem.Services
             customer.PersonalizationConsent = dto.PersonalizationConsent;
             customer.Allergens = dto.Allergens;
             customer.DietaryPreferences = dto.DietaryPreferences;
-            customer.UpdatedAt = DateTime.Now;
+            customer.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
             return ToDto(customer);
@@ -63,7 +63,7 @@ namespace RestaurantSystem.Services
             if (customer == null) return false;
 
             customer.PersonalizationConsent = consent;
-            customer.UpdatedAt = DateTime.Now;
+            customer.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
             return true;
         }

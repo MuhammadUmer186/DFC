@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { AiForecastService, ForecastRun, ForecastValue } from '../../../Services/ai-forecast.service';
 import { ToastService } from '../../../Services/toast.service';
 import { RmsCurrencyPipe } from '../../../Shared/pipes/currency-symbol.pipe';
+import { RmsDatePipe } from '../../../Shared/pipes/rms-date.pipe';
 
 @Component({
   selector: 'app-ai-forecast',
   standalone: true,
-  imports: [CommonModule, FormsModule, RmsCurrencyPipe],
+  imports: [CommonModule, FormsModule, RmsCurrencyPipe, RmsDatePipe],
   templateUrl: './ai-forecast.component.html',
   styleUrl: './ai-forecast.component.css'
 })

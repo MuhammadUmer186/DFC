@@ -11,10 +11,12 @@ namespace RestaurantSystem.Controllers
     public class SalaryController : ControllerBase
     {
         private readonly ISalaryService _service;
+        private readonly IRestaurantClock _clock;
 
-        public SalaryController(ISalaryService service)
+        public SalaryController(ISalaryService service, IRestaurantClock clock)
         {
             _service = service;
+            _clock = clock;
         }
 
         [Authorize(Roles = "SuperAdmin,Admin,Cashier,MainAdmin")]
@@ -25,8 +27,8 @@ namespace RestaurantSystem.Controllers
         [HttpGet("status")]
         public async Task<IActionResult> GetSalaryStatus([FromQuery] DateOnly? date)
         {
-            // If no date provided, default to today
-            var targetDate = date ?? DateOnly.FromDateTime(DateTime.Now);
+            // If no date provided, default to today (in the restaurant's configured local time)
+            var targetDate = date ?? DateOnly.FromDateTime(await _clock.GetLocalNowAsync());
 
             var result = await _service.GetSalaryStatusAsync(targetDate);
             return Ok(result);

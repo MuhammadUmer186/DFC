@@ -74,7 +74,7 @@ namespace RestaurantSystem.Services
                 VendorId = request.VendorId,
                 AmountPaid = request.AmountPaid,
                 PaidByUser = request.PaidByUser,
-                PaidOn = DateTime.Now
+                PaidOn = DateTime.UtcNow
             };
 
             _context.VendorPayments.Add(payment);

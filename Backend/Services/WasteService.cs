@@ -22,7 +22,7 @@
             {
                 var waste = new WasteRecord
                 {
-                    WasteDate = DateTime.Now,
+                    WasteDate = DateTime.UtcNow,
                     Reason = request.Reason
                 };
 
@@ -42,7 +42,7 @@
 
                     // Deduct Stock
                     stock.Quantity -= item.Quantity;
-                    stock.LastUpdated = DateTime.Now;
+                    stock.LastUpdated = DateTime.UtcNow;
 
                     _context.WasteItems.Add(new WasteItem
                     {

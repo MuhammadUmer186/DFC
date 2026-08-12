@@ -49,7 +49,7 @@
     <div class="dfc-page-header" style="margin-top: 8px;">
       <div class="dfc-page-header-text">
         <p class="dfc-page-subtitle">
-          Run #{{ r.id }} · model {{ r.modelVersion }} · generated {{ r.createdAt | date:'medium' }} ·
+          Run #{{ r.id }} · model {{ r.modelVersion }} · generated {{ r.createdAt | rmsDate:'medium' }} ·
           covers {{ r.forecastFrom | date:'MMM d' }} – {{ r.forecastTo | date:'MMM d' }}
           @if (r.mae !== null) { · MAE {{ r.mae | rmsCurrency }} @if (r.wape !== null) { , WAPE {{ r.wape }}% } }
           @else { · accuracy not yet available (computed once the forecasted dates have passed) }

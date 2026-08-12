@@ -41,7 +41,7 @@ namespace RestaurantSystem.Printing
           $"ORDER NO: {dto.OrderNo}" + "\x1D\x21\x00\x1B\x45\x00");
 
 
-            lines.Add($"Date: {DateTime.Now}");
+            lines.Add($"Date: {dto.PrintedAt}");
 
             // ===== DELIVERY CUSTOMER INFO (online orders only) =====
             if (!string.IsNullOrWhiteSpace(dto.CustomerName))

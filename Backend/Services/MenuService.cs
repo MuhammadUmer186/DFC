@@ -11,7 +11,8 @@ namespace RestaurantSystem.Services
     public class MenuService: IMenuService
     {
         private readonly ApplicationDbContext _context;
-        public MenuService(ApplicationDbContext db) { _context = db; }
+        private readonly IRestaurantClock _clock;
+        public MenuService(ApplicationDbContext db, IRestaurantClock clock) { _context = db; _clock = clock; }
 
         public async Task<int> CreateMenuItemAsync(CreateMenuItemDto dto)
         {
@@ -100,14 +101,16 @@ namespace RestaurantSystem.Services
         }
         public async Task<List<MenuItemStatsDto>> GetMenuItemStatsOptimizedAsync()
         {
-            var now = DateTime.Now;
+            var tz = await _clock.GetTimeZoneAsync();
+            var now = await _clock.GetLocalNowAsync();
+            var today = BusinessDayHelper.GetBusinessToday(tz);
 
             // Business day ranges
-            var todayStart = BusinessDayHelper.GetStart(BusinessDayHelper.GetBusinessToday());
-            var todayEnd = BusinessDayHelper.GetEnd(BusinessDayHelper.GetBusinessToday());
+            var todayStart = BusinessDayHelper.GetStart(today, tz);
+            var todayEnd = BusinessDayHelper.GetEnd(today, tz);
 
-            var weekStart = BusinessDayHelper.GetStart(DateOnly.FromDateTime(now.AddDays(-(int)now.DayOfWeek)));
-            var monthStart = BusinessDayHelper.GetStart(DateOnly.FromDateTime(new DateTime(now.Year, now.Month, 1)));
+            var weekStart = BusinessDayHelper.GetStart(DateOnly.FromDateTime(now.AddDays(-(int)now.DayOfWeek)), tz);
+            var monthStart = BusinessDayHelper.GetStart(DateOnly.FromDateTime(new DateTime(now.Year, now.Month, 1)), tz);
 
             // 1️⃣ Get all menu items
             var menuItems = await _context.MenuItems.ToListAsync();
@@ -166,10 +169,11 @@ namespace RestaurantSystem.Services
         }
         public async Task<List<MenuItemStatsDto>> GetMenuItemStatsByDateAsync(DateOnly date)
         {
-            var today = BusinessDayHelper.GetBusinessToday();
+            var tz = await _clock.GetTimeZoneAsync();
+            var today = BusinessDayHelper.GetBusinessToday(tz);
             // Convert DateOnly to DateTime range
-            var start = BusinessDayHelper.GetStart(today);
-            var end = BusinessDayHelper.GetEnd(today);
+            var start = BusinessDayHelper.GetStart(today, tz);
+            var end = BusinessDayHelper.GetEnd(today, tz);
 
             // 1️⃣ Get all menu items
             var menuItems = await _context.MenuItems.ToListAsync();

@@ -2,11 +2,12 @@ import { Component, signal, effect } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { PurchaseOrder, PurchaseOrderService } from '../../../Services/purchaseorder.service';
 import { RmsCurrencyPipe } from '../../../Shared/pipes/currency-symbol.pipe';
+import { RmsDatePipe } from '../../../Shared/pipes/rms-date.pipe';
 
 @Component({
   standalone: true,
   selector: 'app-purchase-order-list',
-  imports: [CommonModule, DatePipe, RmsCurrencyPipe],
+  imports: [CommonModule, DatePipe, RmsCurrencyPipe, RmsDatePipe],
   templateUrl: './purchaseorder-list.component.html',
   styleUrls: ['./purchaseorder-list.component.css']
 })

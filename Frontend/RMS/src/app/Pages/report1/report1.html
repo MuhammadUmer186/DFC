@@ -97,7 +97,7 @@
                 <td>{{ order.id }}</td>
                 <td>{{ order.totalAmount | rmsCurrency }}</td>
                 <td>{{ order.totalQuantity }}</td>
-                <td>{{ order.createdAt | date:'medium' }}</td>
+                <td>{{ order.createdAt | rmsDate:'medium' }}</td>
                 <td>{{ order.takenByEmployeeName || '-' }}</td>
                 <td>{{ order.cashierName || '-' }}</td>
                 <td>
@@ -163,7 +163,7 @@
               <tr>
                 <td>{{ o.billNo }}</td>
                 <td>{{ o.vendorName }}</td>
-                <td>{{ o.purchaseDate | date:'medium' }}</td>
+                <td>{{ o.purchaseDate | rmsDate:'medium' }}</td>
                 <td>{{ o.totalAmount | rmsCurrency }}</td>
                 <td>
                   <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" (click)="toggleDetails(o.id); $event.stopPropagation()">
@@ -208,7 +208,7 @@
           <tbody>
             @for(k of kitchenOuts(); track k.id) {
               <tr>
-                <td>{{ k.issuedAt | date:'short' }}</td>
+                <td>{{ k.issuedAt | rmsDate:'short' }}</td>
                 <td>
                   <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" (click)="toggleKitchenDetails(k.id); $event.stopPropagation()">
                     <i class="pi" [ngClass]="expandedKitchenId() === k.id ? 'pi-chevron-up' : 'pi-eye'"></i>
@@ -251,7 +251,7 @@
             @for(w of report().wastes; track w.id) {
               <tr>
                 <td>{{ w.id }}</td>
-                <td>{{ w.createdAt | date:'short' }}</td>
+                <td>{{ w.createdAt | rmsDate:'short' }}</td>
               </tr>
             }
           </tbody>

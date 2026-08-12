@@ -85,7 +85,7 @@
                 <td>{{ p.id }}</td>
                 <td>{{ p.billNo }}</td>
                 <td>{{ p.totalAmount }}</td>
-                <td>{{ p.createdAt | date:'short' }}</td>
+                <td>{{ p.createdAt | rmsDate:'short' }}</td>
               </tr>
             }
           </tbody>
@@ -112,7 +112,7 @@
                 <td>{{ p.id }}</td>
                 <td>{{ p.amountPaid }}</td>
                 <td><strong>{{ p.paidByUser }}</strong></td>
-                <td>{{ p.paidOn | date:'short' }}</td>
+                <td>{{ p.paidOn | rmsDate:'short' }}</td>
               </tr>
             }
           </tbody>

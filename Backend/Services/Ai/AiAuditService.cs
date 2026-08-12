@@ -21,7 +21,7 @@ namespace RestaurantSystem.Services.Ai
 
         public async Task LogAsync(AiAuditLog entry, CancellationToken ct = default)
         {
-            entry.CreatedAt = DateTime.Now;
+            entry.CreatedAt = DateTime.UtcNow;
             try
             {
                 _context.AiAuditLogs.Add(entry);

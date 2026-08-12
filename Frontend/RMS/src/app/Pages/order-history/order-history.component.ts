@@ -6,11 +6,12 @@ import { Order, OrderService } from '../../Services/order.service';
 import { PrintService } from '../../Services/printservice';
 import { ToastService } from '../../Services/toast.service';
 import { RmsCurrencyPipe } from '../../Shared/pipes/currency-symbol.pipe';
+import { RmsDatePipe } from '../../Shared/pipes/rms-date.pipe';
 
 @Component({
   selector: 'app-orders-history',
   standalone: true,
-  imports: [CommonModule, FormsModule, PaginatorModule, RmsCurrencyPipe],
+  imports: [CommonModule, FormsModule, PaginatorModule, RmsCurrencyPipe, RmsDatePipe],
   templateUrl: './order-history.component.html',
   styleUrls: ['./order-history.component.css']
 })

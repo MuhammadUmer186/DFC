@@ -25,7 +25,7 @@
   @if (result()) {
     <div class="status-card">
       <div class="status-label">{{ result()!.statusLabel }}</div>
-      <div class="status-sub">Order #{{ result()!.orderNumber || result()!.id }} · {{ serviceTypeLabel(result()!.serviceType) }} · {{ result()!.createdAt | date:'medium' }}</div>
+      <div class="status-sub">Order #{{ result()!.orderNumber || result()!.id }} · {{ serviceTypeLabel(result()!.serviceType) }} · {{ result()!.createdAt | rmsDate:'medium' }}</div>
 
       <div class="status-items">
         @for (item of result()!.items; track item.menuItemName) {

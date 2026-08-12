@@ -1,10 +1,11 @@
 import { Component, signal } from '@angular/core';
 import { WasteRecord, WasteService } from '../../Services/waste.service';
 import { CommonModule } from '@angular/common';
+import { RmsDatePipe } from '../../Shared/pipes/rms-date.pipe';
 
 @Component({
   selector: 'app-waste-list',
-  imports: [CommonModule],
+  imports: [CommonModule, RmsDatePipe],
   templateUrl: './waste-list.component.html',
   styleUrls: ['./waste-list.component.css'] // Fixed typo 'styleUrl' -> 'styleUrls'
 })

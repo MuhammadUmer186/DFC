@@ -1,10 +1,11 @@
 import { Component, signal } from '@angular/core';
 import { KitchenOut, KitchenOutService } from '../../../Services/kitchenout.service';
 import { CommonModule } from '@angular/common';
+import { RmsDatePipe } from '../../../Shared/pipes/rms-date.pipe';
 
 @Component({
   selector: 'app-kitchen-out-list',
-  imports: [CommonModule],
+  imports: [CommonModule, RmsDatePipe],
   templateUrl: './kitchenout-list.component.html',
   styleUrls: ['./kitchenout-list.component.css']
 })

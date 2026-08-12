@@ -12,16 +12,18 @@ namespace RestaurantSystem.Services.Ai
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<InventoryRecommendationService> _logger;
+        private readonly IRestaurantClock _clock;
 
         // Thresholds are deliberately simple constants (not learned/tuned) so every
         // recommendation stays explainable in plain language.
         private const decimal ExcessStockMultiplier = 3.0m;
         private const decimal WasteSignificanceRatio = 0.10m; // waste > 10% of forecasted demand
 
-        public InventoryRecommendationService(ApplicationDbContext context, ILogger<InventoryRecommendationService> logger)
+        public InventoryRecommendationService(ApplicationDbContext context, ILogger<InventoryRecommendationService> logger, IRestaurantClock clock)
         {
             _context = context;
             _logger = logger;
+            _clock = clock;
         }
 
         public async Task<List<AiInventoryRecommendation>> GenerateRecommendationsAsync(CancellationToken ct = default)
@@ -73,7 +75,7 @@ namespace RestaurantSystem.Services.Ai
                 .Select(g => new { RawItemId = g.Key, Quantity = g.Sum(s => s.Quantity), LatestVendorId = g.OrderByDescending(s => s.LastUpdated).First().VendorId })
                 .ToListAsync(ct);
 
-            var wasteSince = DateTime.Now.AddDays(-30);
+            var wasteSince = DateTime.UtcNow.AddDays(-30);
             var recentWasteByRawItem = await _context.WasteItems
                 .Where(w => rawItemIds.Contains(w.RawItemId) && w.WasteRecord.WasteDate >= wasteSince)
                 .GroupBy(w => w.RawItemId)
@@ -83,7 +85,7 @@ namespace RestaurantSystem.Services.Ai
             var vendorIds = stockByRawItem.Select(s => s.LatestVendorId).Distinct().ToList();
             var vendors = await _context.Vendors.Where(v => vendorIds.Contains(v.Id)).ToListAsync(ct);
 
-            var today = BusinessDayHelper.GetBusinessToday();
+            var today = BusinessDayHelper.GetBusinessToday(await _clock.GetTimeZoneAsync());
             var recommendations = new List<AiInventoryRecommendation>();
 
             foreach (var rawItem in rawItems)
@@ -165,7 +167,7 @@ namespace RestaurantSystem.Services.Ai
 
                 recommendations.Add(new AiInventoryRecommendation
                 {
-                    CreatedAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
                     RawItemId = rawItem.Id,
                     CurrentStock = Math.Max(0, currentStock),
                     ForecastedDemand = Math.Max(0, forecastedDemand),
@@ -202,7 +204,7 @@ namespace RestaurantSystem.Services.Ai
             _context.AiInventoryRecommendationDecisions.Add(new AiInventoryRecommendationDecision
             {
                 RecommendationId = recommendationId,
-                DecidedAt = DateTime.Now,
+                DecidedAt = DateTime.UtcNow,
                 DecidedByUserId = userId,
                 DecidedByUserName = userName,
                 Decision = decision,

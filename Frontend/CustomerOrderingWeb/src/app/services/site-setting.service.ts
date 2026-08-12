@@ -13,6 +13,9 @@ export class SiteSettingService {
   // Admin-selected currency (RMS Settings → Country, Time Zone & Currency) — every price shown
   // on the ordering site reads this instead of a hardcoded symbol.
   currencySymbol = signal<string>('Rs');
+  // Admin-selected IANA time zone — drives date/time displays (e.g. order tracking) so they show
+  // the restaurant's local time regardless of the viewer's own device time zone.
+  timeZoneId = signal<string>('Asia/Karachi');
 
   heroImageUrl = computed(() => {
     const url = this.heroImageUrlRaw();
@@ -29,13 +32,14 @@ export class SiteSettingService {
   }
 
   load() {
-    this.http.get<{ heroImageUrl: string | null; whatsAppNumber: string | null; restaurantName: string | null; logoUrl: string | null; currencySymbol: string | null }>(`${this.baseUrl}/site-settings`).subscribe({
+    this.http.get<{ heroImageUrl: string | null; whatsAppNumber: string | null; restaurantName: string | null; logoUrl: string | null; currencySymbol: string | null; timeZoneId: string | null }>(`${this.baseUrl}/site-settings`).subscribe({
       next: (res) => {
         this.heroImageUrlRaw.set(res.heroImageUrl);
         this.whatsAppNumber.set(res.whatsAppNumber);
         if (res.restaurantName) this.restaurantName.set(res.restaurantName);
         this.logoUrlRaw.set(res.logoUrl);
         if (res.currencySymbol) this.currencySymbol.set(res.currencySymbol);
+        if (res.timeZoneId) this.timeZoneId.set(res.timeZoneId);
       },
       error: () => {}
     });

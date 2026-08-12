@@ -36,7 +36,7 @@
             <tr>
               <td>{{ i + 1 }}</td>
               <td>{{ w.referenceNo }}</td>
-              <td>{{ w.createdAt | date:'short' }}</td>
+              <td>{{ w.createdAt | rmsDate:'short' }}</td>
               <td>{{ w.reason }}</td>
               <td>
                 <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" (click)="toggleWasteDetails(w.id)">
