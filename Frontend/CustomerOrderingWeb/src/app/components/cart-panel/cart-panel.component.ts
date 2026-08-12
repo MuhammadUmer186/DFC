@@ -4,11 +4,12 @@ import { RouterLink } from '@angular/router';
 import { CartService } from '../../services/cart.service';
 import { CartLine } from '../../models/cart.model';
 import { OrderTypeService } from '../../services/order-type.service';
+import { RmsCurrencyPipe } from '../../pipes/currency-symbol.pipe';
 
 @Component({
   selector: 'app-cart-panel',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, RmsCurrencyPipe],
   templateUrl: './cart-panel.component.html',
   styleUrl: './cart-panel.component.css'
 })

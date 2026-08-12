@@ -7,11 +7,12 @@ import { ToastService } from '../../Services/toast.service';
 import { OrderQueueDto, OrderSignalRService } from '../../Services/order-signalr';
 import { OnlineOrdersService } from '../../Services/online-orders.service';
 import { nextDeliveryStatus, DeliveryStatusValue } from '../../Services/delivery-status.util';
+import { RmsCurrencyPipe } from '../../Shared/pipes/currency-symbol.pipe';
 
 @Component({
   selector: 'app-queue',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RmsCurrencyPipe],
   templateUrl: './queue.html',
   styleUrls: ['./queue.css']
 })

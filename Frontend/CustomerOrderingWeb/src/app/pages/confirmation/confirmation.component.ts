@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PlaceOrderResponse } from '../../services/order.service';
 import { ServiceType } from '../../services/order-type.service';
+import { RmsCurrencyPipe } from '../../pipes/currency-symbol.pipe';
 
 @Component({
   selector: 'app-confirmation',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, RmsCurrencyPipe],
   templateUrl: './confirmation.component.html',
   styleUrl: './confirmation.component.css'
 })

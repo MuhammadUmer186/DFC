@@ -13,6 +13,8 @@ namespace RestaurantSystem.Models
         // regardless of where the browser viewing it physically is.
         public string Country { get; set; } = "Pakistan";
         public string TimeZoneId { get; set; } = "Asia/Karachi";
+        public string CurrencyCode { get; set; } = "PKR";
+        public string CurrencySymbol { get; set; } = "Rs";
 
         // ✅ MENU PDF — the currently active menu PDF file. The QR code printed for customers
         // encodes a stable redirect endpoint (Public/menu-pdf), not this URL directly, so

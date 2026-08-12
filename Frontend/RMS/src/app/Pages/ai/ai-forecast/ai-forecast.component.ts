@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AiForecastService, ForecastRun, ForecastValue } from '../../../Services/ai-forecast.service';
 import { ToastService } from '../../../Services/toast.service';
+import { RmsCurrencyPipe } from '../../../Shared/pipes/currency-symbol.pipe';
 
 @Component({
   selector: 'app-ai-forecast',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RmsCurrencyPipe],
   templateUrl: './ai-forecast.component.html',
   styleUrl: './ai-forecast.component.css'
 })

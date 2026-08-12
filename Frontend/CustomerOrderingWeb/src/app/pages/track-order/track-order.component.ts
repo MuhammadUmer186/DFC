@@ -2,11 +2,12 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OrderService, OrderStatusResponse } from '../../services/order.service';
+import { RmsCurrencyPipe } from '../../pipes/currency-symbol.pipe';
 
 @Component({
   selector: 'app-track-order',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RmsCurrencyPipe],
   templateUrl: './track-order.component.html',
   styleUrl: './track-order.component.css'
 })

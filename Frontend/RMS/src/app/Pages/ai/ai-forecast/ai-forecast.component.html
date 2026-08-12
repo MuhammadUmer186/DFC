@@ -51,7 +51,7 @@
         <p class="dfc-page-subtitle">
           Run #{{ r.id }} · model {{ r.modelVersion }} · generated {{ r.createdAt | date:'medium' }} ·
           covers {{ r.forecastFrom | date:'MMM d' }} – {{ r.forecastTo | date:'MMM d' }}
-          @if (r.mae !== null) { · MAE Rs {{ r.mae }} @if (r.wape !== null) { , WAPE {{ r.wape }}% } }
+          @if (r.mae !== null) { · MAE {{ r.mae | rmsCurrency }} @if (r.wape !== null) { , WAPE {{ r.wape }}% } }
           @else { · accuracy not yet available (computed once the forecasted dates have passed) }
         </p>
         @if (r.notes) {
@@ -76,10 +76,10 @@
           @for (row of dayRows(); track row.forecastDate) {
             <tr>
               <td>{{ row.forecastDate | date:'EEE, MMM d' }}</td>
-              <td>Rs {{ row.predictedSales }} @if (row.lowConfidence) { <span class="dfc-badge dfc-badge-amber" title="Limited historical data for this date">Low confidence</span> }</td>
-              <td>Rs {{ row.confidenceLow }} – Rs {{ row.confidenceHigh }}</td>
+              <td>{{ row.predictedSales | rmsCurrency }} @if (row.lowConfidence) { <span class="dfc-badge dfc-badge-amber" title="Limited historical data for this date">Low confidence</span> }</td>
+              <td>{{ row.confidenceLow | rmsCurrency }} – {{ row.confidenceHigh | rmsCurrency }}</td>
               <td>{{ row.predictedOrderCount }}</td>
-              <td>{{ row.actualSales !== null ? ('Rs ' + row.actualSales) : '—' }}</td>
+              <td>{{ row.actualSales !== null ? (row.actualSales | rmsCurrency) : '—' }}</td>
             </tr>
           }
         </tbody>
@@ -91,7 +91,7 @@
       <div style="display:flex; align-items:flex-end; gap:3px; height:120px; padding:10px 0;">
         @for (h of hourlyFirstDay(); track h.hourOfDay) {
           <div
-            [title]="hourLabel(h.hourOfDay) + ' — Rs ' + h.predictedSales"
+            [title]="hourLabel(h.hourOfDay) + ' — ' + (h.predictedSales | rmsCurrency)"
             style="flex:1; background:var(--dfc-navy-600, #1e3a5f); border-radius:2px 2px 0 0; min-width:4px;"
             [style.height.%]="(h.predictedSales / maxHourlySales()) * 100"
           ></div>

@@ -401,8 +401,8 @@
     <div class="sidebar-footer">
       <div class="sidebar-footer-title">Today's Summary</div>
       <div class="sidebar-footer-row"><span>Orders</span><strong>{{ summary.orders }}</strong></div>
-      <div class="sidebar-footer-row"><span>Sales</span><strong>Rs {{ summary.sales | number:'1.0-0' }}</strong></div>
-      <div class="sidebar-footer-row"><span>Avg. Order Value</span><strong>Rs {{ summary.avgOrderValue | number:'1.0-0' }}</strong></div>
+      <div class="sidebar-footer-row"><span>Sales</span><strong>{{ summary.sales | rmsCurrency:'1.0-0' }}</strong></div>
+      <div class="sidebar-footer-row"><span>Avg. Order Value</span><strong>{{ summary.avgOrderValue | rmsCurrency:'1.0-0' }}</strong></div>
     </div>
   }
 

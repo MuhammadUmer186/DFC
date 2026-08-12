@@ -108,7 +108,9 @@ namespace RestaurantSystem.Controllers
                 restaurantName = setting?.RestaurantName,
                 logoUrl = setting?.LogoUrl,
                 country = setting?.Country ?? "Pakistan",
-                timeZoneId = setting?.TimeZoneId ?? "Asia/Karachi"
+                timeZoneId = setting?.TimeZoneId ?? "Asia/Karachi",
+                currencyCode = setting?.CurrencyCode ?? "PKR",
+                currencySymbol = setting?.CurrencySymbol ?? "Rs"
             });
         }
 

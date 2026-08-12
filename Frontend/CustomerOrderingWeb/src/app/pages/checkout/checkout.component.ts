@@ -8,11 +8,12 @@ import { OrderTypeService, ServiceType } from '../../services/order-type.service
 import { DeliveryLocationService } from '../../services/delivery-location.service';
 import { AreaService, Area } from '../../services/area.service';
 import { ServiceTimeService } from '../../services/service-time.service';
+import { RmsCurrencyPipe } from '../../pipes/currency-symbol.pipe';
 
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, RmsCurrencyPipe],
   templateUrl: './checkout.component.html',
   styleUrl: './checkout.component.css'
 })

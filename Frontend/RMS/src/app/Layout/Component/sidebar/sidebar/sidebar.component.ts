@@ -6,6 +6,7 @@ import { AuthService } from '../../../../Services/auth.service';
 import { DashboardService } from '../../../../Services/dashboard.service';
 import { OrderSignalRService } from '../../../../Services/order-signalr';
 import { BrandingService } from '../../../../Services/branding.service';
+import { RmsCurrencyPipe } from '../../../../Shared/pipes/currency-symbol.pipe';
 
 interface TodaySummary {
   orders: number;
@@ -16,7 +17,7 @@ interface TodaySummary {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, RmsCurrencyPipe],
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css']
 })

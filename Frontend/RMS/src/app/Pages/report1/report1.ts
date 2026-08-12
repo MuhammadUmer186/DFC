@@ -6,11 +6,12 @@ import { OrderService, Order } from '../../Services/order.service';
 import { PurchaseOrder, PurchaseOrderService } from '../../Services/purchaseorder.service';
 import { KitchenOut, KitchenOutService } from '../../Services/kitchenout.service';
 import { DateRangeFilterComponent, DateRange } from '../../Shared/date-range-filter/date-range-filter.component';
+import { RmsCurrencyPipe } from '../../Shared/pipes/currency-symbol.pipe';
 
 @Component({
   selector: 'app-report',
   standalone: true,
-  imports: [CommonModule, FormsModule, DateRangeFilterComponent],
+  imports: [CommonModule, FormsModule, DateRangeFilterComponent, RmsCurrencyPipe],
   templateUrl: './report1.html',
   styleUrls: ['./report1.css']
 })

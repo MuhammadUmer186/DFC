@@ -18,13 +18,18 @@ export class BrandingService {
   // clock so it shows the restaurant's local time regardless of the viewer's device/location.
   timeZoneId = signal<string>('Asia/Karachi');
   country = signal<string>('Pakistan');
+  // Admin-selected currency (Settings → Country & Time Zone) — every "Rs {{ amount }}"-style
+  // display in the RMS reads this instead of hardcoding a symbol, so switching the configured
+  // country updates prices everywhere without touching individual pages.
+  currencyCode = signal<string>('PKR');
+  currencySymbol = signal<string>('Rs');
 
   constructor(private http: HttpClient, private titleService: Title) {}
 
   load() {
     if (this.loaded) return;
     this.loaded = true;
-    this.http.get<{ restaurantName: string | null; logoUrl: string | null; country: string | null; timeZoneId: string | null }>(this.api).subscribe({
+    this.http.get<{ restaurantName: string | null; logoUrl: string | null; country: string | null; timeZoneId: string | null; currencyCode: string | null; currencySymbol: string | null }>(this.api).subscribe({
       next: (res) => {
         if (res.restaurantName) {
           this.restaurantName.set(res.restaurantName);
@@ -33,6 +38,8 @@ export class BrandingService {
         if (res.logoUrl) this.logoUrl.set(`${environment.apihub}${res.logoUrl}`);
         if (res.country) this.country.set(res.country);
         if (res.timeZoneId) this.timeZoneId.set(res.timeZoneId);
+        if (res.currencyCode) this.currencyCode.set(res.currencyCode);
+        if (res.currencySymbol) this.currencySymbol.set(res.currencySymbol);
       },
       error: () => {
         // Non-critical — falls back to the default name/logo baked into each template.

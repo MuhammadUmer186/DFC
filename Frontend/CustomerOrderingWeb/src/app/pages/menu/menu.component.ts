@@ -5,6 +5,7 @@ import { CartService } from '../../services/cart.service';
 import { CartPanelComponent } from '../../components/cart-panel/cart-panel.component';
 import { SiteSettingService } from '../../services/site-setting.service';
 import { PublicMenu, PublicMenuItem, PublicDeal } from '../../models/menu.model';
+import { RmsCurrencyPipe } from '../../pipes/currency-symbol.pipe';
 
 const CATEGORY_ICONS: { keyword: string; icon: string }[] = [
   { keyword: 'fries', icon: '🍟' },
@@ -25,7 +26,7 @@ const FAVORITES_KEY = 'dfc-customer-favorites';
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports: [CommonModule, CartPanelComponent],
+  imports: [CommonModule, CartPanelComponent, RmsCurrencyPipe],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.css'
 })

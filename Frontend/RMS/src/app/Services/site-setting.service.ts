@@ -22,14 +22,16 @@ export class SiteSettingService {
       orderSerialResetTime: string;
       country: string;
       timeZoneId: string;
+      currencyCode: string;
+      currencySymbol: string;
     }>(this.api, { headers: reqHeader });
   }
 
-  updateCountryTimeZone(country: string, timeZoneId: string) {
+  updateCountryTimeZone(country: string, timeZoneId: string, currencyCode: string, currencySymbol: string) {
     const reqHeader = new HttpHeaders({ 'Authorization': 'Bearer ' + this.authservice.gettoken() });
-    return this.http.put<{ country: string; timeZoneId: string }>(
+    return this.http.put<{ country: string; timeZoneId: string; currencyCode: string; currencySymbol: string }>(
       `${this.api}/country-timezone`,
-      { country, timeZoneId },
+      { country, timeZoneId, currencyCode, currencySymbol },
       { headers: reqHeader }
     );
   }

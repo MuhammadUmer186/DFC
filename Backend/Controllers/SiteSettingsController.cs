@@ -34,7 +34,9 @@ namespace RestaurantSystem.Controllers
                 orderSerialStartingNumber = setting?.OrderSerialStartingNumber ?? 1,
                 orderSerialResetTime = setting?.OrderSerialResetTime ?? TimeSpan.Zero,
                 country = setting?.Country ?? "Pakistan",
-                timeZoneId = setting?.TimeZoneId ?? "Asia/Karachi"
+                timeZoneId = setting?.TimeZoneId ?? "Asia/Karachi",
+                currencyCode = setting?.CurrencyCode ?? "PKR",
+                currencySymbol = setting?.CurrencySymbol ?? "Rs"
             });
         }
 
@@ -46,6 +48,12 @@ namespace RestaurantSystem.Controllers
 
             if (string.IsNullOrWhiteSpace(dto.TimeZoneId))
                 return BadRequest("Time zone is required");
+
+            if (string.IsNullOrWhiteSpace(dto.CurrencyCode))
+                return BadRequest("Currency code is required");
+
+            if (string.IsNullOrWhiteSpace(dto.CurrencySymbol))
+                return BadRequest("Currency symbol is required");
 
             try
             {
@@ -67,10 +75,12 @@ namespace RestaurantSystem.Controllers
 
             setting.Country = dto.Country.Trim();
             setting.TimeZoneId = dto.TimeZoneId.Trim();
+            setting.CurrencyCode = dto.CurrencyCode.Trim().ToUpperInvariant();
+            setting.CurrencySymbol = dto.CurrencySymbol.Trim();
 
             await _context.SaveChangesAsync();
 
-            return Ok(new { country = setting.Country, timeZoneId = setting.TimeZoneId });
+            return Ok(new { country = setting.Country, timeZoneId = setting.TimeZoneId, currencyCode = setting.CurrencyCode, currencySymbol = setting.CurrencySymbol });
         }
 
         [HttpPut("restaurant-name")]

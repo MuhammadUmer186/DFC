@@ -23,9 +23,9 @@
     <div class="kpi-grid">
       <div class="kpi-card kpi-success">
         <div class="kpi-card-head"><span class="kpi-icon"><i class="pi pi-money-bill"></i></span><h4>Total Sales (United)</h4></div>
-        <div class="kpi-row"><span>Amount</span><strong>Rs {{ report()?.sales }}</strong></div>
-        <div class="kpi-row"><span>— Online</span><strong>Rs {{ report()?.onlineSales }}</strong></div>
-        <div class="kpi-row"><span>— Site</span><strong>Rs {{ report()?.siteSales }}</strong></div>
+        <div class="kpi-row"><span>Amount</span><strong>{{ report()?.sales | rmsCurrency }}</strong></div>
+        <div class="kpi-row"><span>— Online</span><strong>{{ report()?.onlineSales | rmsCurrency }}</strong></div>
+        <div class="kpi-row"><span>— Site</span><strong>{{ report()?.siteSales | rmsCurrency }}</strong></div>
       </div>
 
       <div class="kpi-card kpi-success">
@@ -37,32 +37,32 @@
 
       <div class="kpi-card kpi-info">
         <div class="kpi-card-head"><span class="kpi-icon"><i class="pi pi-truck"></i></span><h4>Purchase Orders Cost</h4></div>
-        <div class="kpi-row"><span>Amount</span><strong>Rs {{ report()?.purchaseOrdersCost }}</strong></div>
+        <div class="kpi-row"><span>Amount</span><strong>{{ report()?.purchaseOrdersCost | rmsCurrency }}</strong></div>
       </div>
 
       <div class="kpi-card kpi-info">
         <div class="kpi-card-head"><span class="kpi-icon"><i class="pi pi-box"></i></span><h4>Kitchen Cost</h4></div>
-        <div class="kpi-row"><span>Amount</span><strong>Rs {{ report()?.kitchenCost }}</strong></div>
+        <div class="kpi-row"><span>Amount</span><strong>{{ report()?.kitchenCost | rmsCurrency }}</strong></div>
       </div>
 
       <div class="kpi-card kpi-danger">
         <div class="kpi-card-head"><span class="kpi-icon"><i class="pi pi-trash"></i></span><h4>Waste Cost</h4></div>
-        <div class="kpi-row"><span>Amount</span><strong>Rs {{ report()?.wasteCost }}</strong></div>
+        <div class="kpi-row"><span>Amount</span><strong>{{ report()?.wasteCost | rmsCurrency }}</strong></div>
       </div>
 
       <div class="kpi-card kpi-info">
         <div class="kpi-card-head"><span class="kpi-icon"><i class="pi pi-dollar"></i></span><h4>Salary Paid</h4></div>
-        <div class="kpi-row"><span>Amount</span><strong>Rs {{ report()?.salaryPaid }}</strong></div>
+        <div class="kpi-row"><span>Amount</span><strong>{{ report()?.salaryPaid | rmsCurrency }}</strong></div>
       </div>
 
       <div class="kpi-card kpi-info">
         <div class="kpi-card-head"><span class="kpi-icon"><i class="pi pi-building"></i></span><h4>Vendor Payments</h4></div>
-        <div class="kpi-row"><span>Amount</span><strong>Rs {{ report()?.vendorPayments }}</strong></div>
+        <div class="kpi-row"><span>Amount</span><strong>{{ report()?.vendorPayments | rmsCurrency }}</strong></div>
       </div>
 
       <div class="kpi-card kpi-profit">
         <div class="kpi-card-head"><span class="kpi-icon"><i class="pi pi-chart-line"></i></span><h4>Profit</h4></div>
-        <div class="kpi-row"><span>Amount</span><strong>Rs {{ report()?.profit }}</strong></div>
+        <div class="kpi-row"><span>Amount</span><strong>{{ report()?.profit | rmsCurrency }}</strong></div>
       </div>
     </div>
 
@@ -95,7 +95,7 @@
             @for(order of orders(); track order.id) {
               <tr class="order-row" (click)="toggleExpand(order)" [class.expanded]="order.expanded">
                 <td>{{ order.id }}</td>
-                <td>Rs {{ order.totalAmount }}</td>
+                <td>{{ order.totalAmount | rmsCurrency }}</td>
                 <td>{{ order.totalQuantity }}</td>
                 <td>{{ order.createdAt | date:'medium' }}</td>
                 <td>{{ order.takenByEmployeeName || '-' }}</td>
@@ -127,17 +127,17 @@
                           @for(item of order.items; track item) {
                             <tr>
                               <td>{{ item.menuItemName }}</td>
-                              <td>Rs {{ item.unitPrice }}</td>
+                              <td>{{ item.unitPrice | rmsCurrency }}</td>
                               <td>{{ item.quantity }}</td>
-                              <td>Rs {{ item.unitPrice * item.quantity }}</td>
+                              <td>{{ item.unitPrice * item.quantity | rmsCurrency }}</td>
                             </tr>
                           }
                           @for(deal of order.deals || []; track deal) {
                             <tr>
                               <td>{{ deal.dealName }}</td>
-                              <td>Rs {{ deal.dealPrice }}</td>
+                              <td>{{ deal.dealPrice | rmsCurrency }}</td>
                               <td>{{ deal.quantity }}</td>
-                              <td>Rs {{ deal.dealPrice * deal.quantity }}</td>
+                              <td>{{ deal.dealPrice * deal.quantity | rmsCurrency }}</td>
                             </tr>
                           }
                         </tbody>
@@ -164,7 +164,7 @@
                 <td>{{ o.billNo }}</td>
                 <td>{{ o.vendorName }}</td>
                 <td>{{ o.purchaseDate | date:'medium' }}</td>
-                <td>Rs {{ o.totalAmount }}</td>
+                <td>{{ o.totalAmount | rmsCurrency }}</td>
                 <td>
                   <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" (click)="toggleDetails(o.id); $event.stopPropagation()">
                     <i class="pi" [ngClass]="expandedOrderId() === o.id ? 'pi-chevron-up' : 'pi-eye'"></i>
@@ -183,8 +183,8 @@
                             <tr>
                               <td>{{ item.rawItemName }}</td>
                               <td>{{ item.quantity }}</td>
-                              <td>Rs {{ item.unitPrice }}</td>
-                              <td>Rs {{ item.totalPrice }}</td>
+                              <td>{{ item.unitPrice | rmsCurrency }}</td>
+                              <td>{{ item.totalPrice | rmsCurrency }}</td>
                             </tr>
                           }
                         </tbody>

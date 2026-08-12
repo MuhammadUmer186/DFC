@@ -33,7 +33,7 @@
       <div class="oo-stat-icon oo-stat-icon-green"><i class="pi pi-chart-bar"></i></div>
       <div class="oo-stat-body">
         <span class="oo-stat-label">Today's Online Sales</span>
-        <span class="oo-stat-value">Rs {{ todaysOnlineSales() }}</span>
+        <span class="oo-stat-value">{{ todaysOnlineSales() | rmsCurrency }}</span>
         <span class="oo-stat-sub">Value of today's online orders</span>
       </div>
     </div>
@@ -168,7 +168,7 @@
             }
 
             <div class="ooc-items" (click)="toggleExpand(order)">
-              <span><i class="pi pi-shopping-bag"></i> {{ order.totalQuantity }} item(s) — Rs {{ order.totalAmount }}</span>
+              <span><i class="pi pi-shopping-bag"></i> {{ order.totalQuantity }} item(s) — {{ order.totalAmount | rmsCurrency }}</span>
               <i class="pi" [class.pi-chevron-down]="!order.expanded" [class.pi-chevron-up]="order.expanded"></i>
             </div>
 
@@ -177,13 +177,13 @@
                 @for(item of order.items; track $index) {
                   <div class="ooc-detail-row">
                     <span>{{ item.menuItemName }} × {{ item.quantity }}</span>
-                    <span>Rs {{ item.unitPrice * item.quantity }}</span>
+                    <span>{{ item.unitPrice * item.quantity | rmsCurrency }}</span>
                   </div>
                 }
                 @for(deal of order.deals; track $index) {
                   <div class="ooc-detail-row">
                     <span>{{ deal.dealName }} × {{ deal.quantity }}</span>
-                    <span>Rs {{ deal.dealPrice * deal.quantity }}</span>
+                    <span>{{ deal.dealPrice * deal.quantity | rmsCurrency }}</span>
                   </div>
                 }
               </div>
@@ -273,7 +273,7 @@
               </div>
 
               <div class="ooc-items" (click)="toggleExpand(order)">
-                <span><i class="pi pi-shopping-bag"></i> {{ order.totalQuantity }} item(s) — Rs {{ order.totalAmount }}</span>
+                <span><i class="pi pi-shopping-bag"></i> {{ order.totalQuantity }} item(s) — {{ order.totalAmount | rmsCurrency }}</span>
                 <i class="pi" [class.pi-chevron-down]="!order.expanded" [class.pi-chevron-up]="order.expanded"></i>
               </div>
 
@@ -282,13 +282,13 @@
                   @for(item of order.items; track $index) {
                     <div class="ooc-detail-row">
                       <span>{{ item.menuItemName }} × {{ item.quantity }}</span>
-                      <span>Rs {{ item.unitPrice * item.quantity }}</span>
+                      <span>{{ item.unitPrice * item.quantity | rmsCurrency }}</span>
                     </div>
                   }
                   @for(deal of order.deals; track $index) {
                     <div class="ooc-detail-row">
                       <span>{{ deal.dealName }} × {{ deal.quantity }}</span>
-                      <span>Rs {{ deal.dealPrice * deal.quantity }}</span>
+                      <span>{{ deal.dealPrice * deal.quantity | rmsCurrency }}</span>
                     </div>
                   }
                 </div>

@@ -3,11 +3,12 @@ import { MyDeliveriesService } from '../../Services/my-deliveries.service';
 import { AuthService } from '../../Services/auth.service';
 import { ToastService } from '../../Services/toast.service';
 import { OrderQueueDto } from '../../Services/order-signalr';
+import { RmsCurrencyPipe } from '../../Shared/pipes/currency-symbol.pipe';
 
 @Component({
   selector: 'app-my-deliveries',
   standalone: true,
-  imports: [],
+  imports: [RmsCurrencyPipe],
   templateUrl: './my-deliveries.component.html',
   styleUrl: './my-deliveries.component.css'
 })

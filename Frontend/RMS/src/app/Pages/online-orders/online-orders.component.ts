@@ -7,6 +7,7 @@ import { ToastService } from '../../Services/toast.service';
 import { RiderService } from '../../Services/rider.service';
 import { Rider } from '../../Models/rider.model';
 import { nextDeliveryStatus, DeliveryStatusValue } from '../../Services/delivery-status.util';
+import { RmsCurrencyPipe } from '../../Shared/pipes/currency-symbol.pipe';
 
 interface RiderAssignmentDraft {
   riderId: number | null;
@@ -20,7 +21,7 @@ type ViewMode = 'pending' | 'inProgress';
 @Component({
   selector: 'app-online-orders',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RmsCurrencyPipe],
   templateUrl: './online-orders.component.html',
   styleUrls: ['./online-orders.component.css']
 })

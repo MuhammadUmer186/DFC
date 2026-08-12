@@ -79,7 +79,7 @@
                   @if (item.description) {
                     <div class="menu-item-description">{{ item.description }}</div>
                   }
-                  <div class="menu-item-price">Rs {{ item.price }}</div>
+                  <div class="menu-item-price">{{ item.price | rmsCurrency }}</div>
                 </div>
 
                 <div class="menu-item-actions">

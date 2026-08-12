@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { RmsCurrencyPipe } from '../../Shared/pipes/currency-symbol.pipe';
 
 export interface MenuItem {
   id: number;
@@ -21,7 +22,7 @@ export interface OrderItem {
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, RmsCurrencyPipe],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.css'
 })

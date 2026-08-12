@@ -18,5 +18,7 @@ namespace RestaurantSystem.DTOs
     {
         public string? Country { get; set; }
         public string? TimeZoneId { get; set; }
+        public string? CurrencyCode { get; set; }
+        public string? CurrencySymbol { get; set; }
     }
 }

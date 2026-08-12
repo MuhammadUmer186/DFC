@@ -11,13 +11,14 @@ import { forkJoin } from 'rxjs';
 import { ChartModule } from 'primeng/chart';
 import { DateRangeFilterComponent, DateRange } from '../../Shared/date-range-filter/date-range-filter.component';
 import { LiveClockComponent } from '../../Shared/live-clock/live-clock.component';
+import { RmsCurrencyPipe } from '../../Shared/pipes/currency-symbol.pipe';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule,ChartModule,DateRangeFilterComponent,LiveClockComponent],
+  imports: [CommonModule,ChartModule,DateRangeFilterComponent,LiveClockComponent,RmsCurrencyPipe],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })

@@ -87,7 +87,7 @@
               <img [src]="fullImageUrl(i.imageUrl)" alt="{{ i.name }}" class="item-photo">
             }
             <div class="item-name">{{ i.name }}</div>
-            <div class="item-price">Rs {{ i.price }}</div>
+            <div class="item-price">{{ i.price | rmsCurrency }}</div>
             <span class="add-badge"><i class="pi pi-plus"></i></span>
           </div>
 
@@ -116,7 +116,7 @@
                 <img [src]="fullImageUrl(i.imageUrl)" alt="{{ i.name }}" class="item-photo">
               }
               <div class="item-name">{{ i.name }}</div>
-              <div class="item-price">Rs {{ i.price }}</div>
+              <div class="item-price">{{ i.price | rmsCurrency }}</div>
               <span class="add-badge"><i class="pi pi-plus"></i></span>
             </div>
           }
@@ -129,7 +129,7 @@
                 <img [src]="fullImageUrl(i.imageUrl)" alt="{{ i.dealName }}" class="item-photo">
               }
               <div class="item-name">{{ i.dealName }}</div>
-              <div class="item-price">Rs {{ i.finalPrice }}</div>
+              <div class="item-price">{{ i.finalPrice | rmsCurrency }}</div>
               <span class="add-badge"><i class="pi pi-plus"></i></span>
             </div>
           }
@@ -179,14 +179,14 @@
               }
               <div class="cart-line-main">
                 <span class="cart-line-name">{{ c.name }}</span>
-                <span class="cart-line-unit">Rs {{ c.unitPrice }} each</span>
+                <span class="cart-line-unit">{{ c.unitPrice | rmsCurrency }} each</span>
               </div>
               <div class="qty-stepper">
                 <button class="qty-btn" (click)="decrease(c)"><i class="pi pi-minus"></i></button>
                 <span class="qty">{{ c.quantity }}</span>
                 <button class="qty-btn" (click)="increase(c)"><i class="pi pi-plus"></i></button>
               </div>
-              <div class="cart-line-total">Rs {{ c.total }}</div>
+              <div class="cart-line-total">{{ c.total | rmsCurrency }}</div>
               <button class="line-remove" (click)="removeLine(c)" title="Remove"><i class="pi pi-trash"></i></button>
             </div>
           }
@@ -195,14 +195,14 @@
             <div class="cart-line deal-line">
               <div class="cart-line-main">
                 <span class="cart-line-name"><i class="pi pi-tag"></i> {{ d.dealName }}</span>
-                <span class="cart-line-unit">Rs {{ d.dealPrice }} each</span>
+                <span class="cart-line-unit">{{ d.dealPrice | rmsCurrency }} each</span>
               </div>
               <div class="qty-stepper">
                 <button class="qty-btn" (click)="decrease(d)"><i class="pi pi-minus"></i></button>
                 <span class="qty">{{ d.quantity }}</span>
                 <button class="qty-btn" (click)="increase(d)"><i class="pi pi-plus"></i></button>
               </div>
-              <div class="cart-line-total">Rs {{ d.dealPrice * d.quantity }}</div>
+              <div class="cart-line-total">{{ d.dealPrice * d.quantity | rmsCurrency }}</div>
               <button class="line-remove" (click)="removeLine(d)" title="Remove"><i class="pi pi-trash"></i></button>
             </div>
           }
@@ -231,7 +231,7 @@
               <option [ngValue]="null">Extra Amount</option>
 
               @for (p of extraPrices; track p) {
-                <option [ngValue]="p">Rs {{ p }}</option>
+                <option [ngValue]="p">{{ p | rmsCurrency }}</option>
               }
 
             </select>
@@ -246,19 +246,19 @@
         <div class="summary">
           <div class="summary-row">
             <span>Subtotal</span>
-            <span>Rs {{ itemsTotal() + dealsTotal() }}</span>
+            <span>{{ itemsTotal() + dealsTotal() | rmsCurrency }}</span>
           </div>
 
           @if (discountPercent() > 0) {
             <div class="summary-row discount">
               <span>Discount ({{ discountPercent() }}%)</span>
-              <span>− Rs {{ discountAmount() }}</span>
+              <span>− {{ discountAmount() | rmsCurrency }}</span>
             </div>
           }
 
           <div class="summary-row grand">
             <span>Grand Total</span>
-            <span>Rs {{ finalTotal() }}</span>
+            <span>{{ finalTotal() | rmsCurrency }}</span>
           </div>
 
           <div class="summary-qty">Total Qty: {{ totalQuantity() }}</div>

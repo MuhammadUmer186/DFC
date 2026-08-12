@@ -28,12 +28,12 @@
       <div class="ticker-track">
         @for (item of vendorPaymentSummary(); track $index) {
           <span class="ticker-item paid">
-            {{ item.vendorName }} — Paid: Rs {{ item.totalPaid }}
+            {{ item.vendorName }} — Paid: {{ item.totalPaid | rmsCurrency }}
           </span>
         }
         @for (item of vendorPaymentSummary(); track $index) {
           <span class="ticker-item unpaid">
-            {{ item.vendorName }} — Unpaid: Rs {{ item.unPaid }}
+            {{ item.vendorName }} — Unpaid: {{ item.unPaid | rmsCurrency }}
           </span>
         }
       </div>
@@ -48,12 +48,12 @@
           <span class="kpi-icon"><i class="pi pi-money-bill"></i></span>
           <h4>Sales &amp; Costs</h4>
         </div>
-        <div class="kpi-row"><span>Sales (United)</span> <strong>Rs {{ periodSummary().sales }}</strong></div>
-        <div class="kpi-row"><span>— Online</span> <strong>Rs {{ periodSummary().onlineSales }}</strong></div>
-        <div class="kpi-row"><span>— Site</span> <strong>Rs {{ periodSummary().siteSales }}</strong></div>
-        <div class="kpi-row"><span>Purchases</span> <strong>Rs {{ periodSummary().purchaseOrdersCost }}</strong></div>
-        <div class="kpi-row"><span>Kitchen Cost</span> <strong>Rs {{ periodSummary().kitchenCost }}</strong></div>
-        <div class="kpi-row"><span>Waste</span> <strong>Rs {{ periodSummary().wasteCost }}</strong></div>
+        <div class="kpi-row"><span>Sales (United)</span> <strong>{{ periodSummary().sales | rmsCurrency }}</strong></div>
+        <div class="kpi-row"><span>— Online</span> <strong>{{ periodSummary().onlineSales | rmsCurrency }}</strong></div>
+        <div class="kpi-row"><span>— Site</span> <strong>{{ periodSummary().siteSales | rmsCurrency }}</strong></div>
+        <div class="kpi-row"><span>Purchases</span> <strong>{{ periodSummary().purchaseOrdersCost | rmsCurrency }}</strong></div>
+        <div class="kpi-row"><span>Kitchen Cost</span> <strong>{{ periodSummary().kitchenCost | rmsCurrency }}</strong></div>
+        <div class="kpi-row"><span>Waste</span> <strong>{{ periodSummary().wasteCost | rmsCurrency }}</strong></div>
       </div>
 
       <div class="kpi-card kpi-profit">
@@ -61,9 +61,9 @@
           <span class="kpi-icon"><i class="pi pi-chart-line"></i></span>
           <h4>Profit</h4>
         </div>
-        <div class="kpi-row"><span>Salary Paid</span> <strong>Rs {{ periodSummary().salaryPaid }}</strong></div>
-        <div class="kpi-row"><span>Vendor Payments</span> <strong>Rs {{ periodSummary().vendorPayments }}</strong></div>
-        <div class="kpi-row"><span>Net Profit</span> <strong>Rs {{ periodSummary().profit | number:'1.0-2' }}</strong></div>
+        <div class="kpi-row"><span>Salary Paid</span> <strong>{{ periodSummary().salaryPaid | rmsCurrency }}</strong></div>
+        <div class="kpi-row"><span>Vendor Payments</span> <strong>{{ periodSummary().vendorPayments | rmsCurrency }}</strong></div>
+        <div class="kpi-row"><span>Net Profit</span> <strong>{{ periodSummary().profit | rmsCurrency:'1.0-2' }}</strong></div>
       </div>
 
       <div class="kpi-card kpi-info">
@@ -97,25 +97,25 @@
         <h4>Sales &amp; Expenses</h4>
       </div>
       <div class="kpi-row">
-        <span>Today Sales (United)</span> <strong>Rs {{ mainSummary().todaySales }}</strong>
+        <span>Today Sales (United)</span> <strong>{{ mainSummary().todaySales | rmsCurrency }}</strong>
       </div>
       <div class="kpi-row">
-        <span>— Online</span> <strong>Rs {{ mainSummary().todayOnlineSales }}</strong>
+        <span>— Online</span> <strong>{{ mainSummary().todayOnlineSales | rmsCurrency }}</strong>
       </div>
       <div class="kpi-row">
-        <span>— Site</span> <strong>Rs {{ mainSummary().todaySiteSales }}</strong>
+        <span>— Site</span> <strong>{{ mainSummary().todaySiteSales | rmsCurrency }}</strong>
       </div>
       <div class="kpi-row">
-        <span>Today Purchases</span> <strong>Rs {{ mainSummary().todayPurchases }}</strong>
+        <span>Today Purchases</span> <strong>{{ mainSummary().todayPurchases | rmsCurrency }}</strong>
       </div>
       <div class="kpi-row">
-        <span>Kitchen Cost</span> <strong>Rs {{ kitchenSummary()?.totalKitchenCost }}</strong>
+        <span>Kitchen Cost</span> <strong>{{ kitchenSummary()?.totalKitchenCost | rmsCurrency }}</strong>
       </div>
       <div class="kpi-row">
-        <span>Waste</span> <strong>Rs {{ kitchenSummary()?.totalWasteCost }}</strong>
+        <span>Waste</span> <strong>{{ kitchenSummary()?.totalWasteCost | rmsCurrency }}</strong>
       </div>
       <div class="kpi-row">
-        <span>Today Salary Paid</span> <strong>Rs {{ (salaryStatus()?.totalPaid || 0) }}</strong>
+        <span>Today Salary Paid</span> <strong>{{ (salaryStatus()?.totalPaid || 0) | rmsCurrency }}</strong>
       </div>
     </div>
 
@@ -127,32 +127,34 @@
       </div>
       <div class="kpi-row">
         <span>Today Profit (S-PO)</span>
-        <strong>Rs {{ profitSummarytoday()?.profit }}</strong>
+        <strong>{{ profitSummarytoday()?.profit | rmsCurrency }}</strong>
       </div>
       <div class="kpi-row">
         <span>Total Profit (S-PO-U)</span>
         <strong>
-          Rs {{
+          {{
+            (
             (mainSummary()?.todaySales || 0)
             - (mainSummary()?.todayPurchases || 0)
             - (utility()?.monthlyUtilityBills || 0)
+            ) | rmsCurrency
           }}
         </strong>
       </div>
       <div class="kpi-row">
         <span>Total Profit (S-KO-W)</span>
         <strong>
-          Rs {{
+          {{
             ((mainSummary()?.todaySales || 0)
             - (kitchenSummary()?.totalKitchenCost || 0)
-            - (kitchenSummary()?.totalWasteCost || 0)) | number:'1.0-0'
+            - (kitchenSummary()?.totalWasteCost || 0)) | rmsCurrency:'1.0-0'
           }}
         </strong>
       </div>
       <div class="kpi-row">
         <span>Total Profit (S-PO-U-KO-W-SS)</span>
         <strong>
-                    Rs {{
+                    {{
             (
               (mainSummary()?.todaySales || 0)
               - (mainSummary()?.todayPurchases || 0)
@@ -160,7 +162,7 @@
               - (kitchenSummary()?.totalKitchenCost || 0)
               - (kitchenSummary()?.totalWasteCost || 0)
               - (salaryStatus()?.totalPaid || 0)
-            ) | number:'1.2-2'
+            ) | rmsCurrency:'1.2-2'
           }}
         </strong>
       </div>
@@ -200,7 +202,7 @@
         <span>— Site</span> <strong>{{ orderCountSummary()?.monthlySiteOrders }}</strong>
       </div>
       <div class="kpi-row">
-        <span>Monthly Utility Bills</span> <strong>Rs {{ utility()?.monthlyUtilityBills }}</strong>
+        <span>Monthly Utility Bills</span> <strong>{{ utility()?.monthlyUtilityBills | rmsCurrency }}</strong>
       </div>
     </div>
 

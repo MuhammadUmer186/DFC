@@ -24,16 +24,16 @@
     @for (line of cart.lines(); track line.kind + '-' + line.id) {
       <div class="recap-row">
         <span>{{ line.name }} × {{ line.quantity }}</span>
-        <span>Rs {{ line.price * line.quantity }}</span>
+        <span>{{ line.price * line.quantity | rmsCurrency }}</span>
       </div>
     }
-    <div class="recap-row"><span>Subtotal</span><span>Rs {{ cart.totalAmount() }}</span></div>
+    <div class="recap-row"><span>Subtotal</span><span>{{ cart.totalAmount() | rmsCurrency }}</span></div>
     @if (deliveryFee() > 0) {
-      <div class="recap-row"><span>Delivery Fee</span><span>Rs {{ deliveryFee() }}</span></div>
+      <div class="recap-row"><span>Delivery Fee</span><span>{{ deliveryFee() | rmsCurrency }}</span></div>
     }
     <div class="recap-row total">
       <span>Total</span>
-      <span>Rs {{ grandTotal() }}</span>
+      <span>{{ grandTotal() | rmsCurrency }}</span>
     </div>
   </div>
 
@@ -59,7 +59,7 @@
         <select [value]="selectedAreaId() ?? ''" (change)="setAreaId($any($event.target).value)" name="areaId" required>
           <option value="" disabled>-- Select your area --</option>
           @for (area of areas(); track area.id) {
-            <option [value]="area.id">{{ area.name }} — Rs {{ area.deliveryFee }}</option>
+            <option [value]="area.id">{{ area.name }} — {{ area.deliveryFee | rmsCurrency }}</option>
           }
         </select>
         <p class="map-pin-hint">Don't see your area? Pick "Unknown" and we'll confirm the delivery fee with you.</p>
@@ -108,7 +108,7 @@
       @if (submitting()) {
         Placing order…
       } @else {
-        Place Order · Rs {{ grandTotal() }}
+        Place Order · {{ grandTotal() | rmsCurrency }}
       }
     </button>
   </form>

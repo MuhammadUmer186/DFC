@@ -50,6 +50,8 @@ export class SettingsComponent implements OnInit {
   countryTimeZones = COUNTRY_TIMEZONES;
   country = signal('');
   timeZoneId = signal('');
+  currencyCode = signal('');
+  currencySymbol = signal('');
   savingCountryTimeZone = signal(false);
 
   editValues = new Map<string, { min: number; max: number; enabled: boolean }>();
@@ -82,42 +84,66 @@ export class SettingsComponent implements OnInit {
         this.menuPdfUrl.set(res.menuPdfUrl);
         this.country.set(res.country ?? 'Pakistan');
         this.timeZoneId.set(res.timeZoneId ?? 'Asia/Karachi');
+        this.currencyCode.set(res.currencyCode ?? 'PKR');
+        this.currencySymbol.set(res.currencySymbol ?? 'Rs');
       },
       error: (err) => this.handleLoadError(err)
     });
   }
 
-  // Selecting a country auto-fills its primary time zone; the admin can still fine-tune the
-  // time zone afterwards (e.g. a country spanning multiple zones) before saving.
+  // Selecting a country auto-fills its primary time zone and currency; the admin can still
+  // fine-tune either afterwards (e.g. a country spanning multiple zones, or a symbol
+  // preference) before saving.
   onCountrySelected(value: string) {
     this.country.set(value);
     const match = this.countryTimeZones.find(c => c.country === value);
-    if (match) this.timeZoneId.set(match.timeZoneId);
+    if (match) {
+      this.timeZoneId.set(match.timeZoneId);
+      this.currencyCode.set(match.currencyCode);
+      this.currencySymbol.set(match.currencySymbol);
+    }
   }
 
   setTimeZoneId(value: string) {
     this.timeZoneId.set(value);
   }
 
+  setCurrencyCode(value: string) {
+    this.currencyCode.set(value);
+  }
+
+  setCurrencySymbol(value: string) {
+    this.currencySymbol.set(value);
+  }
+
   saveCountryTimeZone() {
-    if (!this.country().trim() || !this.timeZoneId().trim()) {
-      this.toast.error('Select a country and time zone');
+    if (!this.country().trim() || !this.timeZoneId().trim() || !this.currencyCode().trim() || !this.currencySymbol().trim()) {
+      this.toast.error('Select a country, time zone and currency');
       return;
     }
 
     this.savingCountryTimeZone.set(true);
-    this.siteSettingService.updateCountryTimeZone(this.country().trim(), this.timeZoneId().trim()).subscribe({
+    this.siteSettingService.updateCountryTimeZone(
+      this.country().trim(),
+      this.timeZoneId().trim(),
+      this.currencyCode().trim(),
+      this.currencySymbol().trim()
+    ).subscribe({
       next: (res) => {
         this.country.set(res.country);
         this.timeZoneId.set(res.timeZoneId);
+        this.currencyCode.set(res.currencyCode);
+        this.currencySymbol.set(res.currencySymbol);
         this.branding.country.set(res.country);
         this.branding.timeZoneId.set(res.timeZoneId);
+        this.branding.currencyCode.set(res.currencyCode);
+        this.branding.currencySymbol.set(res.currencySymbol);
         this.savingCountryTimeZone.set(false);
-        this.toast.success('Country & time zone updated');
+        this.toast.success('Country, time zone & currency updated');
       },
       error: (err) => {
         this.savingCountryTimeZone.set(false);
-        this.toast.error(err?.error || 'Failed to update country & time zone');
+        this.toast.error(err?.error || 'Failed to update country, time zone & currency');
       }
     });
   }

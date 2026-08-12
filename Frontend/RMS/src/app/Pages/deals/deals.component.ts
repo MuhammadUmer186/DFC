@@ -8,11 +8,12 @@ import { Deal, DealMenuItem } from '../../Models/deal.model';
 import { Category } from '../../Models/category.model';
 import { MenuItem } from '../../Models/menu-item.model';
 import { environment } from '../../../environments/environment';
+import { RmsCurrencyPipe } from '../../Shared/pipes/currency-symbol.pipe';
 
 @Component({
   selector: 'app-deals',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RmsCurrencyPipe],
   templateUrl: './deals.component.html',
   styleUrls: ['./deals.component.css']
 })

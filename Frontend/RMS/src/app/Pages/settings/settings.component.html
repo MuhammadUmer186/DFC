@@ -63,18 +63,19 @@
     </button>
   </div>
 
-  <!-- COUNTRY & TIME ZONE -->
+  <!-- COUNTRY, TIME ZONE & CURRENCY -->
   <div class="dfc-page-header" style="margin-top: 24px;">
     <div class="dfc-page-header-text">
-      <h2 class="dfc-page-title" style="font-size: 16px;"><i class="pi pi-globe"></i> Country &amp; Time Zone</h2>
+      <h2 class="dfc-page-title" style="font-size: 16px;"><i class="pi pi-globe"></i> Country, Time Zone &amp; Currency</h2>
       <p class="dfc-page-subtitle">
-        Sets which country's clock the system follows — the Dashboard clock and other "current time" displays
-        always show this time zone, regardless of where the device viewing them is physically located.
+        Sets which country the restaurant operates in. The Dashboard clock and other "current time" displays always
+        follow this time zone regardless of the viewing device's location, and every price shown across the RMS
+        (and the ordering site) uses this currency symbol.
       </p>
     </div>
   </div>
 
-  <div class="dfc-toolbar">
+  <div class="dfc-toolbar" style="flex-wrap: wrap;">
     <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:#64748b;">
       Country
       <select
@@ -95,9 +96,33 @@
         type="text"
         class="dfc-input"
         placeholder="e.g. Asia/Karachi"
-        style="min-width: 220px;"
+        style="min-width: 200px;"
         [value]="timeZoneId()"
         (input)="setTimeZoneId($any($event.target).value)"
+      />
+    </label>
+
+    <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:#64748b;">
+      Currency Code
+      <input
+        type="text"
+        class="dfc-input"
+        placeholder="e.g. PKR"
+        style="width: 100px;"
+        [value]="currencyCode()"
+        (input)="setCurrencyCode($any($event.target).value)"
+      />
+    </label>
+
+    <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:#64748b;">
+      Currency Symbol
+      <input
+        type="text"
+        class="dfc-input"
+        placeholder="e.g. Rs"
+        style="width: 100px;"
+        [value]="currencySymbol()"
+        (input)="setCurrencySymbol($any($event.target).value)"
       />
     </label>
 

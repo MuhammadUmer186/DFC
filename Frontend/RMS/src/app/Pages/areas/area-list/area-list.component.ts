@@ -2,11 +2,12 @@ import { Component, OnInit, signal } from '@angular/core';
 import { Area } from '../../../Models/area.model';
 import { AreaService } from '../../../Services/area.service';
 import { ToastService } from '../../../Services/toast.service';
+import { RmsCurrencyPipe } from '../../../Shared/pipes/currency-symbol.pipe';
 
 @Component({
   selector: 'app-area-list',
   standalone: true,
-  imports: [],
+  imports: [RmsCurrencyPipe],
   templateUrl: './area-list.component.html',
   styleUrl: './area-list.component.css'
 })

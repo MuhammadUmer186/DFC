@@ -8,11 +8,12 @@ import { ToastService } from '../../Services/toast.service';
 import { Category } from '../../Models/category.model';
 import { MenuItem } from '../../Models/menu-item.model';
 import { environment } from '../../../environments/environment';
+import { RmsCurrencyPipe } from '../../Shared/pipes/currency-symbol.pipe';
 
 @Component({
   selector: 'app-my-menu',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, RmsCurrencyPipe],
   templateUrl: './my-menu.component.html',
   styleUrls: ['./my-menu.component.css']
 })

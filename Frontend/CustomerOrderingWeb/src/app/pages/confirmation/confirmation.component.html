@@ -9,21 +9,21 @@
       @for (item of order.items; track item.menuItemName) {
         <div class="recap-row">
           <span>{{ item.menuItemName }} × {{ item.quantity }}</span>
-          <span>Rs {{ item.unitPrice * item.quantity }}</span>
+          <span>{{ item.unitPrice * item.quantity | rmsCurrency }}</span>
         </div>
       }
       @for (deal of order.deals; track deal.dealName) {
         <div class="recap-row">
           <span>{{ deal.dealName }} × {{ deal.quantity }}</span>
-          <span>Rs {{ deal.dealPrice * deal.quantity }}</span>
+          <span>{{ deal.dealPrice * deal.quantity | rmsCurrency }}</span>
         </div>
       }
       @if (deliveryFee > 0) {
-        <div class="recap-row"><span>Delivery Fee{{ areaName ? ' (' + areaName + ')' : '' }}</span><span>Rs {{ deliveryFee }}</span></div>
+        <div class="recap-row"><span>Delivery Fee{{ areaName ? ' (' + areaName + ')' : '' }}</span><span>{{ deliveryFee | rmsCurrency }}</span></div>
       }
       <div class="recap-row total">
         <span>Total</span>
-        <span>Rs {{ order.totalAmount }}</span>
+        <span>{{ order.totalAmount | rmsCurrency }}</span>
       </div>
     </div>
   }

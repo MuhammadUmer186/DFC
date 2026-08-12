@@ -38,7 +38,7 @@
           }
           <div class="line-info">
             <div class="line-name">{{ line.name }}</div>
-            <div class="line-price">Rs {{ line.price }}</div>
+            <div class="line-price">{{ line.price | rmsCurrency }}</div>
             <div class="qty-stepper">
               <button (click)="decrease(line)">−</button>
               <span>{{ line.quantity }}</span>
@@ -53,7 +53,7 @@
     <a routerLink="/" class="add-more-link">+ Add more items</a>
 
     <div class="cart-fees">
-      <div class="fee-row"><span>Subtotal</span><span>Rs {{ cart.totalAmount() }}</span></div>
+      <div class="fee-row"><span>Subtotal</span><span>{{ cart.totalAmount() | rmsCurrency }}</span></div>
       @if (orderType.serviceType() === 'Delivery') {
         <div class="fee-row"><span>Delivery Fee</span><span>Added at checkout</span></div>
       }
@@ -61,7 +61,7 @@
 
     <div class="cart-total-row">
       <span>{{ orderType.serviceType() === 'Delivery' ? 'Subtotal' : 'Total' }}</span>
-      <span>Rs {{ grandTotal() }}</span>
+      <span>{{ grandTotal() | rmsCurrency }}</span>
     </div>
 
     <a routerLink="/checkout" class="btn btn-primary checkout-btn">🔒 Proceed to Checkout</a>

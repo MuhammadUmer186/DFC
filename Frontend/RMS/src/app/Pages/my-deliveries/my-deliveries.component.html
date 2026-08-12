@@ -69,9 +69,9 @@
           }
 
           <div class="dc-footer">
-            <span>{{ order.totalQuantity }} item(s) — Rs {{ order.totalAmount }}</span>
+            <span>{{ order.totalQuantity }} item(s) — {{ order.totalAmount | rmsCurrency }}</span>
             @if (order.riderCost != null) {
-              <span class="dc-cost">Your cost: Rs {{ order.riderCost }}</span>
+              <span class="dc-cost">Your cost: {{ order.riderCost | rmsCurrency }}</span>
             }
           </div>
 

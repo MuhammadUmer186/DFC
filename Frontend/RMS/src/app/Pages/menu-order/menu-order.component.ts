@@ -8,11 +8,12 @@ import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../Services/toast.service';
 import { AuthService } from '../../Services/auth.service';
 import { environment } from '../../../environments/environment';
+import { RmsCurrencyPipe } from '../../Shared/pipes/currency-symbol.pipe';
 //declare var qz: any;
 @Component({
   standalone: true,
   selector: 'app-menu-order',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RmsCurrencyPipe],
   templateUrl: './menu-order.component.html',
   styleUrls: ['./menu-order.component.css']
 })

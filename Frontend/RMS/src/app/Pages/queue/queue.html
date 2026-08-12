@@ -66,7 +66,7 @@
             @for(order of queuedOrders(); track $index) {
               <tr class="order-row" (click)="toggleExpand(order)" [class.expanded]="order.expanded">
                 <td>{{ order.orderNumber || order.id }}</td>
-                <td>Rs {{ order.totalAmount }}</td>
+                <td>{{ order.totalAmount | rmsCurrency }}</td>
                 <td>{{ order.totalQuantity }}</td>
                 <td>
                   @if (order.orderSource === 'Online') {
@@ -130,17 +130,17 @@
                           @for(item of order.items; track $index) {
                             <tr>
                               <td>{{ item.menuItemName }}</td>
-                              <td>Rs {{ item.unitPrice }}</td>
+                              <td>{{ item.unitPrice | rmsCurrency }}</td>
                               <td>{{ item.quantity }}</td>
-                              <td>Rs {{ item.unitPrice * item.quantity }}</td>
+                              <td>{{ item.unitPrice * item.quantity | rmsCurrency }}</td>
                             </tr>
                           }
                           @for(deal of order.deals; track $index) {
                             <tr>
                               <td>{{ deal.dealName }}</td>
-                              <td>Rs {{ deal.dealPrice }}</td>
+                              <td>{{ deal.dealPrice | rmsCurrency }}</td>
                               <td>{{ deal.quantity }}</td>
-                              <td>Rs {{ deal.dealPrice * deal.quantity }}</td>
+                              <td>{{ deal.dealPrice * deal.quantity | rmsCurrency }}</td>
                             </tr>
                           }
                         </tbody>

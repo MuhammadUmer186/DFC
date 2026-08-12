@@ -57,9 +57,9 @@
             </div>
             <div class="deal-price-row">
               @if (deal.discountAmount > 0) {
-                <span class="deal-original-price">Rs {{ deal.originalPrice }}</span>
+                <span class="deal-original-price">{{ deal.originalPrice | rmsCurrency }}</span>
               }
-              <span class="deal-final-price">Rs {{ deal.finalPrice }}</span>
+              <span class="deal-final-price">{{ deal.finalPrice | rmsCurrency }}</span>
             </div>
           </div>
 
@@ -118,7 +118,7 @@
         <div class="item-picker-row">
           <select [ngModel]="pickerMenuItemId()" (ngModelChange)="pickerMenuItemId.set($event)">
             @for (item of allMenuItems(); track item.id) {
-              <option [ngValue]="item.id">{{ item.name }} (Rs {{ item.price }})</option>
+              <option [ngValue]="item.id">{{ item.name }} ({{ item.price | rmsCurrency }})</option>
             }
           </select>
           <input type="number" min="1" class="qty-input" [ngModel]="pickerQuantity()" (ngModelChange)="pickerQuantity.set($event)">
@@ -130,7 +130,7 @@
             @for (item of formItems(); track item.menuItemId) {
               <div class="combo-item-row">
                 <span>{{ item.name }} × {{ item.quantity }}</span>
-                <span class="combo-item-price">Rs {{ item.price * item.quantity }}</span>
+                <span class="combo-item-price">{{ item.price * item.quantity | rmsCurrency }}</span>
                 <button class="remove-btn" (click)="removeItemFromCombo(item.menuItemId)"><i class="pi pi-times"></i></button>
               </div>
             }
@@ -139,9 +139,9 @@
       </div>
 
       <div class="combo-preview">
-        <div class="preview-row"><span>Combo Value</span><span>Rs {{ comboValue() }}</span></div>
-        <div class="preview-row"><span>Discount</span><span>− Rs {{ formDiscountAmount() || 0 }}</span></div>
-        <div class="preview-row total"><span>Final Price</span><span>Rs {{ finalPricePreview() }}</span></div>
+        <div class="preview-row"><span>Combo Value</span><span>{{ comboValue() | rmsCurrency }}</span></div>
+        <div class="preview-row"><span>Discount</span><span>− {{ (formDiscountAmount() || 0) | rmsCurrency }}</span></div>
+        <div class="preview-row total"><span>Final Price</span><span>{{ finalPricePreview() | rmsCurrency }}</span></div>
       </div>
 
       <button class="dfc-btn dfc-btn-primary menu-form-save" [disabled]="saving()" (click)="save()">

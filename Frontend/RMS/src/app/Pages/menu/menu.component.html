@@ -7,7 +7,7 @@
         <img [src]="item.image" [alt]="item.name" class="dish-image">
         <h4>{{ item.name }}</h4>
         <!--<p class="description">{{ item.description }}</p>-->
-        <p class="price">Rs. {{ item.price }}</p>
+        <p class="price">{{ item.price | rmsCurrency }}</p>
         <button (click)="addToOrder(item)" class="btn-add">Add to Order</button>
       </div>
     }
@@ -38,12 +38,12 @@
             @for (orderItem of selectedItems; track orderItem) {
               <tr>
                 <td>{{ orderItem.menuItem.name }}</td>
-                <td>Rs. {{ orderItem.menuItem.price }}</td>
+                <td>{{ orderItem.menuItem.price | rmsCurrency }}</td>
                 <td>
                   <input type="number" min="1" [value]="orderItem.quantity"
                     (change)="updateQuantity(orderItem.menuItem.id, $any($event.target).value)">
                   </td>
-                  <td>Rs. {{ orderItem.menuItem.price * orderItem.quantity }}</td>
+                  <td>{{ orderItem.menuItem.price * orderItem.quantity | rmsCurrency }}</td>
                   <td>
                     <button (click)="removeFromOrder(orderItem.menuItem.id)" class="btn-remove">Remove</button>
                   </td>
@@ -55,7 +55,7 @@
       }
 
       <div class="total-section">
-        <h3>Total Bill: Rs. {{ totalBill }}</h3>
+        <h3>Total Bill: {{ totalBill | rmsCurrency }}</h3>
         <button (click)="submitOrder()" class="btn-submit">Submit Order</button>
       </div>
     </div>

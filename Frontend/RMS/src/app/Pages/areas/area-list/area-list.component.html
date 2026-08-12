@@ -74,7 +74,7 @@
                 </td>
               } @else {
                 <td>{{ a.name }}</td>
-                <td>Rs {{ a.deliveryFee }}</td>
+                <td>{{ a.deliveryFee | rmsCurrency }}</td>
                 <td>
                   @if (a.isActive) {
                     <span class="dfc-badge dfc-badge-success">Active</span>
