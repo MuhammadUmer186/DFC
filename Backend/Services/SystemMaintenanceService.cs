@@ -13,6 +13,14 @@ namespace RestaurantSystem.Services
             _context = context;
         }
 
+        // Configured from the Settings page — left untouched by Clear Data so restaurant
+        // branding, currency, order numbering and service-type timing survive a reset.
+        private static readonly HashSet<string> ExcludedTables = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "SiteSettings",
+            "ServiceTimeSettings"
+        };
+
         public async Task ClearAllDataAsync()
         {
             // Every table EF Core maps, discovered from the model rather than hardcoded, so
@@ -20,7 +28,7 @@ namespace RestaurantSystem.Services
             // of the model, so it's untouched and migration state stays intact.
             var tableNames = _context.Model.GetEntityTypes()
                 .Select(t => t.GetTableName())
-                .Where(t => t != null)
+                .Where(t => t != null && !ExcludedTables.Contains(t))
                 .Distinct()
                 .ToList();
 
@@ -51,23 +59,15 @@ namespace RestaurantSystem.Services
             }
         }
 
-        // Mirrors the HasData seed rows in ApplicationDbContext.OnModelCreating — the state a
-        // freshly migrated, never-used database starts in.
+        // Mirrors the HasData seed row in ApplicationDbContext.OnModelCreating — the state a
+        // freshly migrated, never-used database starts in. SiteSettings/ServiceTimeSettings
+        // aren't touched by the wipe (see ExcludedTables), so there's nothing to reseed for them.
         private async Task ReseedBaselineRowsAsync()
         {
             var seedDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
             await InsertWithIdentityAsync("Areas", () =>
                 _context.Areas.Add(new Area { Id = 1, Name = "Unknown", DeliveryFee = 100, IsActive = true, CreatedAt = seedDate }));
-
-            await InsertWithIdentityAsync("ServiceTimeSettings", () =>
-                _context.ServiceTimeSettings.AddRange(
-                    new ServiceTimeSetting { Id = 1, ServiceType = "DineIn", MinMinutes = 15, MaxMinutes = 20, IsEnabled = true, UpdatedAt = seedDate },
-                    new ServiceTimeSetting { Id = 2, ServiceType = "Takeaway", MinMinutes = 15, MaxMinutes = 20, IsEnabled = true, UpdatedAt = seedDate },
-                    new ServiceTimeSetting { Id = 3, ServiceType = "Delivery", MinMinutes = 25, MaxMinutes = 35, IsEnabled = true, UpdatedAt = seedDate }));
-
-            await InsertWithIdentityAsync("SiteSettings", () =>
-                _context.SiteSettings.Add(new SiteSetting { Id = 1, HeroImageUrl = null }));
         }
 
         private async Task InsertWithIdentityAsync(string table, Action addEntities)
