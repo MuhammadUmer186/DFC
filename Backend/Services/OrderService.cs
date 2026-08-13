@@ -19,13 +19,15 @@ namespace RestaurantSystem.Services
         private readonly IKitchenOutService _kitchenOutService;
         private readonly PrintSvc _printService;
         private readonly IRestaurantClock _clock;
-        public OrderService(ApplicationDbContext context, IHubContext<OrderHub> hub, IKitchenOutService kitchenOutService, PrintSvc printService, IRestaurantClock clock)
+        private readonly ICustomerService _customerService;
+        public OrderService(ApplicationDbContext context, IHubContext<OrderHub> hub, IKitchenOutService kitchenOutService, PrintSvc printService, IRestaurantClock clock, ICustomerService customerService)
         {
             _context = context;
             _hub = hub;
             _kitchenOutService = kitchenOutService;
             _printService = printService;
             _clock = clock;
+            _customerService = customerService;
         }
 
         // Shared by CreateAsync and ApproveOnlineOrderAsync — expands items/deals into raw-item quantities via recipes
@@ -407,6 +409,13 @@ namespace RestaurantSystem.Services
 
             order.OrderSource = "Online";
             order.Status = OrderStatus.PendingApproval; // sits here until staff approves — not kitchen-visible yet
+
+            // Save the guest's WhatsApp number/name/address into the Clients module so it's on
+            // hand for future orders, without touching personalization/consent fields.
+            if (!string.IsNullOrWhiteSpace(request.PhoneNumber))
+            {
+                await _customerService.UpsertFromOrderAsync(request.PhoneNumber, request.CustomerName, request.Address);
+            }
 
             // Delivery fee is looked up server-side from the selected Area (never trust a client-supplied
             // amount) and snapshotted onto the order so it stays accurate even if the Area's fee changes later.

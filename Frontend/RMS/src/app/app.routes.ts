@@ -48,6 +48,7 @@ import { MyMenuComponent } from './Pages/my-menu/my-menu.component';
 import { DealsComponent } from './Pages/deals/deals.component';
 import { SettingsComponent } from './Pages/settings/settings.component';
 import { RiderListComponent } from './Pages/riders/rider-list/rider-list.component';
+import { ClientListComponent } from './Pages/clients/client-list/client-list.component';
 import { AreaListComponent } from './Pages/areas/area-list/area-list.component';
 import { MyDeliveriesComponent } from './Pages/my-deliveries/my-deliveries.component';
 import { AiForecastComponent } from './Pages/ai/ai-forecast/ai-forecast.component';
@@ -249,6 +250,10 @@ export const routes: Routes = [
             },
             {
                 path:"riders-list",component:RiderListComponent,canActivate: [AuthGuard],
+            data: { roles: ['SuperAdmin'] }
+            },
+            {
+                path:"clients",component:ClientListComponent,canActivate: [AuthGuard],
             data: { roles: ['SuperAdmin'] }
             },
             {

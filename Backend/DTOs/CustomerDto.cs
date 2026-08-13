@@ -5,6 +5,7 @@ namespace RestaurantSystem.DTOs
         public int Id { get; set; }
         public string PhoneNumber { get; set; } = null!;
         public string? Name { get; set; }
+        public string? Address { get; set; }
         public bool PersonalizationConsent { get; set; }
         public string? Allergens { get; set; }
         public string? DietaryPreferences { get; set; }
@@ -16,6 +17,7 @@ namespace RestaurantSystem.DTOs
     {
         public string PhoneNumber { get; set; } = null!;
         public string? Name { get; set; }
+        public string? Address { get; set; }
         public bool PersonalizationConsent { get; set; }
         public string? Allergens { get; set; }
         public string? DietaryPreferences { get; set; }

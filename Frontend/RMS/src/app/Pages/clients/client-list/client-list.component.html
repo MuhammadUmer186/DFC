@@ -1,0 +1,52 @@
+<div class="dfc-page">
+
+  <div class="dfc-page-header">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title"><i class="pi pi-users"></i> Clients</h2>
+      <p class="dfc-page-subtitle">Name, WhatsApp number and address, saved automatically from every online order</p>
+    </div>
+  </div>
+
+  <div class="dfc-toolbar">
+    <input
+      type="text"
+      class="dfc-input"
+      placeholder="Search by name, phone or address"
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+  </div>
+
+  @if (filteredClients().length === 0) {
+    <div class="dfc-empty">
+      <i class="pi pi-inbox"></i>
+      <span>No clients found</span>
+    </div>
+  }
+
+  @if (filteredClients().length > 0) {
+    <div class="dfc-table-wrap">
+      <table class="dfc-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>WhatsApp Number</th>
+            <th>Address</th>
+            <th>Added</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of filteredClients(); track c.id) {
+            <tr>
+              <td>{{ c.name || '—' }}</td>
+              <td>{{ c.phoneNumber }}</td>
+              <td>{{ c.address || '—' }}</td>
+              <td>{{ c.createdAt | date:'medium' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+</div>

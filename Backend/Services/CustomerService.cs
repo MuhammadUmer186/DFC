@@ -48,6 +48,7 @@ namespace RestaurantSystem.Services
             }
 
             customer.Name = dto.Name;
+            customer.Address = dto.Address;
             customer.PersonalizationConsent = dto.PersonalizationConsent;
             customer.Allergens = dto.Allergens;
             customer.DietaryPreferences = dto.DietaryPreferences;
@@ -55,6 +56,26 @@ namespace RestaurantSystem.Services
 
             await _context.SaveChangesAsync();
             return ToDto(customer);
+        }
+
+        public async Task UpsertFromOrderAsync(string phoneNumber, string? name, string? address)
+        {
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.PhoneNumber == phoneNumber);
+            if (customer == null)
+            {
+                customer = new Customer
+                {
+                    PhoneNumber = phoneNumber,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.Customers.Add(customer);
+            }
+
+            if (!string.IsNullOrWhiteSpace(name)) customer.Name = name;
+            if (!string.IsNullOrWhiteSpace(address)) customer.Address = address;
+            customer.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
         }
 
         public async Task<bool> SetConsentAsync(string phoneNumber, bool consent)
@@ -73,6 +94,7 @@ namespace RestaurantSystem.Services
             Id = c.Id,
             PhoneNumber = c.PhoneNumber,
             Name = c.Name,
+            Address = c.Address,
             PersonalizationConsent = c.PersonalizationConsent,
             Allergens = c.Allergens,
             DietaryPreferences = c.DietaryPreferences,

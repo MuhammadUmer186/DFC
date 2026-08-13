@@ -12,6 +12,7 @@ namespace RestaurantSystem.Models
         public int Id { get; set; }
         public string PhoneNumber { get; set; } = null!;
         public string? Name { get; set; }
+        public string? Address { get; set; }
 
         /// Must be explicitly true before any personalization/recommendation logic may use this
         /// customer's history — "customer consent and privacy settings" / "provide a way for
