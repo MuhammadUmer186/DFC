@@ -81,6 +81,7 @@ builder.Services.AddScoped<IMenuRecipeService, MenuRecipeService>();
 builder.Services.AddScoped<IRiderService, RiderService>();
 builder.Services.AddScoped<IAreaService, AreaService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<ISystemMaintenanceService, SystemMaintenanceService>();
 
 // ===== AI foundation =====
 builder.Services.Configure<AiFeatureOptions>(builder.Configuration.GetSection("AiFeatures"));

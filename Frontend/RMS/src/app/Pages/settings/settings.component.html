@@ -389,4 +389,63 @@
     </div>
   }
 
+  <!-- DANGER ZONE -->
+  <div class="dfc-page-header" style="margin-top: 32px;">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title" style="font-size: 16px; color: #dc2626;"><i class="pi pi-exclamation-triangle"></i> Danger Zone</h2>
+      <p class="dfc-page-subtitle">Irreversible actions — proceed with caution</p>
+    </div>
+  </div>
+
+  <div class="dfc-toolbar" style="border: 1px solid #fecaca; background: #fef2f2; border-radius: 8px; padding: 14px 16px; align-items: center; justify-content: space-between;">
+    <div>
+      <div style="font-weight: 700; font-size: 14px; color: #991b1b;">Clear All Data</div>
+      <div style="font-size: 12px; color: #7f1d1d; max-width: 520px;">
+        Permanently deletes every order, customer, employee, menu item, vendor, login and setting in the system,
+        then resets Settings and Service Types back to their defaults. This cannot be undone.
+      </div>
+    </div>
+    <button class="dfc-btn dfc-btn-danger dfc-btn-sm" (click)="openClearDataModal()">
+      <i class="pi pi-trash"></i> Clear Data
+    </button>
+  </div>
+
 </div>
+
+<!-- CLEAR DATA CONFIRMATION MODAL -->
+@if (clearDataModalOpen()) {
+  <div style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+    <div style="background: #fff; border-radius: 10px; padding: 24px; width: 420px; max-width: 90vw; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+      <h3 style="margin: 0 0 8px; color: #dc2626; display: flex; align-items: center; gap: 8px;">
+        <i class="pi pi-exclamation-triangle"></i> Clear All Data
+      </h3>
+      <p style="font-size: 13px; color: #475569; line-height: 1.5;">
+        This will <strong>permanently delete everything</strong> — all orders, customers, menu items, employees,
+        vendors, riders, logins and settings — and reset the system to a fresh state. There is no undo.
+      </p>
+      <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:#64748b; margin-top: 12px;">
+        Re-enter your SuperAdmin password to confirm
+        <input
+          type="password"
+          class="dfc-input"
+          style="width: 100%;"
+          placeholder="Password"
+          [value]="clearDataPassword()"
+          (input)="clearDataPassword.set($any($event.target).value)"
+          (keydown.enter)="confirmClearData()"
+          autocomplete="off"
+        />
+      </label>
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+        <button class="dfc-btn dfc-btn-ghost dfc-btn-sm" [disabled]="clearingData()" (click)="cancelClearData()">Cancel</button>
+        <button class="dfc-btn dfc-btn-danger dfc-btn-sm" [disabled]="clearingData()" (click)="confirmClearData()">
+          @if (clearingData()) {
+            <i class="pi pi-spin pi-spinner"></i> Clearing…
+          } @else {
+            <i class="pi pi-trash"></i> Permanently Clear Everything
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

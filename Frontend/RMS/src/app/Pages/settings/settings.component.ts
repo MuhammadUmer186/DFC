@@ -5,6 +5,8 @@ import { ServiceTimeSettingService } from '../../Services/service-time-setting.s
 import { SiteSettingService } from '../../Services/site-setting.service';
 import { BrandingService } from '../../Services/branding.service';
 import { ToastService } from '../../Services/toast.service';
+import { AuthService } from '../../Services/auth.service';
+import { SystemService } from '../../Services/system.service';
 import { environment } from '../../../environments/environment';
 import { COUNTRY_TIMEZONES } from '../../Shared/country-timezones';
 
@@ -56,11 +58,18 @@ export class SettingsComponent implements OnInit {
 
   editValues = new Map<string, { min: number; max: number; enabled: boolean }>();
 
+  // ===== CLEAR DATA (factory reset) =====
+  clearDataModalOpen = signal(false);
+  clearDataPassword = signal('');
+  clearingData = signal(false);
+
   constructor(
     private service: ServiceTimeSettingService,
     private siteSettingService: SiteSettingService,
     private branding: BrandingService,
-    private toast: ToastService
+    private toast: ToastService,
+    private authService: AuthService,
+    private systemService: SystemService
   ) {}
 
   loadError = signal<string | null>(null);
@@ -465,6 +474,42 @@ export class SettingsComponent implements OnInit {
       error: (err) => {
         this.toast.error(err?.error || 'Failed to update estimated time');
         this.savingType.set(null);
+      }
+    });
+  }
+
+  // ===== CLEAR DATA (factory reset) =====
+  openClearDataModal() {
+    this.clearDataPassword.set('');
+    this.clearDataModalOpen.set(true);
+  }
+
+  cancelClearData() {
+    this.clearDataModalOpen.set(false);
+    this.clearDataPassword.set('');
+  }
+
+  confirmClearData() {
+    const password = this.clearDataPassword();
+    if (!password) {
+      this.toast.error('Enter your SuperAdmin password to confirm');
+      return;
+    }
+
+    this.clearingData.set(true);
+    this.systemService.clearData(password).subscribe({
+      next: () => {
+        this.toast.success('All data cleared. Reloading…');
+        // Every table (including Users) was just wiped, so this session's own state — and
+        // everyone else's — is now stale. A full reload/re-login is the only consistent recovery.
+        setTimeout(() => {
+          this.authService.logout();
+          window.location.href = '/login';
+        }, 1200);
+      },
+      error: (err) => {
+        this.toast.error(err?.error || 'Failed to clear data');
+        this.clearingData.set(false);
       }
     });
   }
