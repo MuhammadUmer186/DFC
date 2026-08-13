@@ -27,7 +27,7 @@
 
   <div class="dfc-toolbar" style="align-items: flex-start;">
     @if (fullLogoUrl()) {
-      <img [src]="fullLogoUrl()" alt="Logo preview" style="width: 88px; height: 88px; object-fit: contain; background: #0f172a; border-radius: 8px;">
+      <img [src]="fullLogoUrl()" alt="Logo preview" style="width: 88px; height: 88px; object-fit: contain; background: var(--dfc-navy-900); border-radius: 8px;">
     } @else {
       <div style="width: 88px; height: 88px; display: flex; align-items: center; justify-content: center; background: #f1f5f9; border-radius: 8px; color: #94a3b8; font-size: 12px; text-align: center;">
         No logo uploaded
@@ -76,7 +76,7 @@
 
   <div class="dfc-toolbar" style="align-items: flex-start;">
     @if (fullCompanyLogoUrl()) {
-      <img [src]="fullCompanyLogoUrl()" alt="Company logo preview" style="width: 88px; height: 88px; object-fit: contain; background: #0f172a; border-radius: 8px;">
+      <img [src]="fullCompanyLogoUrl()" alt="Company logo preview" style="width: 88px; height: 88px; object-fit: contain; background: var(--dfc-navy-900); border-radius: 8px;">
     } @else {
       <div style="width: 88px; height: 88px; display: flex; align-items: center; justify-content: center; background: #f1f5f9; border-radius: 8px; color: #94a3b8; font-size: 12px; text-align: center;">
         No logo uploaded
@@ -199,7 +199,7 @@
 
   <div class="dfc-toolbar" style="align-items: flex-start;">
     @if (fullHeroImageUrl()) {
-      <img [src]="fullHeroImageUrl()" alt="Hero banner preview" style="width: 360px; height: 88px; object-fit: cover; background: #0f172a; border-radius: 8px;">
+      <img [src]="fullHeroImageUrl()" alt="Hero banner preview" style="width: 360px; height: 88px; object-fit: cover; background: var(--dfc-navy-900); border-radius: 8px;">
     } @else {
       <div style="width: 360px; height: 88px; display: flex; align-items: center; justify-content: center; background: #f1f5f9; border-radius: 8px; color: #94a3b8; font-size: 12px;">
         No image uploaded yet

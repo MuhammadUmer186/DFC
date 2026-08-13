@@ -9,7 +9,7 @@ import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 import { routes } from './app.routes';
 
-// "Deep Navy + Amber" preset — keeps Aura's structure/behavior, swaps the
+// "Forest Green + Amber" preset — keeps Aura's structure/behavior, swaps the
 // brand colors so every PrimeNG component (buttons, inputs, tables, dialogs)
 // matches the DFC identity without per-component overrides.
 const DfcPreset = definePreset(Aura, {
@@ -31,7 +31,7 @@ const DfcPreset = definePreset(Aura, {
       light: {
         primary: {
           color: '{amber.500}',
-          contrastColor: '#0f172a',
+          contrastColor: '#081f13',
           hoverColor: '{amber.600}',
           activeColor: '{amber.700}'
         },

@@ -32,7 +32,7 @@
 }
 
 .ai-chat-history-item:hover { background: #f1f5f9; }
-.ai-chat-history-item.active { background: #dbeafe; color: #1e3a5f; font-weight: 600; }
+.ai-chat-history-item.active { background: var(--dfc-success-bg); color: var(--dfc-navy-800); font-weight: 600; }
 
 .ai-chat-main {
   display: flex;
@@ -58,7 +58,7 @@
   padding: 8px 14px;
   font-size: 13px;
   cursor: pointer;
-  color: #1e3a5f;
+  color: var(--dfc-navy-800);
 }
 .ai-starter-btn:hover { background: #e2e8f0; }
 
@@ -84,7 +84,7 @@
   line-height: 1.5;
 }
 
-.ai-chat-message.user .ai-chat-bubble { background: #1e3a5f; color: #fff; }
+.ai-chat-message.user .ai-chat-bubble { background: var(--dfc-navy-800); color: #fff; }
 .ai-chat-message.assistant .ai-chat-bubble { background: #f1f5f9; color: #1f2937; }
 
 .ai-chat-sources {
