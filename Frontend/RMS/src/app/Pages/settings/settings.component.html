@@ -19,7 +19,7 @@
     <div class="dfc-page-header-text">
       <h2 class="dfc-page-title" style="font-size: 16px;"><i class="pi pi-building"></i> Restaurant Name &amp; Logo</h2>
       <p class="dfc-page-subtitle">
-        Sets the name and logo shown throughout the RMS (sidebar, top bar, login page) and the customer ordering site —
+        Sets the name and logo shown on the RMS sidebar and the customer ordering site —
         change these to set up the system for a different restaurant.
       </p>
     </div>
@@ -55,6 +55,55 @@
     />
     <button class="dfc-btn dfc-btn-primary dfc-btn-sm" [disabled]="savingRestaurantName()" (click)="saveRestaurantName()">
       @if (savingRestaurantName()) {
+        <i class="pi pi-spin pi-spinner"></i>
+      } @else {
+        <i class="pi pi-check"></i>
+      }
+      Save
+    </button>
+  </div>
+
+  <!-- COMPANY NAME & LOGO -->
+  <div class="dfc-page-header" style="margin-top: 24px;">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title" style="font-size: 16px;"><i class="pi pi-briefcase"></i> Company Name &amp; Logo</h2>
+      <p class="dfc-page-subtitle">
+        Sets the name and logo shown on the RMS top bar and login page — this is the parent/legal company,
+        separate from the restaurant brand shown on the sidebar and customer site.
+      </p>
+    </div>
+  </div>
+
+  <div class="dfc-toolbar" style="align-items: flex-start;">
+    @if (fullCompanyLogoUrl()) {
+      <img [src]="fullCompanyLogoUrl()" alt="Company logo preview" style="width: 88px; height: 88px; object-fit: contain; background: #0f172a; border-radius: 8px;">
+    } @else {
+      <div style="width: 88px; height: 88px; display: flex; align-items: center; justify-content: center; background: #f1f5f9; border-radius: 8px; color: #94a3b8; font-size: 12px; text-align: center;">
+        No logo uploaded
+      </div>
+    }
+
+    <label class="dfc-btn dfc-btn-primary dfc-btn-sm">
+      @if (uploadingCompanyLogo()) {
+        <i class="pi pi-spin pi-spinner"></i> Uploading…
+      } @else {
+        <i class="pi pi-upload"></i> {{ companyLogoUrl() ? 'Replace Logo' : 'Upload Logo' }}
+      }
+      <input type="file" accept="image/png,image/jpeg,image/webp" hidden (change)="onCompanyLogoFileSelected($event)">
+    </label>
+  </div>
+
+  <div class="dfc-toolbar" style="margin-top: 10px;">
+    <input
+      type="text"
+      class="dfc-input"
+      placeholder="e.g. Data Finger Chips Pvt Ltd"
+      style="min-width: 320px;"
+      [value]="companyName()"
+      (input)="setCompanyName($any($event.target).value)"
+    />
+    <button class="dfc-btn dfc-btn-primary dfc-btn-sm" [disabled]="savingCompanyName()" (click)="saveCompanyName()">
+      @if (savingCompanyName()) {
         <i class="pi pi-spin pi-spinner"></i>
       } @else {
         <i class="pi pi-check"></i>

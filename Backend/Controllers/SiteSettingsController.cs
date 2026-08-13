@@ -29,6 +29,8 @@ namespace RestaurantSystem.Controllers
                 whatsAppNumber = setting?.WhatsAppNumber,
                 restaurantName = setting?.RestaurantName,
                 logoUrl = setting?.LogoUrl,
+                companyName = setting?.CompanyName,
+                companyLogoUrl = setting?.CompanyLogoUrl,
                 menuPdfUrl = setting?.MenuPdfUrl,
                 orderSerialPrefix = setting?.OrderSerialPrefix ?? string.Empty,
                 orderSerialStartingNumber = setting?.OrderSerialStartingNumber ?? 1,
@@ -100,6 +102,65 @@ namespace RestaurantSystem.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { restaurantName = setting.RestaurantName });
+        }
+
+        [HttpPut("company-name")]
+        public async Task<IActionResult> UpdateCompanyName([FromBody] UpdateCompanyNameDto dto)
+        {
+            var setting = await _context.SiteSettings.FirstOrDefaultAsync(s => s.Id == 1);
+            if (setting == null)
+            {
+                setting = new Models.SiteSetting { Id = 1, CompanyName = dto.CompanyName };
+                _context.SiteSettings.Add(setting);
+            }
+            else
+            {
+                setting.CompanyName = dto.CompanyName;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { companyName = setting.CompanyName });
+        }
+
+        [HttpPost("company-logo")]
+        [RequestSizeLimit(5_000_000)] // 5 MB — a logo, not a banner
+        public async Task<IActionResult> UploadCompanyLogo(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded");
+
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!AllowedImageExtensions.Contains(ext))
+                return BadRequest("Unsupported image type. Use jpg, png or webp.");
+
+            var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "site");
+            Directory.CreateDirectory(folder);
+
+            var fileName = $"companylogo_{Guid.NewGuid():N}{ext}";
+            var fullPath = Path.Combine(folder, fileName);
+
+            using (var stream = new FileStream(fullPath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var url = $"/uploads/site/{fileName}";
+
+            var setting = await _context.SiteSettings.FirstOrDefaultAsync(s => s.Id == 1);
+            if (setting == null)
+            {
+                setting = new Models.SiteSetting { Id = 1, CompanyLogoUrl = url };
+                _context.SiteSettings.Add(setting);
+            }
+            else
+            {
+                setting.CompanyLogoUrl = url;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { companyLogoUrl = url });
         }
 
         [HttpPost("logo")]

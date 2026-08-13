@@ -16,6 +16,8 @@ export class SiteSettingService {
       whatsAppNumber: string | null;
       restaurantName: string | null;
       logoUrl: string | null;
+      companyName: string | null;
+      companyLogoUrl: string | null;
       menuPdfUrl: string | null;
       orderSerialPrefix: string;
       orderSerialStartingNumber: number;
@@ -67,6 +69,18 @@ export class SiteSettingService {
     const formData = new FormData();
     formData.append('file', file);
     return this.http.post<{ logoUrl: string }>(`${this.api}/logo`, formData, { headers: reqHeader });
+  }
+
+  updateCompanyName(companyName: string) {
+    const reqHeader = new HttpHeaders({ 'Authorization': 'Bearer ' + this.authservice.gettoken() });
+    return this.http.put<{ companyName: string | null }>(`${this.api}/company-name`, { companyName }, { headers: reqHeader });
+  }
+
+  uploadCompanyLogo(file: File) {
+    const reqHeader = new HttpHeaders({ 'Authorization': 'Bearer ' + this.authservice.gettoken() });
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ companyLogoUrl: string }>(`${this.api}/company-logo`, formData, { headers: reqHeader });
   }
 
   uploadMenuPdf(file: File) {

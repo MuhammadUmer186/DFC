@@ -38,6 +38,11 @@ export class SettingsComponent implements OnInit {
   logoUrl = signal<string | null>(null);
   uploadingLogo = signal(false);
 
+  companyName = signal('');
+  savingCompanyName = signal(false);
+  companyLogoUrl = signal<string | null>(null);
+  uploadingCompanyLogo = signal(false);
+
   orderSerialPrefix = signal('');
   orderSerialStartingNumber = signal(1);
   orderSerialResetTime = signal('00:00');
@@ -86,6 +91,8 @@ export class SettingsComponent implements OnInit {
         this.whatsAppNumber.set(res.whatsAppNumber ?? '');
         this.restaurantName.set(res.restaurantName ?? '');
         this.logoUrl.set(res.logoUrl);
+        this.companyName.set(res.companyName ?? '');
+        this.companyLogoUrl.set(res.companyLogoUrl);
         this.orderSerialPrefix.set(res.orderSerialPrefix ?? '');
         this.orderSerialStartingNumber.set(res.orderSerialStartingNumber ?? 1);
         // Backend sends "HH:mm:ss" — <input type="time"> wants "HH:mm"
@@ -312,6 +319,65 @@ export class SettingsComponent implements OnInit {
       error: (err) => {
         this.savingRestaurantName.set(false);
         this.toast.error(err?.error || 'Failed to update restaurant name');
+      }
+    });
+  }
+
+  setCompanyName(value: string) {
+    this.companyName.set(value);
+  }
+
+  saveCompanyName() {
+    const name = this.companyName().trim();
+    if (!name) {
+      this.toast.error('Company name is required');
+      return;
+    }
+    this.savingCompanyName.set(true);
+    this.siteSettingService.updateCompanyName(name).subscribe({
+      next: (res) => {
+        this.companyName.set(res.companyName ?? '');
+        this.savingCompanyName.set(false);
+        this.toast.success('Company name updated');
+        this.branding.companyName.set(res.companyName ?? name);
+      },
+      error: (err) => {
+        this.savingCompanyName.set(false);
+        this.toast.error(err?.error || 'Failed to update company name');
+      }
+    });
+  }
+
+  fullCompanyLogoUrl(): string | null {
+    const url = this.companyLogoUrl();
+    return url ? `${environment.apihub}${url}` : null;
+  }
+
+  onCompanyLogoFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const maxBytes = 5 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      this.toast.error(`Image is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Please use a file under 5 MB.`);
+      input.value = '';
+      return;
+    }
+
+    this.uploadingCompanyLogo.set(true);
+    this.siteSettingService.uploadCompanyLogo(file).subscribe({
+      next: (res) => {
+        this.companyLogoUrl.set(res.companyLogoUrl);
+        this.uploadingCompanyLogo.set(false);
+        this.toast.success('Company logo updated');
+        this.branding.companyLogoUrl.set(`${environment.apihub}${res.companyLogoUrl}`);
+        input.value = '';
+      },
+      error: (err) => {
+        this.uploadingCompanyLogo.set(false);
+        this.toast.error(this.describeUploadError(err));
+        input.value = '';
       }
     });
   }

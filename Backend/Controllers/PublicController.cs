@@ -107,6 +107,8 @@ namespace RestaurantSystem.Controllers
                 whatsAppNumber = setting?.WhatsAppNumber,
                 restaurantName = setting?.RestaurantName,
                 logoUrl = setting?.LogoUrl,
+                companyName = setting?.CompanyName,
+                companyLogoUrl = setting?.CompanyLogoUrl,
                 country = setting?.Country ?? "Pakistan",
                 timeZoneId = setting?.TimeZoneId ?? "Asia/Karachi",
                 currencyCode = setting?.CurrencyCode ?? "PKR",

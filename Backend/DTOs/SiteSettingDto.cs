@@ -8,6 +8,10 @@ namespace RestaurantSystem.DTOs
     {
         public string? RestaurantName { get; set; }
     }
+    public class UpdateCompanyNameDto
+    {
+        public string? CompanyName { get; set; }
+    }
     public class UpdateOrderSerialSettingDto
     {
         public string? Prefix { get; set; }

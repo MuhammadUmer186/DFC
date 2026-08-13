@@ -14,6 +14,10 @@ export class BrandingService {
 
   restaurantName = signal<string>('DFC');
   logoUrl = signal<string | null>(null);
+  // Company (parent/legal) branding — shown on the RMS top bar and login page, separate
+  // from the restaurant brand above (sidebar, customer site).
+  companyName = signal<string>('DFC');
+  companyLogoUrl = signal<string | null>(null);
   // Admin-selected IANA time zone (Settings → Country & Time Zone) — drives the dashboard
   // clock so it shows the restaurant's local time regardless of the viewer's device/location.
   timeZoneId = signal<string>('Asia/Karachi');
@@ -29,13 +33,15 @@ export class BrandingService {
   load() {
     if (this.loaded) return;
     this.loaded = true;
-    this.http.get<{ restaurantName: string | null; logoUrl: string | null; country: string | null; timeZoneId: string | null; currencyCode: string | null; currencySymbol: string | null }>(this.api).subscribe({
+    this.http.get<{ restaurantName: string | null; logoUrl: string | null; companyName: string | null; companyLogoUrl: string | null; country: string | null; timeZoneId: string | null; currencyCode: string | null; currencySymbol: string | null }>(this.api).subscribe({
       next: (res) => {
         if (res.restaurantName) {
           this.restaurantName.set(res.restaurantName);
           this.titleService.setTitle(`${res.restaurantName} — RMS`);
         }
         if (res.logoUrl) this.logoUrl.set(`${environment.apihub}${res.logoUrl}`);
+        if (res.companyName) this.companyName.set(res.companyName);
+        if (res.companyLogoUrl) this.companyLogoUrl.set(`${environment.apihub}${res.companyLogoUrl}`);
         if (res.country) this.country.set(res.country);
         if (res.timeZoneId) this.timeZoneId.set(res.timeZoneId);
         if (res.currencyCode) this.currencyCode.set(res.currencyCode);

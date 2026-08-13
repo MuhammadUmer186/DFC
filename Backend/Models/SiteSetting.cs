@@ -8,6 +8,12 @@ namespace RestaurantSystem.Models
         public string? RestaurantName { get; set; }
         public string? LogoUrl { get; set; }
 
+        // ✅ COMPANY BRANDING — the legal/parent company name & logo, distinct from the
+        // restaurant brand shown on the customer site and RMS sidebar. Used on the RMS
+        // navbar and login page.
+        public string? CompanyName { get; set; }
+        public string? CompanyLogoUrl { get; set; }
+
         // ✅ COUNTRY & TIME ZONE — which country the restaurant operates in and the IANA time
         // zone (e.g. "Asia/Karachi") used to display "system time" (dashboard clock, etc.)
         // regardless of where the browser viewing it physically is.
