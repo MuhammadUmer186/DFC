@@ -304,6 +304,72 @@
     </div>
   }
 
+  <!-- LOCATION & QR CODE -->
+  <div class="dfc-page-header" style="margin-top: 24px;">
+    <div class="dfc-page-header-text">
+      <h2 class="dfc-page-title" style="font-size: 16px;"><i class="pi pi-map-marker"></i> Location & QR Code</h2>
+      <p class="dfc-page-subtitle">
+        Paste your restaurant's Google Maps link (from Maps' "Share" button), then generate a QR code that opens it.
+        The QR always points to the stable link below — updating the address later never breaks a QR code you've
+        already printed.
+      </p>
+    </div>
+  </div>
+
+  <div class="dfc-toolbar" style="align-items: flex-start;">
+    <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:#64748b; flex:1;">
+      Google Maps Link
+      <input
+        type="text"
+        class="dfc-input"
+        style="width: 100%; min-width: 320px;"
+        placeholder="https://maps.app.goo.gl/..."
+        [value]="googleMapsUrl()"
+        (input)="setGoogleMapsUrl($any($event.target).value)"
+      />
+    </label>
+
+    <button class="dfc-btn dfc-btn-primary dfc-btn-sm" style="align-self: flex-end;" [disabled]="savingGoogleMapsUrl()" (click)="saveGoogleMapsUrl()">
+      @if (savingGoogleMapsUrl()) {
+        <i class="pi pi-spin pi-spinner"></i>
+      } @else {
+        <i class="pi pi-save"></i>
+      }
+      Save
+    </button>
+  </div>
+
+  <div class="dfc-toolbar" style="margin-top: 10px; align-items: flex-start;">
+    <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:#64748b; flex:1;">
+      QR Code Link (edit if your public domain is different)
+      <input
+        type="text"
+        class="dfc-input"
+        style="width: 100%; min-width: 320px;"
+        [value]="locationQrTargetUrl()"
+        (input)="setLocationQrTargetUrl($any($event.target).value)"
+      />
+    </label>
+
+    <button class="dfc-btn dfc-btn-primary dfc-btn-sm" style="align-self: flex-end;" [disabled]="generatingLocationQr()" (click)="generateLocationQr()">
+      @if (generatingLocationQr()) {
+        <i class="pi pi-spin pi-spinner"></i>
+      } @else {
+        <i class="pi pi-qrcode"></i>
+      }
+      Generate QR
+    </button>
+  </div>
+
+  @if (locationQrDataUrl()) {
+    <div class="dfc-toolbar" style="margin-top: 10px; align-items: center;">
+      <img [src]="locationQrDataUrl()" alt="Location QR code" style="width: 160px; height: 160px; background: #fff; border-radius: 8px; padding: 8px;">
+      <button class="dfc-btn dfc-btn-primary dfc-btn-sm" (click)="downloadLocationQr()">
+        <i class="pi pi-download"></i> Download QR
+      </button>
+    </div>
+  }
+
   <!-- ORDER SERIAL -->
   <div class="dfc-page-header" style="margin-top: 24px;">
     <div class="dfc-page-header-text">

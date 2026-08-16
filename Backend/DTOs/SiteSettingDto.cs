@@ -12,6 +12,10 @@ namespace RestaurantSystem.DTOs
     {
         public string? CompanyName { get; set; }
     }
+    public class UpdateGoogleMapsUrlDto
+    {
+        public string? GoogleMapsUrl { get; set; }
+    }
     public class UpdateOrderSerialSettingDto
     {
         public string? Prefix { get; set; }

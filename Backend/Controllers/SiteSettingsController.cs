@@ -32,6 +32,7 @@ namespace RestaurantSystem.Controllers
                 companyName = setting?.CompanyName,
                 companyLogoUrl = setting?.CompanyLogoUrl,
                 menuPdfUrl = setting?.MenuPdfUrl,
+                googleMapsUrl = setting?.GoogleMapsUrl,
                 orderSerialPrefix = setting?.OrderSerialPrefix ?? string.Empty,
                 orderSerialStartingNumber = setting?.OrderSerialStartingNumber ?? 1,
                 orderSerialResetTime = setting?.OrderSerialResetTime ?? TimeSpan.Zero,
@@ -121,6 +122,25 @@ namespace RestaurantSystem.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { companyName = setting.CompanyName });
+        }
+
+        [HttpPut("google-maps-url")]
+        public async Task<IActionResult> UpdateGoogleMapsUrl([FromBody] UpdateGoogleMapsUrlDto dto)
+        {
+            var setting = await _context.SiteSettings.FirstOrDefaultAsync(s => s.Id == 1);
+            if (setting == null)
+            {
+                setting = new Models.SiteSetting { Id = 1, GoogleMapsUrl = dto.GoogleMapsUrl };
+                _context.SiteSettings.Add(setting);
+            }
+            else
+            {
+                setting.GoogleMapsUrl = dto.GoogleMapsUrl;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { googleMapsUrl = setting.GoogleMapsUrl });
         }
 
         [HttpPost("company-logo")]

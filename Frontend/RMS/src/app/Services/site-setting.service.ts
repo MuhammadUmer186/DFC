@@ -19,6 +19,7 @@ export class SiteSettingService {
       companyName: string | null;
       companyLogoUrl: string | null;
       menuPdfUrl: string | null;
+      googleMapsUrl: string | null;
       orderSerialPrefix: string;
       orderSerialStartingNumber: number;
       orderSerialResetTime: string;
@@ -81,6 +82,11 @@ export class SiteSettingService {
     const formData = new FormData();
     formData.append('file', file);
     return this.http.post<{ companyLogoUrl: string }>(`${this.api}/company-logo`, formData, { headers: reqHeader });
+  }
+
+  updateGoogleMapsUrl(googleMapsUrl: string) {
+    const reqHeader = new HttpHeaders({ 'Authorization': 'Bearer ' + this.authservice.gettoken() });
+    return this.http.put<{ googleMapsUrl: string | null }>(`${this.api}/google-maps-url`, { googleMapsUrl }, { headers: reqHeader });
   }
 
   uploadMenuPdf(file: File) {

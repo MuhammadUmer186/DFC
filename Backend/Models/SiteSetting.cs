@@ -27,6 +27,12 @@ namespace RestaurantSystem.Models
         // re-uploading a new PDF (a new GUID filename) never invalidates already-printed QR codes.
         public string? MenuPdfUrl { get; set; }
 
+        // ✅ GOOGLE MAPS LOCATION — the restaurant's Google Maps link (e.g. copied from Maps'
+        // "Share" button). Same indirection as MenuPdfUrl: the printed QR encodes the stable
+        // Public/location redirect, not this link directly, so updating the address later
+        // (branch move, corrected pin) never invalidates an already-printed QR code.
+        public string? GoogleMapsUrl { get; set; }
+
         // ✅ ORDER SERIAL — customer-facing order numbers (Prefix + running number),
         // reset back to OrderSerialStartingNumber once per day at OrderSerialResetTime.
         public string OrderSerialPrefix { get; set; } = string.Empty;

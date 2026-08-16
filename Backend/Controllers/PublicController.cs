@@ -132,6 +132,21 @@ namespace RestaurantSystem.Controllers
         }
 
         // ===============================
+        // 1c-3. LOCATION — stable QR target for the restaurant's Google Maps pin. Same
+        // pattern as menu-pdf: the printed QR encodes this endpoint, not the Maps link
+        // directly, so updating the address in Settings never invalidates a printed QR code.
+        // ===============================
+        [HttpGet("location")]
+        public async Task<IActionResult> GetLocation()
+        {
+            var setting = await _context.SiteSettings.FirstOrDefaultAsync(s => s.Id == 1);
+            if (string.IsNullOrEmpty(setting?.GoogleMapsUrl))
+                return NotFound("No location has been set yet");
+
+            return Redirect(setting.GoogleMapsUrl);
+        }
+
+        // ===============================
         // 1d. GET DELIVERY AREAS (CUSTOMER SIDE)
         // ===============================
         [HttpGet("areas")]

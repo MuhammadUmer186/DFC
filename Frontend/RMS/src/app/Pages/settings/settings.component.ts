@@ -54,6 +54,12 @@ export class SettingsComponent implements OnInit {
   menuQrDataUrl = signal<string | null>(null);
   generatingQr = signal(false);
 
+  googleMapsUrl = signal('');
+  savingGoogleMapsUrl = signal(false);
+  locationQrTargetUrl = signal(this.defaultLocationQrTargetUrl());
+  locationQrDataUrl = signal<string | null>(null);
+  generatingLocationQr = signal(false);
+
   countryTimeZones = COUNTRY_TIMEZONES;
   country = signal('');
   timeZoneId = signal('');
@@ -98,6 +104,7 @@ export class SettingsComponent implements OnInit {
         // Backend sends "HH:mm:ss" — <input type="time"> wants "HH:mm"
         this.orderSerialResetTime.set((res.orderSerialResetTime ?? '00:00:00').slice(0, 5));
         this.menuPdfUrl.set(res.menuPdfUrl);
+        this.googleMapsUrl.set(res.googleMapsUrl ?? '');
         this.country.set(res.country ?? 'Pakistan');
         this.timeZoneId.set(res.timeZoneId ?? 'Asia/Karachi');
         this.currencyCode.set(res.currencyCode ?? 'PKR');
@@ -172,6 +179,67 @@ export class SettingsComponent implements OnInit {
       ? environment.apiBaseUrl
       : `${window.location.origin}${environment.apiBaseUrl}`;
     return `${base}/public/menu-pdf`;
+  }
+
+  // Absolute URL of the stable Public/location redirect — same reasoning as the menu PDF QR:
+  // it never changes even if the Google Maps link is updated later.
+  private defaultLocationQrTargetUrl(): string {
+    const base = environment.apiBaseUrl.startsWith('http')
+      ? environment.apiBaseUrl
+      : `${window.location.origin}${environment.apiBaseUrl}`;
+    return `${base}/public/location`;
+  }
+
+  setGoogleMapsUrl(value: string) {
+    this.googleMapsUrl.set(value);
+  }
+
+  saveGoogleMapsUrl() {
+    const url = this.googleMapsUrl().trim();
+    this.savingGoogleMapsUrl.set(true);
+    this.siteSettingService.updateGoogleMapsUrl(url).subscribe({
+      next: (res) => {
+        this.googleMapsUrl.set(res.googleMapsUrl ?? '');
+        this.savingGoogleMapsUrl.set(false);
+        this.toast.success('Google Maps location saved — the location QR code (if already printed) now points to it automatically');
+      },
+      error: (err) => {
+        this.savingGoogleMapsUrl.set(false);
+        this.toast.error(err?.error || 'Failed to save Google Maps location');
+      }
+    });
+  }
+
+  setLocationQrTargetUrl(value: string) {
+    this.locationQrTargetUrl.set(value);
+  }
+
+  async generateLocationQr() {
+    const url = this.locationQrTargetUrl().trim();
+    if (!url) {
+      this.toast.error('Enter the URL the QR code should open');
+      return;
+    }
+
+    this.generatingLocationQr.set(true);
+    try {
+      const dataUrl = await QRCode.toDataURL(url, { width: 512, margin: 2 });
+      this.locationQrDataUrl.set(dataUrl);
+    } catch {
+      this.toast.error('Failed to generate QR code');
+    } finally {
+      this.generatingLocationQr.set(false);
+    }
+  }
+
+  downloadLocationQr() {
+    const dataUrl = this.locationQrDataUrl();
+    if (!dataUrl) return;
+
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = 'location-qr.png';
+    link.click();
   }
 
   fullMenuPdfUrl(): string | null {
