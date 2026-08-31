@@ -21,7 +21,8 @@ namespace RestaurantSystem.Services
         private readonly IRestaurantClock _clock;
         private readonly ICustomerService _customerService;
         private readonly RestaurantSystem.Sync.ICommandContext _commandContext;
-        public OrderService(ApplicationDbContext context, IHubContext<OrderHub> hub, IKitchenOutService kitchenOutService, PrintSvc printService, IRestaurantClock clock, ICustomerService customerService, RestaurantSystem.Sync.ICommandContext commandContext)
+        private readonly IOrderNumberService _orderNumberService;
+        public OrderService(ApplicationDbContext context, IHubContext<OrderHub> hub, IKitchenOutService kitchenOutService, PrintSvc printService, IRestaurantClock clock, ICustomerService customerService, RestaurantSystem.Sync.ICommandContext commandContext, IOrderNumberService orderNumberService)
         {
             _context = context;
             _hub = hub;
@@ -30,6 +31,7 @@ namespace RestaurantSystem.Services
             _clock = clock;
             _customerService = customerService;
             _commandContext = commandContext;
+            _orderNumberService = orderNumberService;
         }
 
         // Shared by CreateAsync and ApproveOnlineOrderAsync — expands items/deals into raw-item quantities via recipes
@@ -150,34 +152,17 @@ namespace RestaurantSystem.Services
         // day and the next). The counter itself is incremented via a single atomic UPDATE (not a
         // C# read-modify-write) so concurrent order creation can't race and hand out duplicates;
         // this runs inside CreateAsync's own transaction, so the row lock holds until it commits.
-        private async Task<string> GenerateOrderNumberAsync()
-        {
-            var settings = await _context.SiteSettings.AsNoTracking().FirstOrDefaultAsync(s => s.Id == 1);
-            var prefix = settings?.OrderSerialPrefix ?? string.Empty;
-            var startingNumber = settings?.OrderSerialStartingNumber ?? 1;
-            var resetTime = settings?.OrderSerialResetTime ?? TimeSpan.Zero;
-
-            // The reset time is configured in the restaurant's local time (Settings), so "now"
-            // here must be the restaurant's local time too, not the server host's own clock.
-            var now = await _clock.GetLocalNowAsync();
-            var businessDate = now.TimeOfDay < resetTime ? now.Date.AddDays(-1) : now.Date;
-
-            var numbers = await _context.Database.SqlQueryRaw<int>(
-                @"UPDATE SiteSettings
-                  SET OrderSerialCurrentNumber = CASE WHEN OrderSerialCurrentDate = {0} THEN OrderSerialCurrentNumber + 1 ELSE {1} END,
-                      OrderSerialCurrentDate = {0}
-                  OUTPUT INSERTED.OrderSerialCurrentNumber
-                  WHERE Id = 1",
-                businessDate, startingNumber).ToListAsync();
-
-            return $"{prefix}{numbers.First()}";
-        }
+        // Phase 3: order numbering moved to IOrderNumberService — per (branch, source,
+        // business day) atomic sequences (POS / WEB / CLD) so local and cloud writers
+        // never collide. The legacy single-writer counter in SiteSetting (Id=1) is no
+        // longer used for allocation.
 
         public async Task<OrderDto> CreateAsync(
     CreateOrderRequest request,
     decimal discount,
     ClaimsPrincipal userClaims,
-            bool skipStockCheck = false)
+            bool skipStockCheck = false,
+            string orderSource = "POS")
         {
             // ================= BASIC VALIDATION =================
             if ((request.Items == null || !request.Items.Any()) &&
@@ -335,7 +320,12 @@ namespace RestaurantSystem.Services
 
 
                 // ================= SAVE =================
-                order.OrderNumber = await GenerateOrderNumberAsync();
+                // Phase 3: per-branch/source/business-day sequence. The service maps
+                // "ONLINE" to WEB on an Edge node and CLD on the Cloud node.
+                var isOnline = orderSource.Equals("Online", StringComparison.OrdinalIgnoreCase);
+                var (orderNumber, resolvedSource) = await _orderNumberService.AllocateAsync(isOnline ? "ONLINE" : "POS");
+                order.OrderNumber = orderNumber;
+                order.OrderNumberSource = resolvedSource;
                 _context.Orders.Add(order);
                 await _context.SaveChangesAsync();
                 var dto = await GetByIdAsync(order.Id);
@@ -398,7 +388,7 @@ namespace RestaurantSystem.Services
                 Paid = false // 🔥 ONLINE = NOT PAID
             };
 
-            var orderDto = await CreateAsync(createOrderRequest, 0, fakeClaims, true);
+            var orderDto = await CreateAsync(createOrderRequest, 0, fakeClaims, true, orderSource: "Online");
 
             // 🔴 GET ACTUAL ENTITY (IMPORTANT)
             var order = await _context.Orders

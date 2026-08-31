@@ -107,6 +107,7 @@ builder.Services.AddScoped<IConsumptionService, ConsumptionService>();
 builder.Services.AddScoped<IMenuProfitService, MenuProfitService>();
 builder.Services.AddScoped<IStockReportService, StockReportService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IOrderNumberService, OrderNumberService>(); // Phase 3
 builder.Services.AddScoped<IVendorAccountService, VendorAccountService>();
 builder.Services.AddScoped<IWasteService, WasteService>();
 builder.Services.AddScoped<IUtilityBillService, UtilityBillService>();

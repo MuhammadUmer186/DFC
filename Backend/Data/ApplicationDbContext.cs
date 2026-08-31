@@ -72,6 +72,9 @@ namespace RestaurantSystem.Data
         // ===== Offline-first / cloud-sync — Phase 6 (idempotent commands). Node-local, not synced. =====
         public DbSet<ProcessedCommand> ProcessedCommands { get; set; } = null!;
 
+        // ===== Offline-first / cloud-sync — Phase 3 (safe order numbering). Node-local, not synced. =====
+        public DbSet<OrderNumberSequence> OrderNumberSequences { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -142,6 +145,22 @@ namespace RestaurantSystem.Data
                 entity.HasIndex(e => new { e.Dispatched, e.DeletedAtUtc });
                 entity.Property(e => e.AggregateType).HasMaxLength(128).IsRequired();
             });
+
+            modelBuilder.Entity<OrderNumberSequence>(entity =>
+            {
+                entity.HasIndex(e => new { e.BranchId, e.SourceCode, e.BusinessDate }).IsUnique();
+                entity.Property(e => e.SourceCode).HasMaxLength(8).IsRequired();
+                entity.Property(e => e.BusinessDate).HasColumnType("date");
+            });
+
+            // Phase 3: new-format order numbers are unique; legacy numbers
+            // (OrderNumberSource IS NULL) are left exactly as they were.
+            modelBuilder.Entity<Order>()
+                .HasIndex(o => o.OrderNumber)
+                .IsUnique()
+                .HasDatabaseName("UX_Orders_OrderNumber_Sequenced")
+                .HasFilter("[OrderNumberSource] IS NOT NULL");
+            modelBuilder.Entity<Order>().HasIndex(o => o.OrderNumberSource);
 
             modelBuilder.Entity<ProcessedCommand>(entity =>
             {
