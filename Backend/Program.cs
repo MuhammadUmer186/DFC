@@ -51,10 +51,19 @@ builder.Services.AddSwaggerGen(option =>
     });
 });
 builder.Services.AddSignalR();
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+
+// Offline-first / cloud-sync — Phase 2. Ambient node identity + the SaveChanges
+// interceptor that stamps GlobalId / AggregateVersion / UTC timestamps and
+// writes delete tombstones.
+builder.Services.AddSingleton<RestaurantSystem.Sync.INodeContext, RestaurantSystem.Sync.NodeContext>();
+builder.Services.AddSingleton<RestaurantSystem.Sync.SyncStampingInterceptor>();
+builder.Services.AddScoped<RestaurantSystem.Sync.SyncBackfillService>();
+
+builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        sql => sql.UseCompatibilityLevel(120))); // DB engine is SQL Server 2014 (12.0) — OPENJSON (used by EF Core 8's default Contains() translation) requires 2016+
+        sql => sql.UseCompatibilityLevel(120)) // DB engine is SQL Server 2014 (12.0) — OPENJSON (used by EF Core 8's default Contains() translation) requires 2016+
+    .AddInterceptors(sp.GetRequiredService<RestaurantSystem.Sync.SyncStampingInterceptor>()));
 // ===== Offline-first / cloud-sync — Phase 1 (node & branch identity) =====
 // Real values come from the Deployment section via env vars / secret mounts
 // (Deployment__NodeId, Deployment__NodeRole, Deployment__BranchId, ...).
@@ -205,12 +214,17 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var registration = scope.ServiceProvider.GetRequiredService<RestaurantSystem.Sync.NodeRegistrationService>();
-        await registration.EnsureRegisteredAsync();
+        var identity = await registration.EnsureRegisteredAsync();
+
+        // Phase 2: publish identity to the ambient context the interceptor reads,
+        // then backfill origin/branch on rows created before sync existed.
+        scope.ServiceProvider.GetRequiredService<RestaurantSystem.Sync.INodeContext>().Set(identity);
+        await scope.ServiceProvider.GetRequiredService<RestaurantSystem.Sync.SyncBackfillService>().RunAsync();
     }
     catch (Exception ex)
     {
         scope.ServiceProvider.GetRequiredService<ILogger<Program>>()
-            .LogError(ex, "Sync/Phase1: node self-registration failed; continuing startup.");
+            .LogError(ex, "Sync/Phase1-2: node registration / backfill failed; continuing startup.");
     }
 }
 // Configure the HTTP request pipeline.

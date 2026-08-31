@@ -5,7 +5,7 @@
 
 - **Branch:** `feature/offline-first-edge-sync` (off `main` @ `a5d25b7`)
 - **Started:** 2026-08-31
-- **Last updated:** 2026-08-31 — Phase 0 + Phase 1 complete (code + migration + config + verification)
+- **Last updated:** 2026-08-31 — Phases 0, 1, 2 complete (code + migration + config + verification)
 
 ---
 
@@ -26,7 +26,7 @@
 |---|-------|-------|-------|
 | 0 | Repo inspection + gap analysis + docs | ✅ | This document + 4 companion docs |
 | 1 | Node & branch identity (`Branch`, `SystemNode`, `NodeHeartbeat`, `Deployment` config) | ✅ | Entities + config + idempotent self-registration + additive migration + compose wiring. Verified: build, `ef database update`, two backend starts (create then idempotent refresh). |
-| 2 | Sync-safe identity (`GlobalId`, `AggregateVersion`, timestamps, tombstones, backfill) | ⛔ | Additive columns + backfill migration per aggregate |
+| 2 | Sync-safe identity (`GlobalId`, `AggregateVersion`, timestamps, tombstones, backfill) | ✅ | `ISyncableAggregate`/`ISyncableChild` on 22 entities, `SyncStampingInterceptor`, `SyncTombstone`, `SyncBackfillService`, additive migration (`AddColumn`×126 + `CreateIndex`×54 + `SyncTombstones`; `Up()` has no drop/alter). Verified: build, migrate on dev DB, backfill stamped 101 existing rows across 11 root tables + idempotent on restart, live order create stamps `GlobalId`/`OriginNodeId`/`BranchId`/`AggregateVersion`. |
 | 3 | Safe order numbering (`OrderNumberSequence` per Branch/Source/BusinessDay) | ⛔ | Depends on 1, 2 |
 | 4 | Inventory ledger (`StockMovement`, reconciliation service + report) | ⛔ | Depends on 2 |
 | 5 | Transactional sync (Outbox/Inbox/Checkpoint/Conflict/DeadLetter, `/api/sync/*`, HMAC) | ⛔ | Depends on 1, 2 |
@@ -77,6 +77,71 @@
 - `docker compose config -q` → VALID.
 
 **Not done in Phase 1 (by design)** — no `/api/system/node-status` endpoint yet (Phase 17), no HMAC/sync transport (Phase 5), no GUID/version columns on business aggregates (Phase 2).
+
+---
+
+## Phase 2 — delivered (2026-08-31)
+
+**Model** — `Backend/Sync/ISyncable.cs`: `ISyncableAggregate` (roots: `GlobalId`,
+`BranchId`, `OriginNodeId`, `AggregateVersion`, `CreatedAtUtc`, `UpdatedAtUtc`,
+`DeletedAtUtc?`, `RowVersion`) and `ISyncableChild` (owned: `GlobalId`,
+`CreatedAtUtc`, `UpdatedAtUtc`). Applied via additive partial-class fragments in
+`Backend/Models/Sync/SyncableAggregates.Partials.cs` — original entity files
+untouched; `Area`/`Customer`/`ServiceTimeSetting`/`SiteSetting` gained the
+`partial` keyword only.
+
+- **Roots (15):** Order, Customer, Area, MenuItem, Category, Deal, RawItem,
+  Vendor, PurchaseOrder, KitchenOut, WasteRecord, User, SiteSetting,
+  ServiceTimeSetting, Rider.
+- **Children (7):** OrderItem, OrderDeal, DealItem, MenuRecipe,
+  PurchaseOrderItem, KitchenOutItem, WasteItem — sync inside their root's
+  snapshot; no independent version/tombstone.
+- Payment is intentionally deferred to Phase 7 (no `Payment` entity exists yet).
+
+**Plumbing**
+- `Backend/Sync/NodeContext.cs` — `INodeContext` singleton, populated from
+  `NodeRegistrationService` output at startup.
+- `Backend/Sync/SyncStampingInterceptor.cs` — `SaveChanges` interceptor:
+  Added ⇒ `GlobalId`/timestamps/`AggregateVersion=1`/origin/branch; Modified ⇒
+  `UpdatedAtUtc` + `AggregateVersion++`; Deleted (root) ⇒ writes a
+  `SyncTombstone` in the same unit of work. `AsyncLocal` suppression flag for
+  inbound-sync apply (used from Phase 5). Registered on the `DbContext` via
+  `AddInterceptors`.
+- `Backend/Models/SyncTombstone.cs` + `SyncTombstones` table — propagates hard
+  deletes without global query filters (existing queries unchanged).
+- `Backend/Sync/SyncBackfillService.cs` — startup, idempotent: stamps
+  `OriginNodeId`/`BranchId` on pre-sync rows of every root table.
+- `ApplicationDbContext.ApplySyncConventions()` — loops the model: unique
+  `GlobalId` index everywhere; roots also get `RowVersion` `IsRowVersion()`,
+  `(BranchId, UpdatedAtUtc)` + `DeletedAtUtc` indexes, and SQL defaults
+  (`NEWID()` / `SYSUTCDATETIME()` / all-zero GUID / `1`) so column-add
+  backfills existing rows.
+
+**Migration** `20260831102526_AddSyncIdentityColumns` — `Up()`: `AddColumn`×126,
+`CreateIndex`×54, `CreateTable` `SyncTombstones`, `UpdateData`×5 (seed rows'
+`DeletedAtUtc = null`). **No `DropColumn` / `AlterColumn` / `DropIndex` in
+`Up()`.** Integer PKs and every existing FK unchanged.
+
+**Verification run**
+- `dotnet build` → 0 errors.
+- `dotnet ef database update` (dev DB) → `Applying migration
+  '20260831102526_AddSyncIdentityColumns'. Done.`
+- Backend start → `Sync/Phase2: origin/branch backfill stamped 101 pre-existing
+  row(s)` across Areas/Categories/Deals/KitchenOuts/MenuItems/Orders/Riders/
+  ServiceTimeSettings/SiteSettings/Users/Vendors.
+- `sqlcmd` checks: Orders 25/25 have distinct non-zero `GlobalId`, 25/25
+  `OriginNodeId` stamped, `AggregateVersion` = 1; OrderItems 26/26 have
+  `GlobalId`; MenuItems 24/24 stamped.
+- `POST /api/public/order` → new Order Id 32: fresh `GlobalId`, this node's
+  `OriginNodeId`/`BranchId`, `AggregateVersion` 2 (insert + online-fields
+  update = two persisted changes), child OrderItem `GlobalId` stamped.
+- Restart → backfill logs nothing (idempotent). Snapshot `ProductVersion`
+  unchanged (`8.0.22`).
+
+**Deferred to later phases (by design)** — no global soft-delete query filters
+(documented risk in Phase 7); `SiteSetting.OrderSerial*` counter columns still
+sync as part of the row (Phase 3 excludes them); tombstone → outbox dispatch is
+Phase 5.
 
 ---
 

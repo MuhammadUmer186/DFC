@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RestaurantSystem.Models;
+using RestaurantSystem.Sync;
 using System;
+using System.Linq;
 
 namespace RestaurantSystem.Data
 {
@@ -61,6 +63,9 @@ namespace RestaurantSystem.Data
         public DbSet<SystemNode> SystemNodes { get; set; } = null!;
         public DbSet<NodeHeartbeat> NodeHeartbeats { get; set; } = null!;
 
+        // ===== Offline-first / cloud-sync — Phase 2 (sync-safe identity) =====
+        public DbSet<SyncTombstone> SyncTombstones { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -84,9 +89,53 @@ namespace RestaurantSystem.Data
             ConfigureArea(modelBuilder);
             ConfigureAiEntities(modelBuilder);
             ConfigureSyncNodeIdentity(modelBuilder);
+            ApplySyncConventions(modelBuilder);
 
             // Seed Vendors
 
+        }
+
+        // Offline-first / cloud-sync — Phase 2. Applies the sync-identity column
+        // mapping to every entity implementing ISyncableAggregate / ISyncableChild
+        // without per-entity boilerplate.
+        private void ApplySyncConventions(ModelBuilder modelBuilder)
+        {
+            foreach (var et in modelBuilder.Model.GetEntityTypes())
+            {
+                var clr = et.ClrType;
+                bool isRoot = typeof(ISyncableAggregate).IsAssignableFrom(clr);
+                bool isChild = typeof(ISyncableChild).IsAssignableFrom(clr);
+                if (!isRoot && !isChild) continue;
+
+                var b = modelBuilder.Entity(clr);
+
+                // Populate existing rows when these columns are first added, and give
+                // every future insert a safe fallback if the interceptor is bypassed.
+                b.Property(nameof(ISyncableChild.GlobalId)).HasDefaultValueSql("NEWID()");
+                b.Property(nameof(ISyncableChild.CreatedAtUtc)).HasDefaultValueSql("SYSUTCDATETIME()");
+                b.Property(nameof(ISyncableChild.UpdatedAtUtc)).HasDefaultValueSql("SYSUTCDATETIME()");
+                b.HasIndex(nameof(ISyncableChild.GlobalId)).IsUnique();
+
+                if (isRoot)
+                {
+                    b.Property(nameof(ISyncableAggregate.RowVersion)).IsRowVersion();
+                    b.Property(nameof(ISyncableAggregate.OriginNodeId))
+                        .HasDefaultValueSql("'00000000-0000-0000-0000-000000000000'");
+                    b.Property(nameof(ISyncableAggregate.BranchId))
+                        .HasDefaultValueSql("'00000000-0000-0000-0000-000000000000'");
+                    b.Property(nameof(ISyncableAggregate.AggregateVersion))
+                        .HasDefaultValueSql("1");
+                    b.HasIndex(nameof(ISyncableAggregate.BranchId), nameof(ISyncableAggregate.UpdatedAtUtc));
+                    b.HasIndex(nameof(ISyncableAggregate.DeletedAtUtc));
+                }
+            }
+
+            modelBuilder.Entity<SyncTombstone>(entity =>
+            {
+                entity.HasIndex(e => e.GlobalId).IsUnique();
+                entity.HasIndex(e => new { e.Dispatched, e.DeletedAtUtc });
+                entity.Property(e => e.AggregateType).HasMaxLength(128).IsRequired();
+            });
         }
 
         // Offline-first / cloud-sync — Phase 1. Additive: three new tables, no
