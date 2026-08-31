@@ -125,6 +125,25 @@ namespace RestaurantSystem.Controllers
         [HttpGet("status")]
         public async Task<IActionResult> Status(CancellationToken ct) => Ok(await SyncStatus.BuildAsync(_db, _node, ct));
 
+        /// <summary>Phase 12: fetch an uploaded file's bytes by SHA-256 (peer-to-peer, HMAC-gated).</summary>
+        [HttpGet("blob/{hash}")]
+        public async Task<IActionResult> GetBlob(string hash, [FromServices] UploadStore store, CancellationToken ct)
+        {
+            var f = await store.ReadByHashAsync(hash, ct);
+            if (f is null) return NotFound();
+            return File(f.Value.bytes, f.Value.contentType, f.Value.fileName);
+        }
+
+        /// <summary>Phase 12: receive an uploaded file's bytes for a metadata row already synced.</summary>
+        [HttpPost("blob/{hash}")]
+        public async Task<IActionResult> PutBlob(string hash, [FromServices] UploadStore store, CancellationToken ct)
+        {
+            using var ms = new System.IO.MemoryStream();
+            await Request.Body.CopyToAsync(ms, ct);
+            var ok = await store.WriteFetchedAsync(hash, ms.ToArray(), ct);
+            return ok ? Ok(new { stored = true }) : BadRequest(new { error = "hash-mismatch-or-unknown" });
+        }
+
         internal static SyncEnvelope ToEnvelope(SyncOutbox o) => new()
         {
             EventId = o.EventId,

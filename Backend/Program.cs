@@ -90,6 +90,12 @@ builder.Services.AddHttpClient<RestaurantSystem.Sync.SyncPeerClient>(c =>
     c.Timeout = TimeSpan.FromSeconds(30));
 builder.Services.AddHostedService<RestaurantSystem.Sync.SyncWorker>();
 
+// ===== Offline-first / cloud-sync — Phase 12 (uploaded-media metadata) =====
+builder.Services.Configure<RestaurantSystem.Sync.UploadOptions>(
+    builder.Configuration.GetSection(RestaurantSystem.Sync.UploadOptions.SectionName));
+builder.Services.AddScoped<RestaurantSystem.Sync.UploadStore>();
+builder.Services.AddScoped<RestaurantSystem.Sync.UploadedFileBackfillService>();
+
 // ===== Offline-first / cloud-sync — Phase 17 (health) =====
 builder.Services.AddHealthChecks()
     .AddCheck<RestaurantSystem.Sync.DatabaseHealthCheck>("database", tags: new[] { "ready" });
@@ -294,6 +300,9 @@ using (var scope = app.Services.CreateScope())
 
         // Phase 4: seed the inventory ledger's opening balances from StoreStock.
         await scope.ServiceProvider.GetRequiredService<RestaurantSystem.Sync.StockLedgerBackfillService>().RunAsync();
+
+        // Phase 12: index pre-existing wwwroot/uploads files into UploadedFiles.
+        await scope.ServiceProvider.GetRequiredService<RestaurantSystem.Sync.UploadedFileBackfillService>().RunAsync();
     }
     catch (Exception ex)
     {

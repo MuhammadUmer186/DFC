@@ -5,7 +5,7 @@
 
 - **Branch:** `feature/offline-first-edge-sync` (off `main` @ `a5d25b7`)
 - **Started:** 2026-08-31
-- **Last updated:** 2026-08-31 — Phases 0, 1, 2, 3, 4, 5, 6, 14 complete (code + migration + config + verification). Phase 7 partially in 5.
+- **Last updated:** 2026-08-31 — Phases 0-6, 14, 17(be) done; 7, 12 partial. See rows.
 
 ---
 
@@ -36,7 +36,7 @@
 | 9 | Angular PWA + runtime config + endpoint failover + status widget | ⛔ | Depends on 5, 8 |
 | 10 | SignalR on selected node + import re-emit without duplicates | ⛔ | Depends on 5, 9 |
 | 11 | Public online orders — edge-offline behavior flags | ⛔ | Depends on 5 |
-| 12 | Uploaded-media metadata (`UploadedFile`, hash dedupe) | ⛔ | Depends on 2, 5 |
+| 12 | Uploaded-media metadata (`UploadedFile`, hash dedupe) | 🟡 | `UploadedFile` (ISyncableAggregate) + migration; `UploadStore` (MIME/ext/size validation, no path traversal, SHA-256 dedupe); `GET/POST /api/sync/blob/{hash}` (HMAC); `UploadedFileBackfillService` scans wwwroot/uploads. Wired into `MenuController`. Verified: backfill indexed 7 existing files, new upload creates a row, identical re-upload dedupes to same URL. **Remaining:** Category/Deals/SiteSettings controllers still inline-save (backfill catches them); worker-side blob fetch on import; S3 doc.
 | 13 | Local printing (`IPrintDispatcher`, `PrintJob`, dedupe, reprint audit) | ⛔ | Depends on 6 |
 | 14 | Controlled production migrations (dedicated migrator, expand/contract) | ✅ | `--migrate` one-shot (`DatabaseMigrator`): waits for SQL, `sp_getapplock` exclusive, optional `BACKUP DATABASE` checkpoint, `MigrateAsync` once, `SchemaMigrationHistory` row, exit 0/1. API start no longer auto-migrates outside Development; `Migrator:RequireUpToDate` fails fast on pending. `migrator` compose service gates `backend` via `service_completed_successfully`. Verified: applied `AddSchemaMigrationHistory` + exit 0, idempotent re-run "up to date" + exit 0, history row written, dev auto-migrate path intact. |
 | 15 | Docker edge deployment (`docker-compose.edge.yml`, `.env.edge.example`) | ⛔ | Depends on 1, 5, 8, 13, 14 |

@@ -78,6 +78,9 @@ namespace RestaurantSystem.Data
         // ===== Offline-first / cloud-sync — Phase 4 (immutable inventory ledger). Synchronized append-only. =====
         public DbSet<StockMovement> StockMovements { get; set; } = null!;
 
+        // ===== Offline-first / cloud-sync — Phase 12 (uploaded-media metadata). Synchronized. =====
+        public DbSet<UploadedFile> UploadedFiles { get; set; } = null!;
+
         // ===== Offline-first / cloud-sync — Phase 5 (transactional sync engine). Node-local plumbing. =====
         public DbSet<SyncOutbox> SyncOutbox { get; set; } = null!;
         public DbSet<SyncInbox> SyncInbox { get; set; } = null!;
@@ -206,6 +209,17 @@ namespace RestaurantSystem.Data
                 e.HasIndex(x => new { x.NodeId, x.Nonce }).IsUnique();
                 e.HasIndex(x => x.SeenAtUtc);
                 e.Property(x => x.Nonce).HasMaxLength(64).IsRequired();
+            });
+
+            modelBuilder.Entity<UploadedFile>(e =>
+            {
+                e.HasIndex(x => x.Sha256Hash);
+                e.HasIndex(x => x.StorageKey).IsUnique();
+                e.Property(x => x.StorageKey).HasMaxLength(512).IsRequired();
+                e.Property(x => x.Sha256Hash).HasMaxLength(64).IsRequired();
+                e.Property(x => x.ContentType).HasMaxLength(128);
+                e.Property(x => x.Category).HasMaxLength(64);
+                e.Property(x => x.SyncState).HasMaxLength(16);
             });
 
             modelBuilder.Entity<StockMovement>(entity =>
