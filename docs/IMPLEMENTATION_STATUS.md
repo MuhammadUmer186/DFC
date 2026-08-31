@@ -5,7 +5,7 @@
 
 - **Branch:** `feature/offline-first-edge-sync` (off `main` @ `a5d25b7`)
 - **Started:** 2026-08-31
-- **Last updated:** 2026-08-31 — Phases 0, 1, 2 complete (code + migration + config + verification)
+- **Last updated:** 2026-08-31 — Phases 0, 1, 2, 14 complete (code + migration + config + verification)
 
 ---
 
@@ -38,7 +38,7 @@
 | 11 | Public online orders — edge-offline behavior flags | ⛔ | Depends on 5 |
 | 12 | Uploaded-media metadata (`UploadedFile`, hash dedupe) | ⛔ | Depends on 2, 5 |
 | 13 | Local printing (`IPrintDispatcher`, `PrintJob`, dedupe, reprint audit) | ⛔ | Depends on 6 |
-| 14 | Controlled production migrations (dedicated migrator, expand/contract) | ⛔ | Independent; do early in rollout |
+| 14 | Controlled production migrations (dedicated migrator, expand/contract) | ✅ | `--migrate` one-shot (`DatabaseMigrator`): waits for SQL, `sp_getapplock` exclusive, optional `BACKUP DATABASE` checkpoint, `MigrateAsync` once, `SchemaMigrationHistory` row, exit 0/1. API start no longer auto-migrates outside Development; `Migrator:RequireUpToDate` fails fast on pending. `migrator` compose service gates `backend` via `service_completed_successfully`. Verified: applied `AddSchemaMigrationHistory` + exit 0, idempotent re-run "up to date" + exit 0, history row written, dev auto-migrate path intact. |
 | 15 | Docker edge deployment (`docker-compose.edge.yml`, `.env.edge.example`) | ⛔ | Depends on 1, 5, 8, 13, 14 |
 | 16 | Backup & recovery (scripts + docs, edition warning) | ⛔ | Partly doc-only; independent |
 | 17 | Health & admin (`/health/*`, node-status, sync admin page) | ⛔ | Depends on 1, 5 |
@@ -142,6 +142,36 @@ untouched; `Area`/`Customer`/`ServiceTimeSetting`/`SiteSetting` gained the
 (documented risk in Phase 7); `SiteSetting.OrderSerial*` counter columns still
 sync as part of the row (Phase 3 excludes them); tombstone → outbox dispatch is
 Phase 5.
+
+---
+
+## Phase 14 — delivered (2026-08-31)
+
+- `Backend/Sync/DatabaseMigrator.cs` + `MigratorOptions.cs` +
+  `Backend/Models/SchemaMigrationHistory.cs`.
+- `Program.cs`: `--migrate` / `RUN_MIGRATOR=true` → run `DatabaseMigrator.RunAsync()`
+  and `return` its exit code without starting Kestrel. Normal start:
+  `AutoMigrate ?? env.IsDevelopment()` — apply in dev, otherwise verify only and
+  throw on pending migrations when `RequireUpToDate ?? !IsDevelopment()`.
+- `DatabaseMigrator`: wait-for-SQL (`CanConnectAsync` w/ backoff) → `sp_getapplock`
+  `@Resource=RMS_SchemaMigration` `Exclusive` `Session` → `BACKUP DATABASE …
+  WITH INIT, CHECKSUM` (no `COMPRESSION` — Express) when `BackupPath` set, else
+  a logged warning → `MigrateAsync()` → `SchemaMigrationHistory` row (suppressing
+  the sync interceptor) → `sp_releaseapplock` → exit 0; exit 1 + best-effort
+  history on failure.
+- Migration `20260831103145_AddSchemaMigrationHistory` — `CreateTable` +
+  `CreateIndex` only.
+- `docker-compose.yml`: new `migrator` service (`command: ["--migrate"]`,
+  `restart: "no"`, `depends_on: sqlserver: service_healthy`); `backend`
+  `depends_on: migrator: service_completed_successfully` + `Migrator__AutoMigrate=false`
+  + `Migrator__RequireUpToDate=true`; `mssql-backups` volume on `sqlserver`.
+- `.env.example`: `MIGRATOR_BACKUP_*`.
+
+**Verification**: `dotnet run -- --migrate` applied the pending migration and
+exited 0; re-run reported "already up to date" and exited 0; `SchemaMigrationHistories`
+has `From=AddSyncIdentityColumns To=AddSchemaMigrationHistory Outcome=success`;
+plain `dotnet run` (Development) still auto-migrates and serves; `docker compose
+config -q` VALID with 5 services.
 
 ---
 

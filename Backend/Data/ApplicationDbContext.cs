@@ -66,6 +66,9 @@ namespace RestaurantSystem.Data
         // ===== Offline-first / cloud-sync — Phase 2 (sync-safe identity) =====
         public DbSet<SyncTombstone> SyncTombstones { get; set; } = null!;
 
+        // ===== Offline-first / cloud-sync — Phase 14 (controlled migrations). Node-local, not synced. =====
+        public DbSet<SchemaMigrationHistory> SchemaMigrationHistories { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -135,6 +138,17 @@ namespace RestaurantSystem.Data
                 entity.HasIndex(e => e.GlobalId).IsUnique();
                 entity.HasIndex(e => new { e.Dispatched, e.DeletedAtUtc });
                 entity.Property(e => e.AggregateType).HasMaxLength(128).IsRequired();
+            });
+
+            modelBuilder.Entity<SchemaMigrationHistory>(entity =>
+            {
+                entity.HasIndex(e => e.StartedAtUtc);
+                entity.Property(e => e.FromMigration).HasMaxLength(200);
+                entity.Property(e => e.ToMigration).HasMaxLength(200);
+                entity.Property(e => e.AppVersion).HasMaxLength(64);
+                entity.Property(e => e.NodeRole).HasMaxLength(16);
+                entity.Property(e => e.BackupPath).HasMaxLength(1024);
+                entity.Property(e => e.Outcome).HasMaxLength(16);
             });
         }
 

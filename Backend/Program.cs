@@ -71,6 +71,14 @@ var deploymentOptions = builder.Configuration
     .GetSection(RestaurantSystem.Sync.DeploymentOptions.SectionName)
     .Get<RestaurantSystem.Sync.DeploymentOptions>() ?? new RestaurantSystem.Sync.DeploymentOptions();
 builder.Services.AddSingleton(deploymentOptions);
+
+// ===== Offline-first / cloud-sync — Phase 14 (controlled migrations) =====
+var migratorOptions = builder.Configuration
+    .GetSection(RestaurantSystem.Sync.MigratorOptions.SectionName)
+    .Get<RestaurantSystem.Sync.MigratorOptions>() ?? new RestaurantSystem.Sync.MigratorOptions();
+builder.Services.AddSingleton(migratorOptions);
+builder.Services.AddScoped<RestaurantSystem.Sync.DatabaseMigrator>();
+
 builder.Services.AddScoped<RestaurantSystem.Sync.NodeRegistrationService>(sp =>
     new RestaurantSystem.Sync.NodeRegistrationService(
         sp.GetRequiredService<ApplicationDbContext>(),
@@ -203,10 +211,48 @@ builder.Services.AddCors(options =>
 //});
 
 var app = builder.Build();
+
+// ===== Offline-first / cloud-sync — Phase 14: one-shot controlled migrator =====
+// `dotnet RestaurantSystem.dll --migrate` (or env RUN_MIGRATOR=true) runs the
+// migrator and exits WITHOUT starting Kestrel. The production API container is
+// gated on this finishing successfully (docker compose `service_completed_successfully`).
+if (args.Contains("--migrate") ||
+    string.Equals(Environment.GetEnvironmentVariable("RUN_MIGRATOR"), "true", StringComparison.OrdinalIgnoreCase))
+{
+    using var migScope = app.Services.CreateScope();
+    var migrator = migScope.ServiceProvider.GetRequiredService<RestaurantSystem.Sync.DatabaseMigrator>();
+    return await migrator.RunAsync();
+}
+
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate();
+    var env = scope.ServiceProvider.GetRequiredService<IHostEnvironment>();
+    var migOpts = scope.ServiceProvider.GetRequiredService<RestaurantSystem.Sync.MigratorOptions>();
+    var startupLog = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    // Phase 14: no unconditional Migrate() on API start.
+    //  - Development (or Migrator:AutoMigrate=true): apply, as before, for convenience.
+    //  - Otherwise: verify only. Pending migrations => fail fast (Migrator:RequireUpToDate,
+    //    default true outside Development) so a misconfigured deploy never runs on an old schema.
+    var autoMigrate = migOpts.AutoMigrate ?? env.IsDevelopment();
+    if (autoMigrate)
+    {
+        db.Database.Migrate();
+    }
+    else
+    {
+        var pending = db.Database.GetPendingMigrations().ToList();
+        if (pending.Count > 0)
+        {
+            var msg = $"Phase14: {pending.Count} pending migration(s): {string.Join(", ", pending)}. " +
+                      "Run the migrator container ('--migrate') before starting the API.";
+            var requireUpToDate = migOpts.RequireUpToDate ?? !env.IsDevelopment();
+            if (requireUpToDate)
+                throw new InvalidOperationException(msg);
+            startupLog.LogCritical(msg);
+        }
+    }
 
     // Offline-first / cloud-sync — Phase 1. Idempotent; only ever inserts/refreshes
     // the new Branch / SystemNode / NodeHeartbeat rows. A failure here must not stop
@@ -252,3 +298,8 @@ app.MapHub<OrderHub>("/hubs/orders");
 app.MapControllers();
 
 app.Run();
+
+// Phase 14: the `--migrate` branch above returns an exit code, so the top-level
+// entry point is `Task<int>` and every path must return. app.Run() blocks until
+// shutdown; this is reached only on a clean stop.
+return 0;
