@@ -56,7 +56,8 @@ builder.Services.AddSignalR();
 // interceptor that stamps GlobalId / AggregateVersion / UTC timestamps and
 // writes delete tombstones.
 builder.Services.AddSingleton<RestaurantSystem.Sync.INodeContext, RestaurantSystem.Sync.NodeContext>();
-builder.Services.AddSingleton<RestaurantSystem.Sync.SyncStampingInterceptor>();
+builder.Services.AddScoped<RestaurantSystem.Sync.SyncStampingInterceptor>();
+builder.Services.AddScoped<RestaurantSystem.Sync.AggregateSnapshotService>();
 builder.Services.AddScoped<RestaurantSystem.Sync.SyncBackfillService>();
 
 builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
@@ -78,6 +79,16 @@ var migratorOptions = builder.Configuration
     .Get<RestaurantSystem.Sync.MigratorOptions>() ?? new RestaurantSystem.Sync.MigratorOptions();
 builder.Services.AddSingleton(migratorOptions);
 builder.Services.AddScoped<RestaurantSystem.Sync.DatabaseMigrator>();
+
+// ===== Offline-first / cloud-sync — Phase 5 (transactional sync engine) =====
+var syncOptions = builder.Configuration
+    .GetSection(RestaurantSystem.Sync.SyncOptions.SectionName)
+    .Get<RestaurantSystem.Sync.SyncOptions>() ?? new RestaurantSystem.Sync.SyncOptions();
+builder.Services.AddSingleton(syncOptions);
+builder.Services.AddScoped<RestaurantSystem.Sync.SyncApplyService>();
+builder.Services.AddHttpClient<RestaurantSystem.Sync.SyncPeerClient>(c =>
+    c.Timeout = TimeSpan.FromSeconds(30));
+builder.Services.AddHostedService<RestaurantSystem.Sync.SyncWorker>();
 
 // ===== Offline-first / cloud-sync — Phase 6 (idempotent commands) =====
 var idempotencyOptions = builder.Configuration
@@ -302,6 +313,9 @@ app.UseStaticFiles(); // serves wwwroot/uploads/... (category images, etc.)
 app.UseRouting();
 
 app.UseCors(MyCors);
+
+// Phase 5: HMAC gate for the node-to-node sync channel (/api/sync/*).
+app.UseMiddleware<RestaurantSystem.Sync.SyncHmacMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();

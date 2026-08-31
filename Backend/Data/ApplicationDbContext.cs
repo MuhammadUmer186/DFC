@@ -78,6 +78,14 @@ namespace RestaurantSystem.Data
         // ===== Offline-first / cloud-sync — Phase 4 (immutable inventory ledger). Synchronized append-only. =====
         public DbSet<StockMovement> StockMovements { get; set; } = null!;
 
+        // ===== Offline-first / cloud-sync — Phase 5 (transactional sync engine). Node-local plumbing. =====
+        public DbSet<SyncOutbox> SyncOutbox { get; set; } = null!;
+        public DbSet<SyncInbox> SyncInbox { get; set; } = null!;
+        public DbSet<SyncCheckpoint> SyncCheckpoints { get; set; } = null!;
+        public DbSet<SyncConflict> SyncConflicts { get; set; } = null!;
+        public DbSet<SyncDeadLetter> SyncDeadLetters { get; set; } = null!;
+        public DbSet<SyncNonce> SyncNonces { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -154,6 +162,50 @@ namespace RestaurantSystem.Data
                 entity.HasIndex(e => new { e.BranchId, e.SourceCode, e.BusinessDate }).IsUnique();
                 entity.Property(e => e.SourceCode).HasMaxLength(8).IsRequired();
                 entity.Property(e => e.BusinessDate).HasColumnType("date");
+            });
+
+            // ---- Phase 5 sync plumbing ----
+            modelBuilder.Entity<SyncOutbox>(e =>
+            {
+                e.HasIndex(x => x.EventId).IsUnique();
+                e.HasIndex(x => new { x.Dispatched, x.Id });
+                e.Property(x => x.EventType).HasMaxLength(128);
+                e.Property(x => x.AggregateType).HasMaxLength(128);
+            });
+            modelBuilder.Entity<SyncInbox>(e =>
+            {
+                e.HasIndex(x => x.EventId).IsUnique();
+                e.HasIndex(x => new { x.AggregateType, x.AggregateGlobalId });
+                e.Property(x => x.EventType).HasMaxLength(128);
+                e.Property(x => x.AggregateType).HasMaxLength(128);
+                e.Property(x => x.Status).HasMaxLength(16);
+            });
+            modelBuilder.Entity<SyncCheckpoint>(e =>
+            {
+                e.HasIndex(x => new { x.PeerNodeId, x.Direction, x.AggregateType }).IsUnique();
+                e.Property(x => x.Direction).HasMaxLength(8);
+                e.Property(x => x.AggregateType).HasMaxLength(128);
+            });
+            modelBuilder.Entity<SyncConflict>(e =>
+            {
+                e.HasIndex(x => new { x.Resolved, x.CreatedAtUtc });
+                e.HasIndex(x => x.EventId);
+                e.Property(x => x.Kind).HasMaxLength(32);
+                e.Property(x => x.AggregateType).HasMaxLength(128);
+                e.Property(x => x.Resolution).HasMaxLength(16);
+            });
+            modelBuilder.Entity<SyncDeadLetter>(e =>
+            {
+                e.HasIndex(x => new { x.Replayed, x.CreatedAtUtc });
+                e.HasIndex(x => x.EventId);
+                e.Property(x => x.Kind).HasMaxLength(32);
+                e.Property(x => x.AggregateType).HasMaxLength(128);
+            });
+            modelBuilder.Entity<SyncNonce>(e =>
+            {
+                e.HasIndex(x => new { x.NodeId, x.Nonce }).IsUnique();
+                e.HasIndex(x => x.SeenAtUtc);
+                e.Property(x => x.Nonce).HasMaxLength(64).IsRequired();
             });
 
             modelBuilder.Entity<StockMovement>(entity =>

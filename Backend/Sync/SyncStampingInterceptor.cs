@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using RestaurantSystem.Data;
 using RestaurantSystem.Models;
 
 namespace RestaurantSystem.Sync
@@ -68,21 +69,71 @@ namespace RestaurantSystem.Sync
             var nodeId = _node.NodeId;
             var branchId = _node.BranchId;
 
-            // Snapshot the entries first — we add tombstone rows while iterating.
+            // Snapshot the entries first — we add tombstone / outbox rows while iterating.
             var entries = context.ChangeTracker.Entries().ToList();
+            var outbox = new List<(ISyncableAggregate root, string verb)>();
 
             foreach (var entry in entries)
             {
                 switch (entry.Entity)
                 {
+                    case SyncOutbox or SyncTombstone or SyncInbox:
+                        break; // never emit events about the sync plumbing itself
                     case ISyncableAggregate root:
                         StampRoot(context, entry, root, now, nodeId, branchId);
+                        if (entry.State is EntityState.Added) outbox.Add((root, "Upserted"));
+                        else if (entry.State is EntityState.Modified)
+                            outbox.Add((root, root.DeletedAtUtc.HasValue ? "Deleted" : "Upserted"));
+                        else if (entry.State is EntityState.Deleted) outbox.Add((root, "Deleted"));
                         break;
                     case ISyncableChild child:
                         StampChild(entry, child, now);
                         break;
                 }
             }
+
+            // Transactional outbox — added to THIS SaveChanges (same transaction).
+            if (outbox.Count > 0)
+            {
+                var snap = new AggregateSnapshotService((ApplicationDbContext)context);
+                foreach (var (root, verb) in outbox)
+                    EmitOutbox(context, snap, root, verb, now);
+            }
+        }
+
+        private void EmitOutbox(DbContext context, AggregateSnapshotService snap, ISyncableAggregate root, string verb, DateTime now)
+        {
+            var type = context.Entry(root).Metadata.ClrType.Name;
+            string payload;
+            try
+            {
+                payload = verb == "Deleted" ? "{}" : snap.Serialize(root, trackerOnlyRefs: true);
+            }
+            catch
+            {
+                // Never let snapshotting break a business write — the worker will
+                // re-serialize this aggregate from a fresh context before dispatch.
+                payload = "{}";
+            }
+
+            context.Add(new SyncOutbox
+            {
+                EventId = Guid.NewGuid(),
+                EventType = $"{type}{verb}",
+                SchemaVersion = SyncSchema.Current,
+                AggregateType = type,
+                AggregateGlobalId = root.GlobalId,
+                AggregateVersion = root.AggregateVersion,
+                BranchId = root.BranchId == Guid.Empty ? _node.BranchId : root.BranchId,
+                OriginNodeId = _node.NodeId,
+                OccurredAtUtc = now,
+                CorrelationId = root.GlobalId,
+                CausationId = null,
+                PayloadJson = payload,
+                CreatedAtUtc = now,
+                Dispatched = false,
+                Attempts = 0
+            });
         }
 
         private static void StampRoot(

@@ -64,7 +64,11 @@ X-Sync-BodyHash:  <base64(SHA-256(raw request body))>   // empty-body → hash o
 X-Sync-Signature: <base64(HMAC_SHA256(secret, signingString))>
 ```
 
-`signingString = UPPER(method) + "\n" + path + "\n" + timestamp + "\n" + nonce + "\n" + bodyHash`
+`signingString = UPPER(method) + "\n" + pathAndQuery + "\n" + timestamp + "\n" + nonce + "\n" + bodyHash`
+
+where `pathAndQuery` is the request path **including** the query string
+(e.g. `/api/sync/pull?since=42&max=200`), so query parameters are covered by
+the signature.
 
 The shared `secret` is a per-pair value from `SYNC_HMAC_SECRET` (env / secret
 mount), one per `(edgeNodeId, cloudNodeId)` pair, never in source.

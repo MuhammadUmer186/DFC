@@ -76,6 +76,10 @@ services:
       Deployment__CloudBaseUrl: ${DEPLOYMENT_CLOUD_BASE_URL:-}
       Deployment__EdgeBaseUrl: ${DEPLOYMENT_EDGE_BASE_URL:-}
       Deployment__NodeIdFilePath: /app/keys/node-id.txt
+      # Phase 5 — transactional sync engine.
+      Sync__HmacSecret: ${SYNC_HMAC_SECRET:-}
+      Sync__WorkerEnabled: ${SYNC_WORKER_ENABLED:-}
+      Sync__IntervalSeconds: ${SYNC_INTERVAL_SECONDS:-10}
     volumes:
       - backend-uploads:/app/wwwroot/uploads
       - backend-keys:/app/keys
