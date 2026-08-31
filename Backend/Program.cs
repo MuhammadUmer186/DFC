@@ -185,6 +185,13 @@ builder.Services.AddRateLimiter(options =>
     options.RejectionStatusCode = 429;
 });
 
+// Phase 8: JWT signing/validation material — RS256 per node (if configured) plus
+// legacy HS256, trusting BOTH the cloud and edge issuers.
+var authKeys = new RestaurantSystem.Sync.AuthKeyProvider(
+    builder.Configuration,
+    LoggerFactory.Create(b => b.AddConsole()).CreateLogger<RestaurantSystem.Sync.AuthKeyProvider>());
+builder.Services.AddSingleton(authKeys);
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
 {
@@ -198,9 +205,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         RoleClaimType = ClaimTypes.Role,
         NameClaimType = ClaimTypes.Name,
         ValidateLifetime = true,
-        ValidIssuer = builder.Configuration["AppSettings:Issuer"],
+        ValidIssuers = authKeys.ValidIssuers,                         // cloud + edge
         ValidAudience = builder.Configuration["AppSettings:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]!))
+        IssuerSigningKeys = authKeys.ValidationKeys                    // HS256 + all trusted public keys
     };
 });
 builder.Services.AddAuthorization();

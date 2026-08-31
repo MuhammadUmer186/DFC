@@ -72,6 +72,9 @@ namespace RestaurantSystem.Data
         // ===== Offline-first / cloud-sync — Phase 6 (idempotent commands). Node-local, not synced. =====
         public DbSet<ProcessedCommand> ProcessedCommands { get; set; } = null!;
 
+        // ===== Offline-first / cloud-sync — Phase 8 (offline auth). Node-local audit. =====
+        public DbSet<AuthAuditLog> AuthAuditLogs { get; set; } = null!;
+
         // ===== Offline-first / cloud-sync — Phase 3 (safe order numbering). Node-local, not synced. =====
         public DbSet<OrderNumberSequence> OrderNumberSequences { get; set; } = null!;
 
@@ -209,6 +212,24 @@ namespace RestaurantSystem.Data
                 e.HasIndex(x => new { x.NodeId, x.Nonce }).IsUnique();
                 e.HasIndex(x => x.SeenAtUtc);
                 e.Property(x => x.Nonce).HasMaxLength(64).IsRequired();
+            });
+
+            // Phase 8: pre-existing users must stay enabled; each gets a distinct stamp.
+            modelBuilder.Entity<User>(e =>
+            {
+                e.Property(x => x.IsActive).HasDefaultValue(true);
+                e.Property(x => x.SecurityStamp).HasDefaultValueSql("NEWID()");
+            });
+
+            modelBuilder.Entity<AuthAuditLog>(e =>
+            {
+                e.HasIndex(x => x.AtUtc);
+                e.HasIndex(x => x.UserName);
+                e.Property(x => x.UserName).HasMaxLength(128);
+                e.Property(x => x.Role).HasMaxLength(32);
+                e.Property(x => x.Result).HasMaxLength(32);
+                e.Property(x => x.Issuer).HasMaxLength(64);
+                e.Property(x => x.IpAddress).HasMaxLength(64);
             });
 
             modelBuilder.Entity<UploadedFile>(e =>
