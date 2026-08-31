@@ -1,9 +1,11 @@
-import { ApplicationConfig, importProvidersFrom } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom, APP_INITIALIZER } from '@angular/core';
 import { provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAnimations, provideNoopAnimations } from '@angular/platform-browser/animations';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { providePrimeNG } from 'primeng/config';
+import { apiInterceptor } from './interceptors/api.interceptor';
+import { RuntimeConfigService, loadRuntimeConfig } from './Services/runtime-config.service';
 import { MessageService } from 'primeng/api';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
@@ -57,7 +59,15 @@ const DfcPreset = definePreset(Aura, {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
-    provideHttpClient(),
+    // Phase 9: runtime config loaded before the app starts.
+    {
+      provide: APP_INITIALIZER,
+      useFactory: loadRuntimeConfig,
+      deps: [RuntimeConfigService],
+      multi: true,
+    },
+    // Phase 9 (+ Angular half of 6 & 8): endpoint failover + bearer + Idempotency-Key + 401 handling.
+    provideHttpClient(withInterceptors([apiInterceptor])),
     providePrimeNG({
       theme: {
         preset: DfcPreset,

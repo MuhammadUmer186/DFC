@@ -1,6 +1,7 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { environment } from '../../environments/environment';
+import { EndpointService } from './endpoint.service';
  // create interface file if needed
 export interface OrderQueueDto {
   id: number;
@@ -32,8 +33,11 @@ export interface OrderQueueDto {
 }
 @Injectable({ providedIn: 'root' })
 export class OrderSignalRService {
-  private baseUrll = environment.apihub;
-  private baseUrl = this.baseUrll + '/hubs/orders';
+  // Phase 10: hub URL follows the currently-selected node (edge/cloud).
+  private endpoints = inject(EndpointService);
+  private get baseUrl(): string {
+    return this.endpoints.hubUrl() || environment.apihub + '/hubs/orders';
+  }
   private hubConnection?: signalR.HubConnection;
   private listenersRegistered = false;
 
@@ -65,6 +69,12 @@ export class OrderSignalRService {
       .withUrl(this.baseUrl)
       .withAutomaticReconnect()
       .build();
+
+    // Phase 10: rejoin the queue group after every automatic reconnect.
+    this.hubConnection.onreconnected(() => {
+      this.hubConnection?.invoke('JoinQueue').catch(() => {});
+      this.lastActivityAt.set(Date.now());
+    });
 
     this.hubConnection.start()
       .then(() => {

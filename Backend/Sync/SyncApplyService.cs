@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RestaurantSystem.Data;
+using RestaurantSystem.Hubs;
 using RestaurantSystem.Models;
 
 namespace RestaurantSystem.Sync
@@ -22,12 +24,15 @@ namespace RestaurantSystem.Sync
         private readonly ApplicationDbContext _db;
         private readonly AggregateSnapshotService _snap;
         private readonly ILogger<SyncApplyService> _log;
+        private readonly IHubContext<OrderHub> _hub;
 
-        public SyncApplyService(ApplicationDbContext db, AggregateSnapshotService snap, ILogger<SyncApplyService> log)
+        public SyncApplyService(ApplicationDbContext db, AggregateSnapshotService snap,
+            ILogger<SyncApplyService> log, IHubContext<OrderHub> hub)
         {
             _db = db;
             _snap = snap;
             _log = log;
+            _hub = hub;
         }
 
         public async Task<List<SyncAckItem>> ApplyBatchAsync(IEnumerable<SyncEnvelope> events, CancellationToken ct = default)
@@ -110,6 +115,17 @@ namespace RestaurantSystem.Sync
 
                 await WriteInboxAsync(e, status, null, ct);
                 await tx.CommitAsync(ct);
+
+                // Phase 10: nudge RMS clients that a synced order landed. Fires ONCE
+                // per EventId (inbox-deduped), carries no payload, so no duplicate
+                // notifications and no duplicate prints (imported events never touch
+                // the print path).
+                if (status == "applied" && e.AggregateType == nameof(Order))
+                {
+                    try { await _hub.Clients.Group("OrderQueue").SendAsync("OrderCreated", new { imported = true }, ct); }
+                    catch { /* hub best-effort */ }
+                }
+
                 ack.Status = status;
                 return ack;
             }
