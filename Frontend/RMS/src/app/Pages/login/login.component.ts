@@ -19,6 +19,18 @@ export class LoginComponent implements OnInit {
   showPassword = false;
   currentYear = new Date().getFullYear();
 
+  // ---- Product identity (fixed) — the software, separate from the restaurant's
+  //      own name/logo which comes from BrandingService. ----
+  readonly productName = 'FoodSync';
+  readonly productTagline = 'Restaurant Management System';
+  readonly vendorName = 'Orbionix Technologies';
+  productLogo = 'assets/foodsync-logo.png';
+
+  /** If the product logo file isn't present, fall back to the bundled logo. */
+  onLogoError(): void {
+    if (this.productLogo !== 'assets/DFC.jpg') this.productLogo = 'assets/DFC.jpg';
+  }
+
   constructor(private service: AuthService, private router: Router, private toast: ToastService, public branding: BrandingService) {}
 
   loginform: FormGroup = new FormGroup({

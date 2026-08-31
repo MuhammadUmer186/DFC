@@ -4,15 +4,20 @@
   <div class="brand-panel">
     <div class="brand-panel-glow"></div>
     <div class="brand-panel-content">
-      <img [src]="branding.companyLogoUrl() || 'assets/DFC.jpg'" [alt]="branding.companyName()" class="brand-panel-logo" />
-      <h1 class="brand-panel-title">{{ branding.companyName() }}</h1>
-      <p class="brand-panel-tagline">Restaurant Management System</p>
+      <img [src]="productLogo" (error)="onLogoError()" [alt]="productName + ' logo'" class="brand-panel-logo" />
+      <h1 class="brand-panel-title">{{ productName }}</h1>
+      <p class="brand-panel-tagline">{{ productTagline }}</p>
+      <p class="brand-panel-vendor">by {{ vendorName }}</p>
 
       <ul class="brand-panel-points">
         <li><i class="pi pi-check-circle"></i> Orders, Kitchen &amp; Inventory in one place</li>
         <li><i class="pi pi-check-circle"></i> Real-time stock &amp; vendor tracking</li>
         <li><i class="pi pi-check-circle"></i> Sales, profit &amp; salary reporting</li>
       </ul>
+
+      <p class="brand-panel-deployed" *ngIf="branding.companyName()">
+        Deployed for <strong>{{ branding.companyName() }}</strong>
+      </p>
     </div>
   </div>
 
@@ -20,7 +25,7 @@
   <div class="form-panel">
     <div class="login-box">
       <div class="login-box-header">
-        <img [src]="branding.companyLogoUrl() || 'assets/DFC.jpg'" [alt]="branding.companyName()" class="login-mobile-logo" />
+        <img [src]="productLogo" (error)="onLogoError()" [alt]="productName + ' logo'" class="login-mobile-logo" />
         <h2>Welcome back</h2>
         <p>Sign in to continue to your dashboard</p>
       </div>
@@ -81,7 +86,10 @@
       </form>
     </div>
 
-    <p class="footnote">© {{ currentYear }} {{ branding.companyName() }} — All rights reserved</p>
+    <p class="footnote">
+      © {{ currentYear }} {{ vendorName }}. All rights reserved.
+      <span class="footnote-sep">·</span> {{ productName }}
+    </p>
   </div>
 </div>
 <router-outlet></router-outlet>
