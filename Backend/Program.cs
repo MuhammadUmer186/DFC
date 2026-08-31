@@ -90,6 +90,11 @@ builder.Services.AddHttpClient<RestaurantSystem.Sync.SyncPeerClient>(c =>
     c.Timeout = TimeSpan.FromSeconds(30));
 builder.Services.AddHostedService<RestaurantSystem.Sync.SyncWorker>();
 
+// ===== Offline-first / cloud-sync — Phase 11 (public online-order flags) =====
+builder.Services.Configure<RestaurantSystem.Sync.PublicOrderingOptions>(
+    builder.Configuration.GetSection(RestaurantSystem.Sync.PublicOrderingOptions.SectionName));
+builder.Services.AddScoped<RestaurantSystem.Sync.EdgeConnectivity>();
+
 // ===== Offline-first / cloud-sync — Phase 12 (uploaded-media metadata) =====
 builder.Services.Configure<RestaurantSystem.Sync.UploadOptions>(
     builder.Configuration.GetSection(RestaurantSystem.Sync.UploadOptions.SectionName));
