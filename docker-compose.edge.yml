@@ -1,0 +1,175 @@
+# Restaurant EDGE deployment (Phase 15). Full stack on the shop LAN so the
+# restaurant keeps operating with no internet; syncs to the Cloud when online.
+#
+#   cp .env.edge.example .env.edge   &&   edit real values
+#   docker compose -f docker-compose.edge.yml --env-file .env.edge up -d
+#
+# See docs/EDGE_DEPLOYMENT.md for first-install, upgrade and rollback.
+
+x-logging: &default-logging
+  driver: json-file
+  options: { max-size: "10m", max-file: "5" }
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      MSSQL_PID: Express          # licensed edition — NOT Developer (see docs/FAILURE_RECOVERY.md)
+    volumes:
+      - edge-mssql-data:/var/opt/mssql
+      - edge-backups:/var/opt/mssql/backup
+    # NOT published on the LAN — reachable only on the internal compose network.
+    expose: ["1433"]
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    restart: unless-stopped
+    logging: *default-logging
+    deploy:
+      resources:
+        limits: { memory: 4g }
+    networks: [edge-net]
+
+  migrator:
+    build: { context: ./Backend }
+    command: ["--migrate"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=RestaurantDB;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=True"
+      Deployment__NodeRole: Edge
+      Deployment__NodeId: ${DEPLOYMENT_NODE_ID:-}
+      Migrator__BackupBeforeMigrate: "true"
+      Migrator__BackupPath: /var/opt/mssql/backup
+      Migrator__SqlWaitSeconds: "240"
+    depends_on:
+      sqlserver: { condition: service_healthy }
+    restart: "no"
+    logging: *default-logging
+    networks: [edge-net]
+
+  backend:
+    build: { context: ./Backend }
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=RestaurantDB;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=True"
+      AppSettings__Issuer: ${JWT_ISSUER:-DFC-RMS}
+      AppSettings__Audience: ${JWT_AUDIENCE:-DFC-RMS-Clients}
+      AppSettings__Token: ${JWT_TOKEN}
+      SuperAdmin__UserName: ${SUPERADMIN_USERNAME}
+      SuperAdmin__Password: ${SUPERADMIN_PASSWORD}
+      OpenAI__ApiKey: ${OPENAI_API_KEY:-}
+      AiFeatures__UseMockProvider: ${AI_USE_MOCK_PROVIDER:-true}
+      # ---- node identity (Phase 1) ----
+      Deployment__NodeRole: Edge
+      Deployment__NodeId: ${DEPLOYMENT_NODE_ID:-}
+      Deployment__BranchId: ${DEPLOYMENT_BRANCH_ID:-}
+      Deployment__BranchName: ${DEPLOYMENT_BRANCH_NAME:-Main Branch}
+      Deployment__BranchCode: ${DEPLOYMENT_BRANCH_CODE:-}
+      Deployment__CloudBaseUrl: ${DEPLOYMENT_CLOUD_BASE_URL}
+      Deployment__EdgeBaseUrl: ${DEPLOYMENT_EDGE_BASE_URL:-https://edge.dfc.lan}
+      Deployment__NodeIdFilePath: /app/keys/node-id.txt
+      # ---- controlled migrations (Phase 14) ----
+      Migrator__AutoMigrate: "false"
+      Migrator__RequireUpToDate: "true"
+      # ---- sync engine (Phase 5) ----
+      Sync__HmacSecret: ${SYNC_HMAC_SECRET}
+      Sync__WorkerEnabled: "true"      # the Edge drives sync (worker runs inside the API, guarded by an app-lock)
+      Sync__IntervalSeconds: ${SYNC_INTERVAL_SECONDS:-10}
+      # ---- offline auth (Phase 8) ----
+      Auth__Issuer: ${AUTH_ISSUER:-DFC-RMS-edge}
+      Auth__PrivateKeyPath: ${AUTH_PRIVATE_KEY_PATH:-}
+      Auth__TrustedPublicKeys__cloud: ${AUTH_TRUSTED_PUBLICKEY_CLOUD:-}
+      Auth__TrustedPublicKeys__edge: ${AUTH_TRUSTED_PUBLICKEY_EDGE:-}
+      # ---- public online-order behaviour (Phase 11) ----
+      PublicOrdering__AllowDelayedOnlineOrders: "true"
+    volumes:
+      - edge-uploads:/app/wwwroot/uploads
+      - edge-keys:/app/keys                 # node id + JWT private key (mounted secret)
+    expose: ["8080"]
+    depends_on:
+      sqlserver: { condition: service_healthy }
+      migrator: { condition: service_completed_successfully }
+    restart: unless-stopped
+    logging: *default-logging
+    deploy:
+      resources:
+        limits: { memory: 1g }
+    networks: [edge-net]
+
+  rms-frontend:
+    build: { context: ./Frontend/RMS }
+    expose: ["80"]
+    depends_on: [backend]
+    restart: unless-stopped
+    logging: *default-logging
+    networks: [edge-net]
+
+  customer-frontend:                        # optional on-LAN ordering site
+    build: { context: ./Frontend/CustomerOrderingWeb }
+    expose: ["80"]
+    depends_on: [backend]
+    restart: unless-stopped
+    logging: *default-logging
+    networks: [edge-net]
+
+  edge-gateway:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/edge/nginx.edge.conf:/etc/nginx/conf.d/default.conf:ro
+      - ${EDGE_TLS_CERT_DIR:-./deploy/edge/certs}:/etc/nginx/certs:ro
+      - ${EDGE_RUNTIME_CONFIG:-./deploy/edge/runtime-config.json}:/usr/share/nginx/html/runtime-config.json:ro
+      - edge-rms-static:/usr/share/nginx/html
+    depends_on: [backend, rms-frontend]
+    restart: unless-stopped
+    logging: *default-logging
+    networks: [edge-net]
+
+  # Copies the RMS build out of the frontend image so the gateway can serve it directly.
+  rms-static-export:
+    build: { context: ./Frontend/RMS }
+    entrypoint: ["/bin/sh", "-c", "cp -r /usr/share/nginx/html/. /export/ && echo done"]
+    volumes:
+      - edge-rms-static:/export
+    restart: "no"
+    networks: [edge-net]
+
+  backup:
+    image: mcr.microsoft.com/mssql-tools:latest
+    entrypoint: ["/bin/bash", "/scripts/backup-loop.sh"]
+    environment:
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      SQL_HOST: sqlserver
+      DB_NAME: RestaurantDB
+      BACKUP_DIR: /backups
+      RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+      INTERVAL_MINUTES: ${BACKUP_INTERVAL_MINUTES:-30}
+      EXTERNAL_COPY_DIR: ${BACKUP_EXTERNAL_DIR:-}
+      GPG_RECIPIENT: ${BACKUP_GPG_RECIPIENT:-}
+    volumes:
+      - ./deploy/backup:/scripts:ro
+      - edge-backups:/backups
+      - ${BACKUP_EXTERNAL_MOUNT:-/mnt/backup-drive}:/external
+    depends_on:
+      sqlserver: { condition: service_healthy }
+    restart: unless-stopped
+    logging: *default-logging
+    networks: [edge-net]
+
+networks:
+  edge-net:
+    driver: bridge
+
+volumes:
+  edge-mssql-data:
+  edge-uploads:
+  edge-keys:
+  edge-backups:
+  edge-rms-static:
