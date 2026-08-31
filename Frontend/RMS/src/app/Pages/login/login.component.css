@@ -48,23 +48,15 @@
 }
 
 .brand-panel-logo {
-  width: 96px;
-  height: 96px;
-  border-radius: 20px;
+  width: 180px;
+  height: auto;
+  max-width: 60%;
+  border-radius: 18px;
   object-fit: contain;
   background: #fff;
-  padding: 12px;
+  padding: 14px 18px;
   box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.35), var(--dfc-shadow-lg);
-  margin-bottom: 22px;
-}
-
-.brand-panel-title {
-  font-family: var(--dfc-font-display);
-  font-size: 34px;
-  font-weight: 800;
-  color: #fff;
-  margin: 0 0 6px;
-  letter-spacing: .3px;
+  margin-bottom: 20px;
 }
 
 .brand-panel-tagline {
@@ -122,11 +114,10 @@
 
 .login-mobile-logo {
   display: none;
-  width: 64px;
-  height: 64px;
-  border-radius: 14px;
+  width: 132px;
+  height: auto;
   object-fit: contain;
-  margin: 0 auto 16px;
+  margin: 0 auto 12px;
 }
 
 .login-box-header {

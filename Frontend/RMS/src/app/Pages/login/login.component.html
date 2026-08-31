@@ -4,8 +4,7 @@
   <div class="brand-panel">
     <div class="brand-panel-glow"></div>
     <div class="brand-panel-content">
-      <img [src]="productLogo" (error)="onLogoError()" [alt]="productName + ' logo'" class="brand-panel-logo" />
-      <h1 class="brand-panel-title">{{ productName }}</h1>
+      <img [src]="productLogo" (error)="onLogoError()" [alt]="productName" class="brand-panel-logo" />
       <p class="brand-panel-tagline">{{ productTagline }}</p>
       <p class="brand-panel-vendor">by {{ vendorName }}</p>
 
