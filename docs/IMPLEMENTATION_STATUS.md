@@ -5,7 +5,7 @@
 
 - **Branch:** `feature/offline-first-edge-sync` (off `main` @ `a5d25b7`)
 - **Started:** 2026-08-31
-- **Last updated:** 2026-08-31 — Phases 0, 1, 2, 14 complete (code + migration + config + verification)
+- **Last updated:** 2026-08-31 — Phases 0, 1, 2, 6, 14 complete (code + migration + config + verification)
 
 ---
 
@@ -30,7 +30,7 @@
 | 3 | Safe order numbering (`OrderNumberSequence` per Branch/Source/BusinessDay) | ⛔ | Depends on 1, 2 |
 | 4 | Inventory ledger (`StockMovement`, reconciliation service + report) | ⛔ | Depends on 2 |
 | 5 | Transactional sync (Outbox/Inbox/Checkpoint/Conflict/DeadLetter, `/api/sync/*`, HMAC) | ⛔ | Depends on 1, 2 |
-| 6 | Idempotent commands (`ProcessedCommand`, `Idempotency-Key`) | ⛔ | Depends on 2 |
+| 6 | Idempotent commands (`ProcessedCommand`, `Idempotency-Key`) | ✅ | `IdempotencyMiddleware` (any mutating request with the header), `ProcessedCommand` (unique `CommandId`), `ICommandContext` + deterministic `DeriveGlobalId`. Order create now derives `GlobalId` from the key. Verified: double identical POST ⇒ 1 order, 2nd replayed (`Idempotency-Replayed: true`); same key + different body ⇒ 409 `idempotency-key-reuse`; order `GlobalId` is the derived value. Angular header wiring = Phase 9. |
 | 7 | Conflict & ownership rules (orders/payments/inventory/master-data) | ⛔ | Depends on 5, 6 |
 | 8 | Offline auth (DB SuperAdmin, asymmetric JWT per node, user sync) | ⛔ | Depends on 2, 5 |
 | 9 | Angular PWA + runtime config + endpoint failover + status widget | ⛔ | Depends on 5, 8 |

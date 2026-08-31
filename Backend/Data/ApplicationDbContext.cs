@@ -69,6 +69,9 @@ namespace RestaurantSystem.Data
         // ===== Offline-first / cloud-sync — Phase 14 (controlled migrations). Node-local, not synced. =====
         public DbSet<SchemaMigrationHistory> SchemaMigrationHistories { get; set; } = null!;
 
+        // ===== Offline-first / cloud-sync — Phase 6 (idempotent commands). Node-local, not synced. =====
+        public DbSet<ProcessedCommand> ProcessedCommands { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -138,6 +141,16 @@ namespace RestaurantSystem.Data
                 entity.HasIndex(e => e.GlobalId).IsUnique();
                 entity.HasIndex(e => new { e.Dispatched, e.DeletedAtUtc });
                 entity.Property(e => e.AggregateType).HasMaxLength(128).IsRequired();
+            });
+
+            modelBuilder.Entity<ProcessedCommand>(entity =>
+            {
+                entity.HasIndex(e => e.CommandId).IsUnique();
+                entity.HasIndex(e => e.StartedAtUtc);
+                entity.Property(e => e.Route).HasMaxLength(400).IsRequired();
+                entity.Property(e => e.RequestHash).HasMaxLength(64).IsRequired();
+                entity.Property(e => e.State).HasMaxLength(16).IsRequired();
+                entity.Property(e => e.ResponseContentType).HasMaxLength(128);
             });
 
             modelBuilder.Entity<SchemaMigrationHistory>(entity =>

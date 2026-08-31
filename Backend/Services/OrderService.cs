@@ -20,7 +20,8 @@ namespace RestaurantSystem.Services
         private readonly PrintSvc _printService;
         private readonly IRestaurantClock _clock;
         private readonly ICustomerService _customerService;
-        public OrderService(ApplicationDbContext context, IHubContext<OrderHub> hub, IKitchenOutService kitchenOutService, PrintSvc printService, IRestaurantClock clock, ICustomerService customerService)
+        private readonly RestaurantSystem.Sync.ICommandContext _commandContext;
+        public OrderService(ApplicationDbContext context, IHubContext<OrderHub> hub, IKitchenOutService kitchenOutService, PrintSvc printService, IRestaurantClock clock, ICustomerService customerService, RestaurantSystem.Sync.ICommandContext commandContext)
         {
             _context = context;
             _hub = hub;
@@ -28,6 +29,7 @@ namespace RestaurantSystem.Services
             _printService = printService;
             _clock = clock;
             _customerService = customerService;
+            _commandContext = commandContext;
         }
 
         // Shared by CreateAsync and ApproveOnlineOrderAsync — expands items/deals into raw-item quantities via recipes
@@ -219,6 +221,10 @@ namespace RestaurantSystem.Services
 
                 var order = new Order
                 {
+                    // Phase 6: derive the order's GlobalId from the idempotency key so a
+                    // cross-node retry of this create merges into the same order instead
+                    // of producing a second one. Falls back to a fresh GUID (interceptor).
+                    GlobalId = _commandContext.DeriveGlobalId("Order") ?? Guid.Empty,
                     CreatedAt = DateTime.UtcNow,
                     Paid = isPaid,
                     PaidAt = isPaid ? DateTime.UtcNow : null,

@@ -79,6 +79,13 @@ var migratorOptions = builder.Configuration
 builder.Services.AddSingleton(migratorOptions);
 builder.Services.AddScoped<RestaurantSystem.Sync.DatabaseMigrator>();
 
+// ===== Offline-first / cloud-sync — Phase 6 (idempotent commands) =====
+var idempotencyOptions = builder.Configuration
+    .GetSection(RestaurantSystem.Sync.IdempotencyOptions.SectionName)
+    .Get<RestaurantSystem.Sync.IdempotencyOptions>() ?? new RestaurantSystem.Sync.IdempotencyOptions();
+builder.Services.AddSingleton(idempotencyOptions);
+builder.Services.AddScoped<RestaurantSystem.Sync.ICommandContext, RestaurantSystem.Sync.CommandContext>();
+
 builder.Services.AddScoped<RestaurantSystem.Sync.NodeRegistrationService>(sp =>
     new RestaurantSystem.Sync.NodeRegistrationService(
         sp.GetRequiredService<ApplicationDbContext>(),
@@ -292,6 +299,11 @@ app.UseCors(MyCors);
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Phase 6: replay/short-circuit mutating requests that carry an Idempotency-Key.
+// After auth so the caller is known; before endpoints so it wraps their execution.
+app.UseMiddleware<RestaurantSystem.Sync.IdempotencyMiddleware>();
+
 app.UseRateLimiter();
 app.MapHub<OrderHub>("/hubs/orders");
 
