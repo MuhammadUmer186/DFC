@@ -108,6 +108,8 @@ builder.Services.AddScoped<IMenuProfitService, MenuProfitService>();
 builder.Services.AddScoped<IStockReportService, StockReportService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IOrderNumberService, OrderNumberService>(); // Phase 3
+builder.Services.AddScoped<IStockLedger, StockLedger>();               // Phase 4
+builder.Services.AddScoped<RestaurantSystem.Sync.StockLedgerBackfillService>(); // Phase 4
 builder.Services.AddScoped<IVendorAccountService, VendorAccountService>();
 builder.Services.AddScoped<IWasteService, WasteService>();
 builder.Services.AddScoped<IUtilityBillService, UtilityBillService>();
@@ -274,6 +276,9 @@ using (var scope = app.Services.CreateScope())
         // then backfill origin/branch on rows created before sync existed.
         scope.ServiceProvider.GetRequiredService<RestaurantSystem.Sync.INodeContext>().Set(identity);
         await scope.ServiceProvider.GetRequiredService<RestaurantSystem.Sync.SyncBackfillService>().RunAsync();
+
+        // Phase 4: seed the inventory ledger's opening balances from StoreStock.
+        await scope.ServiceProvider.GetRequiredService<RestaurantSystem.Sync.StockLedgerBackfillService>().RunAsync();
     }
     catch (Exception ex)
     {

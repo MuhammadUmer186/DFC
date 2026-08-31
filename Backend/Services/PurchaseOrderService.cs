@@ -9,10 +9,12 @@ namespace RestaurantSystem.Services
     public class PurchaseOrderService : IPurchaseOrderService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IStockLedger _stockLedger;
 
-        public PurchaseOrderService(ApplicationDbContext context)
+        public PurchaseOrderService(ApplicationDbContext context, IStockLedger stockLedger)
         {
             _context = context;
+            _stockLedger = stockLedger;
         }
 
         public async Task CreateAsync(PurchaseOrderCreateDto dto)
@@ -76,6 +78,19 @@ namespace RestaurantSystem.Services
                 _context.PurchaseOrders.Add(order);
 
                 await _context.SaveChangesAsync();
+
+                // Phase 4: mirror the stock increase into the immutable ledger
+                // (StoreStock stays as the projection). Idempotent per PO+item.
+                await _stockLedger.RecordManyAsync(order.PurchaseOrderItems.Select(i =>
+                    new StockMovementRequest(
+                        StockMovementType.Purchase,
+                        i.RawItemId,
+                        i.Quantity,
+                        "PurchaseOrder",
+                        order.GlobalId,
+                        VendorId: dto.VendorId,
+                        OccurredAtUtc: order.PurchaseDate)));
+
                 await transaction.CommitAsync();
             }
             catch (Exception)

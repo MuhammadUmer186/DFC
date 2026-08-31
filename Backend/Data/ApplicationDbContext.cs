@@ -75,6 +75,9 @@ namespace RestaurantSystem.Data
         // ===== Offline-first / cloud-sync — Phase 3 (safe order numbering). Node-local, not synced. =====
         public DbSet<OrderNumberSequence> OrderNumberSequences { get; set; } = null!;
 
+        // ===== Offline-first / cloud-sync — Phase 4 (immutable inventory ledger). Synchronized append-only. =====
+        public DbSet<StockMovement> StockMovements { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -151,6 +154,20 @@ namespace RestaurantSystem.Data
                 entity.HasIndex(e => new { e.BranchId, e.SourceCode, e.BusinessDate }).IsUnique();
                 entity.Property(e => e.SourceCode).HasMaxLength(8).IsRequired();
                 entity.Property(e => e.BusinessDate).HasColumnType("date");
+            });
+
+            modelBuilder.Entity<StockMovement>(entity =>
+            {
+                // Phase 4: blocks an order / PO / waste / kitchen-out (or a duplicate
+                // sync event) from applying the same movement twice.
+                entity.HasIndex(e => new { e.ReferenceType, e.ReferenceGlobalId, e.MovementType, e.RawItemId })
+                      .IsUnique()
+                      .HasDatabaseName("UX_StockMovements_Reference");
+                entity.HasIndex(e => new { e.RawItemId, e.VendorId });
+                entity.HasIndex(e => e.OccurredAtUtc);
+                entity.Property(e => e.MovementType).HasConversion<string>().HasMaxLength(32);
+                entity.Property(e => e.ReferenceType).HasMaxLength(64).IsRequired();
+                entity.Property(e => e.QuantityDelta).HasColumnType("decimal(18,4)");
             });
 
             // Phase 3: new-format order numbers are unique; legacy numbers

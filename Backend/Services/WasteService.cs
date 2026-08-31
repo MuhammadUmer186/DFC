@@ -8,10 +8,12 @@
     public class WasteService : IWasteService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IStockLedger _stockLedger;
 
-        public WasteService(ApplicationDbContext context)
+        public WasteService(ApplicationDbContext context, IStockLedger stockLedger)
         {
             _context = context;
+            _stockLedger = stockLedger;
         }
 
         public async Task<WasteResponseDto> CreateWasteAsync(WasteCreateRequestDto request)
@@ -29,6 +31,7 @@
                 _context.WasteRecords.Add(waste);
                 await _context.SaveChangesAsync();
 
+                var ledgerMoves = new List<StockMovementRequest>();
                 foreach (var item in request.Items)
                 {
                     var stock = await _context.StoreStocks
@@ -50,9 +53,16 @@
                         RawItemId = item.RawItemId,
                         Quantity = item.Quantity
                     });
+
+                    // Phase 4: mirror into the immutable ledger (negative = stock out).
+                    ledgerMoves.Add(new StockMovementRequest(
+                        StockMovementType.Waste, item.RawItemId, -item.Quantity,
+                        "WasteRecord", waste.GlobalId, VendorId: stock.VendorId,
+                        OccurredAtUtc: waste.WasteDate));
                 }
 
                 await _context.SaveChangesAsync();
+                await _stockLedger.RecordManyAsync(ledgerMoves);
                 await transaction.CommitAsync();
 
                 var response = await _context.WasteRecords

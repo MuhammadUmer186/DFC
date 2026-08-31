@@ -5,7 +5,7 @@
 
 - **Branch:** `feature/offline-first-edge-sync` (off `main` @ `a5d25b7`)
 - **Started:** 2026-08-31
-- **Last updated:** 2026-08-31 — Phases 0, 1, 2, 3, 6, 14 complete (code + migration + config + verification)
+- **Last updated:** 2026-08-31 — Phases 0, 1, 2, 3, 4, 6, 14 complete (code + migration + config + verification)
 
 ---
 
@@ -28,7 +28,7 @@
 | 1 | Node & branch identity (`Branch`, `SystemNode`, `NodeHeartbeat`, `Deployment` config) | ✅ | Entities + config + idempotent self-registration + additive migration + compose wiring. Verified: build, `ef database update`, two backend starts (create then idempotent refresh). |
 | 2 | Sync-safe identity (`GlobalId`, `AggregateVersion`, timestamps, tombstones, backfill) | ✅ | `ISyncableAggregate`/`ISyncableChild` on 22 entities, `SyncStampingInterceptor`, `SyncTombstone`, `SyncBackfillService`, additive migration (`AddColumn`×126 + `CreateIndex`×54 + `SyncTombstones`; `Up()` has no drop/alter). Verified: build, migrate on dev DB, backfill stamped 101 existing rows across 11 root tables + idempotent on restart, live order create stamps `GlobalId`/`OriginNodeId`/`BranchId`/`AggregateVersion`. |
 | 3 | Safe order numbering (`OrderNumberSequence` per Branch/Source/BusinessDay) | ✅ | `OrderNumberSequence` (unique `(BranchId,SourceCode,BusinessDate)`), `IOrderNumberService` atomic `MERGE … HOLDLOCK … OUTPUT` enlisted in the caller's EF tx. `POS`/`WEB`/`CLD` (WEB→CLD on the Cloud node). `Order.OrderNumberSource` (null for legacy); unique **filtered** index `WHERE OrderNumberSource IS NOT NULL` so legacy numbers are untouched. Verified: POS→`POS-000001/2`, WEB→`WEB-000001/2` independent sequences; legacy rows unchanged. One benign `AlterColumn` `OrderNumber nvarchar(max)→(450)` (metadata-only, values are short) — required to index the column. |
-| 4 | Inventory ledger (`StockMovement`, reconciliation service + report) | ⛔ | Depends on 2 |
+| 4 | Inventory ledger (`StockMovement`, reconciliation service + report) | ✅ | Immutable `StockMovement` (`ISyncableAggregate`, append-only) + `StockMovementType` enum; unique `UX_StockMovements_Reference (ReferenceType,ReferenceGlobalId,MovementType,RawItemId)` blocks double-apply. `IStockLedger` (record / rebuild-projection / reconcile). Backfill: `StoreStock` → `OpeningBalance`. Dual-write wired into PurchaseOrderService / WasteService / KitchenOutService (`CreateAsync` + `ConsumeAsync`). `CancelOrderAsync` emits compensating `Return` movements (originals kept). `GET /api/stock/reconciliation` + `POST …/rebuild-projection` (SuperAdmin/MainAdmin). Verified: opening balance seeded (+50, idempotent on restart), PO → `Purchase` (+20) + projection 70, reconciliation `balanced:true`. Historical PO/KO/Waste backfill into the ledger = documented follow-up; consumption path needs recipes to exercise. |
 | 5 | Transactional sync (Outbox/Inbox/Checkpoint/Conflict/DeadLetter, `/api/sync/*`, HMAC) | ⛔ | Depends on 1, 2 |
 | 6 | Idempotent commands (`ProcessedCommand`, `Idempotency-Key`) | ✅ | `IdempotencyMiddleware` (any mutating request with the header), `ProcessedCommand` (unique `CommandId`), `ICommandContext` + deterministic `DeriveGlobalId`. Order create now derives `GlobalId` from the key. Verified: double identical POST ⇒ 1 order, 2nd replayed (`Idempotency-Replayed: true`); same key + different body ⇒ 409 `idempotency-key-reuse`; order `GlobalId` is the derived value. Angular header wiring = Phase 9. |
 | 7 | Conflict & ownership rules (orders/payments/inventory/master-data) | ⛔ | Depends on 5, 6 |

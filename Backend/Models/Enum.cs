@@ -34,5 +34,19 @@ namespace RestaurantSystem.Models
         Cloud = 0,
         Edge = 1
     }
+
+    // Phase 4 — immutable inventory ledger movement kinds.
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum StockMovementType
+    {
+        OpeningBalance = 0,
+        Purchase = 1,
+        OrderConsumption = 2,
+        KitchenOut = 3,
+        Waste = 4,
+        Return = 5,
+        ManualAdjustment = 6,
+        SynchronizationCorrection = 7
+    }
 }
 

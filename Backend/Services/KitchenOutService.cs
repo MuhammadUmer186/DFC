@@ -12,11 +12,13 @@ namespace RestaurantSystem.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IRestaurantClock _clock;
+        private readonly IStockLedger _stockLedger;
 
-        public KitchenOutService(ApplicationDbContext context, IRestaurantClock clock)
+        public KitchenOutService(ApplicationDbContext context, IRestaurantClock clock, IStockLedger stockLedger)
         {
             _context = context;
             _clock = clock;
+            _stockLedger = stockLedger;
         }
 
         public async Task CreateAsync(KitchenOutCreateDto dto)
@@ -30,6 +32,7 @@ namespace RestaurantSystem.Services
                     IssuedAt = DateTime.UtcNow
                 };
 
+                var ledgerMoves = new List<StockMovementRequest>();
                 foreach (var item in dto.Items)
                 {
                     // Deduct from StoreStock
@@ -48,11 +51,20 @@ namespace RestaurantSystem.Services
                         RawItemId = item.RawItemId,
                         Quantity = item.Quantity
                     });
+
+                    ledgerMoves.Add(new StockMovementRequest(
+                        StockMovementType.KitchenOut, item.RawItemId, -item.Quantity,
+                        "KitchenOut", Guid.Empty /* set after save */, VendorId: stock.VendorId,
+                        OccurredAtUtc: kitchenOut.IssuedAt));
                 }
 
                 _context.KitchenOuts.Add(kitchenOut);
 
                 await _context.SaveChangesAsync();
+
+                // Phase 4: reference the now-persisted KitchenOut GlobalId.
+                await _stockLedger.RecordManyAsync(ledgerMoves.Select(m => m with { ReferenceGlobalId = kitchenOut.GlobalId }));
+
                 await transaction.CommitAsync();
             }
             catch
@@ -287,7 +299,9 @@ namespace RestaurantSystem.Services
         public async Task ConsumeAsync(
     Dictionary<int, decimal> rawItemConsumption,
     DateTime issuedAt,
-    int? employeeId)
+    int? employeeId,
+    Guid? referenceGlobalId = null,
+    string referenceType = "Order")
         {
             // 1️⃣ Validate against current kitchen inventory
             var kitchenInventory = await GetCurrentKitchenInventoryAsync();
@@ -318,6 +332,17 @@ namespace RestaurantSystem.Services
 
             _context.KitchenOuts.Add(kitchenOut);
             await _context.SaveChangesAsync();
+
+            // Phase 4: record order consumption in the immutable ledger. Keyed by the
+            // order's GlobalId so a retry / duplicate sync event can't consume twice
+            // (UX_StockMovements_Reference). Consumption is not vendor-specific.
+            if (referenceGlobalId is { } refId && refId != Guid.Empty)
+            {
+                await _stockLedger.RecordManyAsync(rawItemConsumption.Select(e =>
+                    new StockMovementRequest(
+                        StockMovementType.OrderConsumption, e.Key, -e.Value,
+                        referenceType, refId, VendorId: null, OccurredAtUtc: issuedAt)));
+            }
         }
 
     }

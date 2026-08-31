@@ -22,7 +22,8 @@ namespace RestaurantSystem.Services
         private readonly ICustomerService _customerService;
         private readonly RestaurantSystem.Sync.ICommandContext _commandContext;
         private readonly IOrderNumberService _orderNumberService;
-        public OrderService(ApplicationDbContext context, IHubContext<OrderHub> hub, IKitchenOutService kitchenOutService, PrintSvc printService, IRestaurantClock clock, ICustomerService customerService, RestaurantSystem.Sync.ICommandContext commandContext, IOrderNumberService orderNumberService)
+        private readonly IStockLedger _stockLedger;
+        public OrderService(ApplicationDbContext context, IHubContext<OrderHub> hub, IKitchenOutService kitchenOutService, PrintSvc printService, IRestaurantClock clock, ICustomerService customerService, RestaurantSystem.Sync.ICommandContext commandContext, IOrderNumberService orderNumberService, IStockLedger stockLedger)
         {
             _context = context;
             _hub = hub;
@@ -32,6 +33,32 @@ namespace RestaurantSystem.Services
             _customerService = customerService;
             _commandContext = commandContext;
             _orderNumberService = orderNumberService;
+            _stockLedger = stockLedger;
+        }
+
+        // Phase 4: emit compensating (+) ledger movements for everything an order
+        // consumed. Never deletes the original OrderConsumption rows.
+        private async Task ReverseOrderConsumptionAsync(Guid orderGlobalId, string reason)
+        {
+            if (orderGlobalId == Guid.Empty) return;
+
+            var consumed = await _context.Set<StockMovement>()
+                .Where(m => m.ReferenceGlobalId == orderGlobalId
+                            && m.MovementType == StockMovementType.OrderConsumption)
+                .ToListAsync();
+            if (consumed.Count == 0) return;
+
+            var reversals = consumed.Select(m => new StockMovementRequest(
+                StockMovementType.Return,
+                m.RawItemId,
+                -m.QuantityDelta,                    // undo the consumption
+                reason,                              // e.g. "OrderCancellation"
+                orderGlobalId,
+                VendorId: m.VendorId,
+                OccurredAtUtc: DateTime.UtcNow,
+                ReversesMovementGlobalId: m.GlobalId));
+
+            await _stockLedger.RecordManyAsync(reversals);
         }
 
         // Shared by CreateAsync and ApproveOnlineOrderAsync — expands items/deals into raw-item quantities via recipes
@@ -306,6 +333,12 @@ namespace RestaurantSystem.Services
                if (order.TotalAmount <= 0)
                     throw new Exception("Order total must be greater than zero");
 
+                // Phase 4/6: make sure the order has a stable GlobalId before it
+                // drives stock consumption (so ledger movements can reference it and
+                // a retry can't double-consume). The interceptor keeps a pre-set id.
+                if (order.GlobalId == Guid.Empty)
+                    order.GlobalId = Guid.NewGuid();
+
                 // ================= MENU RECIPE → KITCHEN STOCK =================
                 if (!skipStockCheck)
                 {
@@ -314,7 +347,9 @@ namespace RestaurantSystem.Services
                     await _kitchenOutService.ConsumeAsync(
                         rawItemConsumption,
                         DateTime.UtcNow,
-                        takenByEmployeeId
+                        takenByEmployeeId,
+                        referenceGlobalId: order.GlobalId,
+                        referenceType: "Order"
                     );
                 }
 
@@ -613,7 +648,8 @@ namespace RestaurantSystem.Services
                     throw new Exception("Order is not pending approval");
 
                 var rawItemConsumption = await BuildRawItemConsumptionAsync(order.OrderItems, order.OrderDeals);
-                await _kitchenOutService.ConsumeAsync(rawItemConsumption, DateTime.UtcNow, null);
+                await _kitchenOutService.ConsumeAsync(rawItemConsumption, DateTime.UtcNow, null,
+                    referenceGlobalId: order.GlobalId, referenceType: "Order");
 
                 order.Status = OrderStatus.Queued;
                 order.DeliveryStatus = RestaurantSystem.Models.DeliveryStatus.Approved;
@@ -1116,6 +1152,10 @@ namespace RestaurantSystem.Services
             order.CancelledByUserName = userClaims.FindFirst(ClaimTypes.Name)?.Value;
 
             await _context.SaveChangesAsync();
+
+            // Phase 4: restock what this order consumed via COMPENSATING ledger
+            // movements. The original OrderConsumption rows are never deleted.
+            await ReverseOrderConsumptionAsync(order.GlobalId, "OrderCancellation");
 
             await _hub.Clients
                 .Group("OrderQueue")
