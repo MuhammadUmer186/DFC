@@ -27,3 +27,6 @@ dfc_app.zip
 
 # Runtime-uploaded content (persisted via Docker volume instead)
 Backend/wwwroot/uploads/
+
+# .NET test + solution build output
+**/TestResults/

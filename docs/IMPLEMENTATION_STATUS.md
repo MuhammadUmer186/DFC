@@ -5,7 +5,26 @@
 
 - **Branch:** `feature/offline-first-edge-sync` (off `main` @ `a5d25b7`)
 - **Started:** 2026-08-31
-- **Last updated:** 2026-08-31 — Phases 0-6, 11, 14 done; 7, 8, 12, 17(be) partial. Angular 9/10, 13, 15, 16, tests remain.
+- **Last updated:** 2026-08-31 — **Done:** 0,1,2,3,4,5,6,11,14,16. **Partial (mechanism landed + verified, needs 2 nodes / a device / follow-up):** 7,8,9,10,12,13,15,17,T. Nothing is `⛔`.
+
+## Verification commands (run 2026-08-31)
+
+| Command | Result |
+|---------|--------|
+| `dotnet restore` (Backend) | OK |
+| `dotnet build -c Debug` (Backend) | Build succeeded, 0 errors (pre-existing analyzer warnings only) |
+| `dotnet test` (RMS-DFC.sln) | **Passed! 13 / 13**, 0 failed |
+| `dotnet ef migrations list` | 8 new migrations, all applied to the dev DB |
+| `dotnet ef database update` | all 8 applied cleanly; no drop/alter on existing tables (one benign `OrderNumber` length cap) |
+| RMS `ng build --configuration development` | complete, exit 0 |
+| RMS `ng build --configuration production` | complete, exit 0 |
+| `docker compose config -q` (cloud) | VALID (5 services) |
+| `docker compose -f docker-compose.edge.yml config -q` | VALID |
+| `bash -n deploy/backup/*.sh` | OK |
+| Angular lint | **not run** — no `lint` script/target configured in either app |
+| Angular unit tests (`ng test`) | **not run** — Karma needs a headless Chrome not available in this environment |
+| Docker image builds | **not run** — multi-minute; no Dockerfile changed; `compose config` validates wiring |
+| nginx `-t` | **not run** — needs an nginx container; `nginx.edge.conf` is new, unvalidated by a running nginx |
 
 ---
 
@@ -33,8 +52,8 @@
 | 6 | Idempotent commands (`ProcessedCommand`, `Idempotency-Key`) | ✅ | `IdempotencyMiddleware` (any mutating request with the header), `ProcessedCommand` (unique `CommandId`), `ICommandContext` + deterministic `DeriveGlobalId`. Order create now derives `GlobalId` from the key. Verified: double identical POST ⇒ 1 order, 2nd replayed (`Idempotency-Replayed: true`); same key + different body ⇒ 409 `idempotency-key-reuse`; order `GlobalId` is the derived value. Angular header wiring = Phase 9. |
 | 7 | Conflict & ownership rules (orders/payments/inventory/master-data) | 🟡 | In `SyncApplyService`: `AggregateVersion` ordering (stale loses, gap flagged), forbidden backward `DeliveryStatus` transition → `domain-rule` conflict, unresolved → `SyncConflict` for MainAdmin/SuperAdmin. Inventory merge is append-only by construction (Phase 4). **Remaining:** `Payment` append-only entity (no Payment entity yet), post-payment cancel reversal workflow, imported-event side-effect suppression (notifications/prints) = Phase 10/13. |
 | 8 | Offline auth (DB SuperAdmin, asymmetric JWT per node, user sync) | 🟡 | `User.IsActive`+`SecurityStamp` (defaults true / NEWID for existing) + `AuthAuditLog` + migration. `AuthService`: seeds DB SuperAdmin from config on first login then disables the config path; rejects disabled users; audits every attempt (result+issuer+node). `AuthKeyProvider`: RS256 per-node signing when `Auth:PrivateKeyPath` set, else legacy HS256; validation trusts HS256 + all `Auth:TrustedPublicKeys` and both issuers. `stamp`/`node` claims added. Users sync via Phase 5 (User is ISyncableAggregate). Verified: SU + existing users still log in (HS256), existing IsActive preserved, disabled user -> 400 + audit. **Remaining:** Angular interceptor (Phase 9), key-rotation runbook, stamp-claim revalidation middleware.
-| 9 | Angular PWA + runtime config + endpoint failover + status widget | ⛔ | Depends on 5, 8 |
-| 10 | SignalR on selected node + import re-emit without duplicates | ⛔ | Depends on 5, 9 |
+| 9 | Angular PWA + runtime config + endpoint failover + status widget | 🟡 | RMS: `assets/runtime-config.json` + `RuntimeConfigService` (APP_INITIALIZER); `EndpointService` (LOCAL/CLOUD/OFFLINE, edge `/health/ready` probe, N-failure failover, background recovery, critical-transaction guard); `api.interceptor` (node rewrite + bearer + `Idempotency-Key` on mutating + 401→login) — completes the Angular half of Phases 6 & 8; `OperatingStatusComponent` in the navbar. Verified: `ng build` dev + prod exit 0. **Remaining:** PWA service worker (`npm i @angular/service-worker` + `ngsw-config.json`); apply the same interceptor to the customer site. |
+| 10 | SignalR on selected node + import re-emit without duplicates | 🟡 | `order-signalr.ts`: hub URL from `EndpointService.hubUrl()`; `onreconnected` re-invokes `JoinQueue`. `SyncApplyService` emits `OrderCreated {imported:true}` once per applied Order EventId (inbox-deduped) — no duplicate notifications, imported events never hit the print path. Verified: RMS build. **Remaining:** manual reconnect test across an endpoint switch. |
 | 11 | Public online orders — edge-offline behavior flags | ✅ | `PublicOrderingOptions` (DisableCheckoutWhenEdgeOffline / AllowDelayedOnlineOrders / EdgeOfflineThresholdSeconds); `EdgeConnectivity` (last Edge heartbeat vs threshold); `GET /api/public/ordering-status`; checkout gate in `PlaceOrder` — 503 when disabled+offline, else delayed hint via `X-Order-Delayed`/`X-Order-Message` headers (body shape UNCHANGED). Delayed orders reuse existing PendingApproval + no-inventory path. Verified: ordering-status JSON, order still returns the order DTO 200. |
 | 12 | Uploaded-media metadata (`UploadedFile`, hash dedupe) | 🟡 | `UploadedFile` (ISyncableAggregate) + migration; `UploadStore` (MIME/ext/size validation, no path traversal, SHA-256 dedupe); `GET/POST /api/sync/blob/{hash}` (HMAC); `UploadedFileBackfillService` scans wwwroot/uploads. Wired into `MenuController`. Verified: backfill indexed 7 existing files, new upload creates a row, identical re-upload dedupes to same URL. **Remaining:** Category/Deals/SiteSettings controllers still inline-save (backfill catches them); worker-side blob fetch on import; S3 doc.
 | 13 | Local printing (`IPrintDispatcher`, `PrintJob`, dedupe, reprint audit) | 🟡 | `PrintJob` (PrintJobId, status, attempts, IsReprint+reason+user) + migration. `IPrintDispatcher`/`LocalPrintDispatcher` wraps the existing ESC/POS `PrintService`: dedupe by (OrderGlobalId, JobType, Copy) for non-reprints, printer-offline recorded as `failed` status (never throws). Delivery-slip + reprint paths in OrderService routed through it. Verified: approve printed customer slip / kitchen slip failed WITHOUT failing the 200; reprint bypassed dedupe + recorded IsReprint. **Remaining:** QueuedPrintDispatcher + retry worker; kitchen-ticket path; LAN print-agent option.
@@ -42,7 +61,7 @@
 | 15 | Docker edge deployment (`docker-compose.edge.yml`, `.env.edge.example`) | 🟡 | `docker-compose.edge.yml` (edge-gateway nginx TLS, RMS + optional customer frontend, backend NodeRole=Edge, sqlserver NOT published, migrator gate, backup sidecar, healthchecks, restart: unless-stopped, mem limits, json-file log rotation, named volumes). `deploy/edge/nginx.edge.conf`, `runtime-config.json`, `.env.edge.example`. Verified: `docker compose -f docker-compose.edge.yml config -q` VALID. **Remaining:** real build/run of the edge stack; TLS cert provisioning docs are in EDGE_DEPLOYMENT.md; separate SyncWorker project (worker currently runs inside the API).
 | 16 | Backup \& recovery (scripts + docs, edition warning) | ✅ | `deploy/backup/backup-loop.sh` (full BACKUP + CHECKSUM, RESTORE VERIFYONLY, .sha256, retention prune with validated positive-int guard, encrypted off-machine copy via gpg), `restore.sh` (checksum + VERIFYONLY + WITH REPLACE), `README.md` runbook. Developer-Edition warning in the script + docs. Wired as the `backup` service in the edge compose. Verified: `bash -n` on both scripts; compose valid. |
 | 17 | Health & admin (`/health/*`, node-status, sync admin page) | 🟡 | Backend done: `/health/live` + `/health/ready` (DatabaseHealthCheck: connect + pending-migrations), `/api/system/node-status` (SuperAdmin/MainAdmin/Admin), `/api/sync-admin/*` (Phase 5). RMS sync admin PAGE = with Phase 9 Angular work. Verified: live 200, ready Healthy, node-status JSON. |
-| T | Test suites (unit / integration / e2e) + manual failure matrix | ⛔ | Grows with every phase |
+| T | Test suites (unit / integration / e2e) + manual failure matrix | 🟡 | `RMS-DFC.sln` + `Backend.Tests` xUnit project — 13 DB-free unit tests pass (`dotnet test`): deterministic idempotency-key→GlobalId, HMAC sign/verify + tamper, nonce, schema-version window, role parsing. `Backend.Tests/TESTS.md` maps all 24 required scenarios (12 verified end-to-end this session, 9 need two nodes/a device, 1 blocked on Payment entity, 2 manual). Failure matrix in `docs/FAILURE_RECOVERY.md`. **Remaining:** SQL-Server-backed integration tests (Testcontainers), Angular unit tests, e2e. |
 
 ---
 
