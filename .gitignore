@@ -12,6 +12,11 @@
 
 # Secrets — never commit real values, only .env.example
 .env
+.env.edge
+
+# Offline-first / cloud-sync: per-node identity + key material (mounted volume in prod)
+Backend/keys/
+**/keys/node-id.txt
 
 # Unrelated project bundled in this folder
 dfc_app/

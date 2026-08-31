@@ -55,6 +55,20 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         sql => sql.UseCompatibilityLevel(120))); // DB engine is SQL Server 2014 (12.0) — OPENJSON (used by EF Core 8's default Contains() translation) requires 2016+
+// ===== Offline-first / cloud-sync — Phase 1 (node & branch identity) =====
+// Real values come from the Deployment section via env vars / secret mounts
+// (Deployment__NodeId, Deployment__NodeRole, Deployment__BranchId, ...).
+var deploymentOptions = builder.Configuration
+    .GetSection(RestaurantSystem.Sync.DeploymentOptions.SectionName)
+    .Get<RestaurantSystem.Sync.DeploymentOptions>() ?? new RestaurantSystem.Sync.DeploymentOptions();
+builder.Services.AddSingleton(deploymentOptions);
+builder.Services.AddScoped<RestaurantSystem.Sync.NodeRegistrationService>(sp =>
+    new RestaurantSystem.Sync.NodeRegistrationService(
+        sp.GetRequiredService<ApplicationDbContext>(),
+        sp.GetRequiredService<RestaurantSystem.Sync.DeploymentOptions>(),
+        sp.GetRequiredService<ILogger<RestaurantSystem.Sync.NodeRegistrationService>>(),
+        sp.GetRequiredService<IHostEnvironment>().ContentRootPath));
+
 builder.Services.AddScoped<IRestaurantClock, RestaurantClock>();
 builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -184,6 +198,20 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
+
+    // Offline-first / cloud-sync — Phase 1. Idempotent; only ever inserts/refreshes
+    // the new Branch / SystemNode / NodeHeartbeat rows. A failure here must not stop
+    // the API from serving (sync is additive and can be repaired later).
+    try
+    {
+        var registration = scope.ServiceProvider.GetRequiredService<RestaurantSystem.Sync.NodeRegistrationService>();
+        await registration.EnsureRegisteredAsync();
+    }
+    catch (Exception ex)
+    {
+        scope.ServiceProvider.GetRequiredService<ILogger<Program>>()
+            .LogError(ex, "Sync/Phase1: node self-registration failed; continuing startup.");
+    }
 }
 // Configure the HTTP request pipeline.
 app.UseSwagger();

@@ -34,8 +34,19 @@ services:
       AiFeatures__InventoryRecommendationsEnabled: ${AI_INVENTORY_ENABLED:-true}
       AiFeatures__InsightsAssistantEnabled: ${AI_ASSISTANT_ENABLED:-true}
       AiFeatures__UseMockProvider: ${AI_USE_MOCK_PROVIDER:-false}
+      # Offline-first / cloud-sync — Phase 1 (node & branch identity).
+      Deployment__NodeRole: ${DEPLOYMENT_NODE_ROLE:-Cloud}
+      Deployment__NodeId: ${DEPLOYMENT_NODE_ID:-}
+      Deployment__BranchId: ${DEPLOYMENT_BRANCH_ID:-}
+      Deployment__BranchName: ${DEPLOYMENT_BRANCH_NAME:-Main Branch}
+      Deployment__BranchCode: ${DEPLOYMENT_BRANCH_CODE:-}
+      Deployment__NodeDisplayName: ${DEPLOYMENT_NODE_DISPLAY_NAME:-}
+      Deployment__CloudBaseUrl: ${DEPLOYMENT_CLOUD_BASE_URL:-}
+      Deployment__EdgeBaseUrl: ${DEPLOYMENT_EDGE_BASE_URL:-}
+      Deployment__NodeIdFilePath: /app/keys/node-id.txt
     volumes:
       - backend-uploads:/app/wwwroot/uploads
+      - backend-keys:/app/keys
     ports:
       - "8080:8080"
     depends_on:
@@ -74,3 +85,6 @@ networks:
 volumes:
   mssql-data:
   backend-uploads:
+  # Persists the generated per-node identity (and, from Phase 8, JWT signing keys)
+  # across container recreations.
+  backend-keys:

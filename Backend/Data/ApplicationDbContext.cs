@@ -56,6 +56,11 @@ namespace RestaurantSystem.Data
         public DbSet<AiToolExecutionRecord> AiToolExecutionRecords { get; set; } = null!;
         public DbSet<Customer> Customers { get; set; } = null!;
 
+        // ===== Offline-first / cloud-sync — Phase 1 (node & branch identity) =====
+        public DbSet<Branch> Branches { get; set; } = null!;
+        public DbSet<SystemNode> SystemNodes { get; set; } = null!;
+        public DbSet<NodeHeartbeat> NodeHeartbeats { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -78,9 +83,43 @@ namespace RestaurantSystem.Data
             ConfigureRider(modelBuilder);
             ConfigureArea(modelBuilder);
             ConfigureAiEntities(modelBuilder);
+            ConfigureSyncNodeIdentity(modelBuilder);
 
             // Seed Vendors
 
+        }
+
+        // Offline-first / cloud-sync — Phase 1. Additive: three new tables, no
+        // change to any existing entity mapping.
+        private void ConfigureSyncNodeIdentity(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Branch>(entity =>
+            {
+                entity.HasIndex(e => e.BranchId).IsUnique();
+                entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.Code).HasMaxLength(32);
+            });
+
+            modelBuilder.Entity<SystemNode>(entity =>
+            {
+                entity.HasIndex(e => e.NodeId).IsUnique();
+                entity.HasIndex(e => e.BranchId);
+                // Human-readable across nodes — never compared as an ordinal.
+                entity.Property(e => e.Role).HasConversion<string>().HasMaxLength(16);
+                entity.Property(e => e.DisplayName).HasMaxLength(200);
+                entity.Property(e => e.BaseUrl).HasMaxLength(512);
+                entity.Property(e => e.AppVersion).HasMaxLength(64);
+                entity.Property(e => e.SchemaVersion).HasMaxLength(128);
+            });
+
+            modelBuilder.Entity<NodeHeartbeat>(entity =>
+            {
+                entity.HasIndex(e => new { e.NodeId, e.ReceivedAtUtc });
+                entity.Property(e => e.Role).HasConversion<string>().HasMaxLength(16);
+                entity.Property(e => e.AppVersion).HasMaxLength(64);
+                entity.Property(e => e.SchemaVersion).HasMaxLength(128);
+                entity.Property(e => e.Source).HasMaxLength(64);
+            });
         }
 
         private void ConfigureAiEntities(ModelBuilder modelBuilder)
