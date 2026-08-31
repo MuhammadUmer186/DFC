@@ -23,7 +23,8 @@ namespace RestaurantSystem.Services
         private readonly RestaurantSystem.Sync.ICommandContext _commandContext;
         private readonly IOrderNumberService _orderNumberService;
         private readonly IStockLedger _stockLedger;
-        public OrderService(ApplicationDbContext context, IHubContext<OrderHub> hub, IKitchenOutService kitchenOutService, PrintSvc printService, IRestaurantClock clock, ICustomerService customerService, RestaurantSystem.Sync.ICommandContext commandContext, IOrderNumberService orderNumberService, IStockLedger stockLedger)
+        private readonly RestaurantSystem.Sync.IPrintDispatcher _printDispatcher;
+        public OrderService(ApplicationDbContext context, IHubContext<OrderHub> hub, IKitchenOutService kitchenOutService, PrintSvc printService, IRestaurantClock clock, ICustomerService customerService, RestaurantSystem.Sync.ICommandContext commandContext, IOrderNumberService orderNumberService, IStockLedger stockLedger, RestaurantSystem.Sync.IPrintDispatcher printDispatcher)
         {
             _context = context;
             _hub = hub;
@@ -34,6 +35,7 @@ namespace RestaurantSystem.Services
             _commandContext = commandContext;
             _orderNumberService = orderNumberService;
             _stockLedger = stockLedger;
+            _printDispatcher = printDispatcher;
         }
 
         // Phase 4: emit compensating (+) ledger movements for everything an order
@@ -162,15 +164,16 @@ namespace RestaurantSystem.Services
                 PrintedAt = printedAt
             };
 
-            bool counterOk = false, kitchenOk = false;
+            // Phase 13: route through IPrintDispatcher — PrintJobId + status +
+            // dedupe by (OrderGlobalId, copy). Printer-offline never throws here.
+            var counter = await _printDispatcher.DispatchAsync(new RestaurantSystem.Sync.PrintRequest(
+                "DeliverySlip", "customer", BuildDto("customer"), PrinterKind.Usb1,
+                order.Id, order.GlobalId));
+            var kitchen = await _printDispatcher.DispatchAsync(new RestaurantSystem.Sync.PrintRequest(
+                "DeliverySlip", "kitchen", BuildDto("kitchen"), PrinterKind.Usb2,
+                order.Id, order.GlobalId));
 
-            try { counterOk = _printService.PrintReceipt(BuildDto("customer"), PrinterKind.Usb1); }
-            catch { counterOk = false; }
-
-            try { kitchenOk = _printService.PrintReceipt(BuildDto("kitchen"), PrinterKind.Usb2); }
-            catch { kitchenOk = false; }
-
-            return (counterOk, kitchenOk);
+            return (counter.Printed || counter.Status == "skipped", kitchen.Printed || kitchen.Status == "skipped");
         }
 
         // CREATE ORDER
@@ -901,7 +904,14 @@ namespace RestaurantSystem.Services
             };
 
             var printerType = copyType == "kitchen" ? PrinterKind.Usb2 : PrinterKind.Usb1;
-            return _printService.PrintReceipt(dto, printerType);
+
+            // Phase 13: reprint is always allowed (bypasses dedupe) and is audited
+            // via the PrintJob row (IsReprint + reason + user).
+            var outcome = await _printDispatcher.DispatchAsync(new RestaurantSystem.Sync.PrintRequest(
+                "DeliverySlip", copyType, dto, printerType, order.Id, order.GlobalId,
+                IsReprint: true, ReprintReason: $"manual reprint ({copy})",
+                RequestedByUserName: null));
+            return outcome.Printed;
         }
 
 

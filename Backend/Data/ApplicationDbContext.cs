@@ -75,6 +75,9 @@ namespace RestaurantSystem.Data
         // ===== Offline-first / cloud-sync — Phase 8 (offline auth). Node-local audit. =====
         public DbSet<AuthAuditLog> AuthAuditLogs { get; set; } = null!;
 
+        // ===== Offline-first / cloud-sync — Phase 13 (local printing). Node-local. =====
+        public DbSet<PrintJob> PrintJobs { get; set; } = null!;
+
         // ===== Offline-first / cloud-sync — Phase 3 (safe order numbering). Node-local, not synced. =====
         public DbSet<OrderNumberSequence> OrderNumberSequences { get; set; } = null!;
 
@@ -212,6 +215,15 @@ namespace RestaurantSystem.Data
                 e.HasIndex(x => new { x.NodeId, x.Nonce }).IsUnique();
                 e.HasIndex(x => x.SeenAtUtc);
                 e.Property(x => x.Nonce).HasMaxLength(64).IsRequired();
+            });
+
+            modelBuilder.Entity<PrintJob>(e =>
+            {
+                e.HasIndex(x => x.PrintJobId).IsUnique();
+                e.HasIndex(x => new { x.OrderGlobalId, x.JobType, x.Copy, x.Status });
+                e.Property(x => x.JobType).HasMaxLength(32);
+                e.Property(x => x.Copy).HasMaxLength(32);
+                e.Property(x => x.Status).HasMaxLength(16);
             });
 
             // Phase 8: pre-existing users must stay enabled; each gets a distinct stamp.

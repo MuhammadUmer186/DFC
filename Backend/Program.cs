@@ -141,6 +141,7 @@ builder.Services.AddScoped<IWasteService, WasteService>();
 builder.Services.AddScoped<IUtilityBillService, UtilityBillService>();
 builder.Services.AddScoped<IDealService, DealService>();
 builder.Services.AddSingleton<Printing.Services.PrintService>();
+builder.Services.AddScoped<RestaurantSystem.Sync.IPrintDispatcher, RestaurantSystem.Sync.LocalPrintDispatcher>(); // Phase 13
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<ISalaryService, SalaryService>();
 builder.Services.AddScoped<IReportService,ReportService>();
