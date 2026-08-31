@@ -41,7 +41,7 @@
 | 14 | Controlled production migrations (dedicated migrator, expand/contract) | ✅ | `--migrate` one-shot (`DatabaseMigrator`): waits for SQL, `sp_getapplock` exclusive, optional `BACKUP DATABASE` checkpoint, `MigrateAsync` once, `SchemaMigrationHistory` row, exit 0/1. API start no longer auto-migrates outside Development; `Migrator:RequireUpToDate` fails fast on pending. `migrator` compose service gates `backend` via `service_completed_successfully`. Verified: applied `AddSchemaMigrationHistory` + exit 0, idempotent re-run "up to date" + exit 0, history row written, dev auto-migrate path intact. |
 | 15 | Docker edge deployment (`docker-compose.edge.yml`, `.env.edge.example`) | ⛔ | Depends on 1, 5, 8, 13, 14 |
 | 16 | Backup & recovery (scripts + docs, edition warning) | ⛔ | Partly doc-only; independent |
-| 17 | Health & admin (`/health/*`, node-status, sync admin page) | ⛔ | Depends on 1, 5 |
+| 17 | Health & admin (`/health/*`, node-status, sync admin page) | 🟡 | Backend done: `/health/live` + `/health/ready` (DatabaseHealthCheck: connect + pending-migrations), `/api/system/node-status` (SuperAdmin/MainAdmin/Admin), `/api/sync-admin/*` (Phase 5). RMS sync admin PAGE = with Phase 9 Angular work. Verified: live 200, ready Healthy, node-status JSON. |
 | T | Test suites (unit / integration / e2e) + manual failure matrix | ⛔ | Grows with every phase |
 
 ---

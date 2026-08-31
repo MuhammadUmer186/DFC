@@ -90,6 +90,10 @@ builder.Services.AddHttpClient<RestaurantSystem.Sync.SyncPeerClient>(c =>
     c.Timeout = TimeSpan.FromSeconds(30));
 builder.Services.AddHostedService<RestaurantSystem.Sync.SyncWorker>();
 
+// ===== Offline-first / cloud-sync — Phase 17 (health) =====
+builder.Services.AddHealthChecks()
+    .AddCheck<RestaurantSystem.Sync.DatabaseHealthCheck>("database", tags: new[] { "ready" });
+
 // ===== Offline-first / cloud-sync — Phase 6 (idempotent commands) =====
 var idempotencyOptions = builder.Configuration
     .GetSection(RestaurantSystem.Sync.IdempotencyOptions.SectionName)
@@ -328,6 +332,16 @@ app.UseRateLimiter();
 app.MapHub<OrderHub>("/hubs/orders");
 
 app.MapControllers();
+
+// Phase 17: health endpoints (safe details only — no secrets/exceptions in the body).
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = _ => false // liveness = process is up and serving
+});
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = c => c.Tags.Contains("ready")
+});
 
 app.Run();
 
