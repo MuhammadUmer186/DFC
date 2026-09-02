@@ -14,11 +14,13 @@ namespace RestaurantSystem.Controllers
     public class MenuController : ControllerBase
     {
         private readonly IMenuService _menuService;
+        private readonly RestaurantSystem.Sync.UploadStore _uploadStore;
         private static readonly string[] AllowedImageExtensions = { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
 
-        public MenuController(IMenuService menuService)
+        public MenuController(IMenuService menuService, RestaurantSystem.Sync.UploadStore uploadStore)
         {
             _menuService = menuService;
+            _uploadStore = uploadStore;
         }
         [Authorize(Roles = "SuperAdmin,Admin,Cashier,MainAdmin,Waiter")]
         [HttpGet]
@@ -113,21 +115,14 @@ namespace RestaurantSystem.Controllers
 
             try
             {
-                var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "menu-items");
-                Directory.CreateDirectory(folder);
-
-                var fileName = $"item_{id}_{Guid.NewGuid():N}{ext}";
-                var fullPath = Path.Combine(folder, fileName);
-
-                using (var stream = new FileStream(fullPath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                }
-
-                var url = $"/uploads/menu-items/{fileName}";
-                await _menuService.SetMenuItemImageUrlAsync(id, url);
-
-                return Ok(new { imageUrl = url });
+                // Phase 12: validate + SHA-256 dedupe + UploadedFile metadata (syncs).
+                var stored = await _uploadStore.SaveAsync(file, "menu-items", $"item_{id}");
+                await _menuService.SetMenuItemImageUrlAsync(id, stored.Url);
+                return Ok(new { imageUrl = stored.Url });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {

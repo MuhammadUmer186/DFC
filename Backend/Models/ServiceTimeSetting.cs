@@ -2,7 +2,7 @@ using System;
 
 namespace RestaurantSystem.Models
 {
-    public class ServiceTimeSetting
+    public partial class ServiceTimeSetting
     {
         public int Id { get; set; }
         public string ServiceType { get; set; } = string.Empty; // DineIn / Takeaway / Delivery

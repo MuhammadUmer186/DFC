@@ -7,7 +7,7 @@ namespace RestaurantSystem.Models
     // Order.PhoneNumber identifies a guest today. Allergens/DietaryPreferences are plain
     // comma-separated text for now rather than normalized child tables — a reasonable
     // Milestone-2 follow-up once personalization logic actually consumes them.
-    public class Customer
+    public partial class Customer
     {
         public int Id { get; set; }
         public string PhoneNumber { get; set; } = null!;

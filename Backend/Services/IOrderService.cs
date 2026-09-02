@@ -6,7 +6,7 @@ namespace RestaurantSystem.Services
 {
     public interface IOrderService
     {
-        Task<OrderDto> CreateAsync(CreateOrderRequest request, decimal discount, ClaimsPrincipal userClaims, bool skipStockCheck = false);
+        Task<OrderDto> CreateAsync(CreateOrderRequest request, decimal discount, ClaimsPrincipal userClaims, bool skipStockCheck = false, string orderSource = "POS");
         Task<OrderDto> GetByIdAsync(int id);
         Task<OrderDto> CreateOnlineOrderAsync(PublicOrderRequest request);
         Task<List<OrderDto>> GetPendingOnlineOrdersAsync();

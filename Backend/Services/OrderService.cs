@@ -20,7 +20,11 @@ namespace RestaurantSystem.Services
         private readonly PrintSvc _printService;
         private readonly IRestaurantClock _clock;
         private readonly ICustomerService _customerService;
-        public OrderService(ApplicationDbContext context, IHubContext<OrderHub> hub, IKitchenOutService kitchenOutService, PrintSvc printService, IRestaurantClock clock, ICustomerService customerService)
+        private readonly RestaurantSystem.Sync.ICommandContext _commandContext;
+        private readonly IOrderNumberService _orderNumberService;
+        private readonly IStockLedger _stockLedger;
+        private readonly RestaurantSystem.Sync.IPrintDispatcher _printDispatcher;
+        public OrderService(ApplicationDbContext context, IHubContext<OrderHub> hub, IKitchenOutService kitchenOutService, PrintSvc printService, IRestaurantClock clock, ICustomerService customerService, RestaurantSystem.Sync.ICommandContext commandContext, IOrderNumberService orderNumberService, IStockLedger stockLedger, RestaurantSystem.Sync.IPrintDispatcher printDispatcher)
         {
             _context = context;
             _hub = hub;
@@ -28,6 +32,35 @@ namespace RestaurantSystem.Services
             _printService = printService;
             _clock = clock;
             _customerService = customerService;
+            _commandContext = commandContext;
+            _orderNumberService = orderNumberService;
+            _stockLedger = stockLedger;
+            _printDispatcher = printDispatcher;
+        }
+
+        // Phase 4: emit compensating (+) ledger movements for everything an order
+        // consumed. Never deletes the original OrderConsumption rows.
+        private async Task ReverseOrderConsumptionAsync(Guid orderGlobalId, string reason)
+        {
+            if (orderGlobalId == Guid.Empty) return;
+
+            var consumed = await _context.Set<StockMovement>()
+                .Where(m => m.ReferenceGlobalId == orderGlobalId
+                            && m.MovementType == StockMovementType.OrderConsumption)
+                .ToListAsync();
+            if (consumed.Count == 0) return;
+
+            var reversals = consumed.Select(m => new StockMovementRequest(
+                StockMovementType.Return,
+                m.RawItemId,
+                -m.QuantityDelta,                    // undo the consumption
+                reason,                              // e.g. "OrderCancellation"
+                orderGlobalId,
+                VendorId: m.VendorId,
+                OccurredAtUtc: DateTime.UtcNow,
+                ReversesMovementGlobalId: m.GlobalId));
+
+            await _stockLedger.RecordManyAsync(reversals);
         }
 
         // Shared by CreateAsync and ApproveOnlineOrderAsync — expands items/deals into raw-item quantities via recipes
@@ -131,15 +164,16 @@ namespace RestaurantSystem.Services
                 PrintedAt = printedAt
             };
 
-            bool counterOk = false, kitchenOk = false;
+            // Phase 13: route through IPrintDispatcher — PrintJobId + status +
+            // dedupe by (OrderGlobalId, copy). Printer-offline never throws here.
+            var counter = await _printDispatcher.DispatchAsync(new RestaurantSystem.Sync.PrintRequest(
+                "DeliverySlip", "customer", BuildDto("customer"), PrinterKind.Usb1,
+                order.Id, order.GlobalId));
+            var kitchen = await _printDispatcher.DispatchAsync(new RestaurantSystem.Sync.PrintRequest(
+                "DeliverySlip", "kitchen", BuildDto("kitchen"), PrinterKind.Usb2,
+                order.Id, order.GlobalId));
 
-            try { counterOk = _printService.PrintReceipt(BuildDto("customer"), PrinterKind.Usb1); }
-            catch { counterOk = false; }
-
-            try { kitchenOk = _printService.PrintReceipt(BuildDto("kitchen"), PrinterKind.Usb2); }
-            catch { kitchenOk = false; }
-
-            return (counterOk, kitchenOk);
+            return (counter.Printed || counter.Status == "skipped", kitchen.Printed || kitchen.Status == "skipped");
         }
 
         // CREATE ORDER
@@ -148,34 +182,17 @@ namespace RestaurantSystem.Services
         // day and the next). The counter itself is incremented via a single atomic UPDATE (not a
         // C# read-modify-write) so concurrent order creation can't race and hand out duplicates;
         // this runs inside CreateAsync's own transaction, so the row lock holds until it commits.
-        private async Task<string> GenerateOrderNumberAsync()
-        {
-            var settings = await _context.SiteSettings.AsNoTracking().FirstOrDefaultAsync(s => s.Id == 1);
-            var prefix = settings?.OrderSerialPrefix ?? string.Empty;
-            var startingNumber = settings?.OrderSerialStartingNumber ?? 1;
-            var resetTime = settings?.OrderSerialResetTime ?? TimeSpan.Zero;
-
-            // The reset time is configured in the restaurant's local time (Settings), so "now"
-            // here must be the restaurant's local time too, not the server host's own clock.
-            var now = await _clock.GetLocalNowAsync();
-            var businessDate = now.TimeOfDay < resetTime ? now.Date.AddDays(-1) : now.Date;
-
-            var numbers = await _context.Database.SqlQueryRaw<int>(
-                @"UPDATE SiteSettings
-                  SET OrderSerialCurrentNumber = CASE WHEN OrderSerialCurrentDate = {0} THEN OrderSerialCurrentNumber + 1 ELSE {1} END,
-                      OrderSerialCurrentDate = {0}
-                  OUTPUT INSERTED.OrderSerialCurrentNumber
-                  WHERE Id = 1",
-                businessDate, startingNumber).ToListAsync();
-
-            return $"{prefix}{numbers.First()}";
-        }
+        // Phase 3: order numbering moved to IOrderNumberService — per (branch, source,
+        // business day) atomic sequences (POS / WEB / CLD) so local and cloud writers
+        // never collide. The legacy single-writer counter in SiteSetting (Id=1) is no
+        // longer used for allocation.
 
         public async Task<OrderDto> CreateAsync(
     CreateOrderRequest request,
     decimal discount,
     ClaimsPrincipal userClaims,
-            bool skipStockCheck = false)
+            bool skipStockCheck = false,
+            string orderSource = "POS")
         {
             // ================= BASIC VALIDATION =================
             if ((request.Items == null || !request.Items.Any()) &&
@@ -219,6 +236,10 @@ namespace RestaurantSystem.Services
 
                 var order = new Order
                 {
+                    // Phase 6: derive the order's GlobalId from the idempotency key so a
+                    // cross-node retry of this create merges into the same order instead
+                    // of producing a second one. Falls back to a fresh GUID (interceptor).
+                    GlobalId = _commandContext.DeriveGlobalId("Order") ?? Guid.Empty,
                     CreatedAt = DateTime.UtcNow,
                     Paid = isPaid,
                     PaidAt = isPaid ? DateTime.UtcNow : null,
@@ -315,6 +336,12 @@ namespace RestaurantSystem.Services
                if (order.TotalAmount <= 0)
                     throw new Exception("Order total must be greater than zero");
 
+                // Phase 4/6: make sure the order has a stable GlobalId before it
+                // drives stock consumption (so ledger movements can reference it and
+                // a retry can't double-consume). The interceptor keeps a pre-set id.
+                if (order.GlobalId == Guid.Empty)
+                    order.GlobalId = Guid.NewGuid();
+
                 // ================= MENU RECIPE → KITCHEN STOCK =================
                 if (!skipStockCheck)
                 {
@@ -323,13 +350,20 @@ namespace RestaurantSystem.Services
                     await _kitchenOutService.ConsumeAsync(
                         rawItemConsumption,
                         DateTime.UtcNow,
-                        takenByEmployeeId
+                        takenByEmployeeId,
+                        referenceGlobalId: order.GlobalId,
+                        referenceType: "Order"
                     );
                 }
 
 
                 // ================= SAVE =================
-                order.OrderNumber = await GenerateOrderNumberAsync();
+                // Phase 3: per-branch/source/business-day sequence. The service maps
+                // "ONLINE" to WEB on an Edge node and CLD on the Cloud node.
+                var isOnline = orderSource.Equals("Online", StringComparison.OrdinalIgnoreCase);
+                var (orderNumber, resolvedSource) = await _orderNumberService.AllocateAsync(isOnline ? "ONLINE" : "POS");
+                order.OrderNumber = orderNumber;
+                order.OrderNumberSource = resolvedSource;
                 _context.Orders.Add(order);
                 await _context.SaveChangesAsync();
                 var dto = await GetByIdAsync(order.Id);
@@ -392,7 +426,7 @@ namespace RestaurantSystem.Services
                 Paid = false // 🔥 ONLINE = NOT PAID
             };
 
-            var orderDto = await CreateAsync(createOrderRequest, 0, fakeClaims, true);
+            var orderDto = await CreateAsync(createOrderRequest, 0, fakeClaims, true, orderSource: "Online");
 
             // 🔴 GET ACTUAL ENTITY (IMPORTANT)
             var order = await _context.Orders
@@ -617,7 +651,8 @@ namespace RestaurantSystem.Services
                     throw new Exception("Order is not pending approval");
 
                 var rawItemConsumption = await BuildRawItemConsumptionAsync(order.OrderItems, order.OrderDeals);
-                await _kitchenOutService.ConsumeAsync(rawItemConsumption, DateTime.UtcNow, null);
+                await _kitchenOutService.ConsumeAsync(rawItemConsumption, DateTime.UtcNow, null,
+                    referenceGlobalId: order.GlobalId, referenceType: "Order");
 
                 order.Status = OrderStatus.Queued;
                 order.DeliveryStatus = RestaurantSystem.Models.DeliveryStatus.Approved;
@@ -869,7 +904,14 @@ namespace RestaurantSystem.Services
             };
 
             var printerType = copyType == "kitchen" ? PrinterKind.Usb2 : PrinterKind.Usb1;
-            return _printService.PrintReceipt(dto, printerType);
+
+            // Phase 13: reprint is always allowed (bypasses dedupe) and is audited
+            // via the PrintJob row (IsReprint + reason + user).
+            var outcome = await _printDispatcher.DispatchAsync(new RestaurantSystem.Sync.PrintRequest(
+                "DeliverySlip", copyType, dto, printerType, order.Id, order.GlobalId,
+                IsReprint: true, ReprintReason: $"manual reprint ({copy})",
+                RequestedByUserName: null));
+            return outcome.Printed;
         }
 
 
@@ -1120,6 +1162,10 @@ namespace RestaurantSystem.Services
             order.CancelledByUserName = userClaims.FindFirst(ClaimTypes.Name)?.Value;
 
             await _context.SaveChangesAsync();
+
+            // Phase 4: restock what this order consumed via COMPENSATING ledger
+            // movements. The original OrderConsumption rows are never deleted.
+            await ReverseOrderConsumptionAsync(order.GlobalId, "OrderCancellation");
 
             await _hub.Clients
                 .Group("OrderQueue")

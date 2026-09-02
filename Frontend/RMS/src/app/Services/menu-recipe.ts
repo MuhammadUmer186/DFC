@@ -20,40 +20,84 @@ export interface MenuRecipeResponse {
 
 export interface AssignRecipeDto {
   menuItemId: number;
-  recipeItems: RecipeItem[];
+  recipeItems: { rawItemId: number; quantityRequired: number }[];
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+export interface RawItemLite { id: number; name: string; unit: string; }
+
+export interface RecipeOverviewItem {
+  menuItemId: number;
+  menuItemName: string;
+  price: number;
+  isAvailable: boolean;
+  ingredientCount: number;
+}
+export interface RecipeOverviewCategory {
+  categoryId: number;
+  categoryName: string;
+  itemCount: number;
+  itemsWithRecipe: number;
+  items: RecipeOverviewItem[];
+}
+
+export interface KitchenAuditRow {
+  rawItemId: number;
+  rawItemName: string;
+  unit: string;
+  expectedFromSales: number;
+  actualConsumed: number;
+  variance: number;
+}
+export interface KitchenAuditDish {
+  menuItemId: number;
+  menuItemName: string;
+  unitsSold: number;
+  hasRecipe: boolean;
+  ingredients: KitchenAuditRow[];
+}
+export interface KitchenAuditReport {
+  fromUtc: string;
+  toUtc: string;
+  ordersCounted: number;
+  lineUnitsCounted: number;
+  dishesWithoutRecipe: number;
+  totals: KitchenAuditRow[];
+  byDish: KitchenAuditDish[];
+}
+
+@Injectable({ providedIn: 'root' })
 export class MenuRecipeService {
-  private baseUrll = environment.apiBaseUrl;
-  private api = this.baseUrll + '/api/menu-recipe';
+  private base = environment.apiBaseUrl;              // '/api' in prod, 'http://localhost:7122/api' in dev
+  private api = this.base + '/menu-recipe';
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 
+  private get headers() {
+    return new HttpHeaders({ Authorization: 'Bearer ' + this.authService.gettoken() });
+  }
+
+  getOverview(): Observable<RecipeOverviewCategory[]> {
+    return this.http.get<RecipeOverviewCategory[]>(`${this.api}/overview`, { headers: this.headers });
+  }
+
   getRecipeByMenuItemId(menuItemId: number): Observable<MenuRecipeResponse[]> {
-    const headers = new HttpHeaders({ 'Authorization': 'Bearer ' + this.authService.gettoken() });
-    return this.http.get<MenuRecipeResponse[]>(`${this.api}/by-menu-item/${menuItemId}`, { headers });
+    return this.http.get<MenuRecipeResponse[]>(`${this.api}/${menuItemId}`, { headers: this.headers });
   }
 
   assignRecipe(dto: AssignRecipeDto): Observable<any> {
-    const headers = new HttpHeaders({ 'Authorization': 'Bearer ' + this.authService.gettoken() });
-    return this.http.post(`${this.api}/assign`, dto, { responseType: 'text', headers });
+    return this.http.post(`${this.api}/assign`, dto, { headers: this.headers });
   }
 
   deleteRecipe(menuItemId: number): Observable<any> {
-    const headers = new HttpHeaders({ 'Authorization': 'Bearer ' + this.authService.gettoken() });
-    return this.http.delete(`${this.api}/delete/${menuItemId}`, { headers });
+    return this.http.delete(`${this.api}/${menuItemId}`, { headers: this.headers });
   }
 
-  getAllRawItems(): Observable<{ id: number, name: string, unit: string }[]> {
-    const headers = new HttpHeaders({ 'Authorization': 'Bearer ' + this.authService.gettoken() });
-    return this.http.get<{ id: number, name: string, unit: string }[]>(this.baseUrll + '/raw-items', { headers });
+  getKitchenAudit(fromIso: string, toIso: string): Observable<KitchenAuditReport> {
+    const params = `?from=${encodeURIComponent(fromIso)}&to=${encodeURIComponent(toIso)}`;
+    return this.http.get<KitchenAuditReport>(`${this.api}/kitchen-audit${params}`, { headers: this.headers });
   }
 
-  getAllMenuItems(): Observable<{ id: number, name: string }[]> {
-    const headers = new HttpHeaders({ 'Authorization': 'Bearer ' + this.authService.gettoken() });
-    return this.http.get<{ id: number, name: string }[]>(this.baseUrll + '/menu-items', { headers });
+  getAllRawItems(): Observable<RawItemLite[]> {
+    return this.http.get<RawItemLite[]>(`${this.base}/raw-items`, { headers: this.headers });
   }
 }

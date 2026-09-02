@@ -2,9 +2,11 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../../Services/auth.service';
 import { BrandingService } from '../../../../Services/branding.service';
+import { OperatingStatusComponent } from '../../../../Shared/operating-status/operating-status.component';
 
 @Component({
   selector: 'app-navbar',
+  imports: [OperatingStatusComponent],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css']
 })

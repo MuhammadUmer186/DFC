@@ -12,6 +12,6 @@ namespace RestaurantSystem.Services
         Task<DailyKitchenCostDto> GetDailyKitchenCostAsync(DateOnly date);
         Task<MonthlyKitchenCostDto> GetMonthlyKitchenCostAsync(int year, int month);
         Task<List<KitchenInventoryDto>> GetCurrentKitchenInventoryAsync();
-        Task ConsumeAsync(Dictionary<int, decimal> rawItemConsumption, DateTime issuedAt, int? employeeId);
+        Task ConsumeAsync(Dictionary<int, decimal> rawItemConsumption, DateTime issuedAt, int? employeeId, System.Guid? referenceGlobalId = null, string referenceType = "Order");
     }
 }

@@ -13,28 +13,79 @@ using System.Text;
 
 namespace RestaurantSystem.Services
 {
-    public class AuthService(ApplicationDbContext context, IConfiguration configuration) : IAuthService
+    public class AuthService(ApplicationDbContext context, IConfiguration configuration,
+        RestaurantSystem.Sync.AuthKeyProvider keys, RestaurantSystem.Sync.INodeContext node) : IAuthService
     {
+        // Phase 8: config-based SuperAdmin is a ONE-TIME bootstrap. Once a DB
+        // SuperAdmin exists it is used instead and the config path is disabled.
+        private async Task EnsureDbSuperAdminAsync()
+        {
+            var name = configuration["SuperAdmin:UserName"];
+            var pass = configuration["SuperAdmin:Password"];
+            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(pass)) return;
+            if (await context.Users.AnyAsync(u => u.Role == "SuperAdmin")) return;
+
+            var su = new User { UserName = name, Role = "SuperAdmin", IsActive = true, SecurityStamp = Guid.NewGuid() };
+            su.PasswordHash = new PasswordHasher<User>().HashPassword(su, pass);
+            context.Users.Add(su);
+            await context.SaveChangesAsync();
+        }
+
+        private async Task AuditAsync(string userName, string? role, string result, string? detail = null)
+        {
+            context.AuthAuditLogs.Add(new AuthAuditLog
+            {
+                AtUtc = DateTime.UtcNow,
+                UserName = userName,
+                Role = role,
+                Result = result,
+                Issuer = keys.Issuer,
+                NodeId = node.NodeId,
+                Detail = detail
+            });
+            try { using (RestaurantSystem.Sync.SyncStampingInterceptor.Suppress()) await context.SaveChangesAsync(); }
+            catch { /* audit is best-effort */ }
+        }
+
         public async Task<string?> LoginAsync(UserDto request)
         {
-            var superAdminUserName = configuration["SuperAdmin:UserName"];
-            var superAdminPassword = configuration["SuperAdmin:Password"];
-            if (!string.IsNullOrEmpty(superAdminUserName)
-                && request.UserName == superAdminUserName
-                && request.Password == superAdminPassword)
-            {
-                return CreateSuperAdminToken(superAdminUserName);
-            }
+            await EnsureDbSuperAdminAsync();
 
             var user = await context.Users
                 .Include(u => u.Employee)
                 .Include(u => u.Rider)
                 .FirstOrDefaultAsync(u => u.UserName == request.UserName);
+
+            // Config SuperAdmin only if NO DB SuperAdmin exists (bootstrap window).
             if (user is null)
+            {
+                var superAdminUserName = configuration["SuperAdmin:UserName"];
+                var superAdminPassword = configuration["SuperAdmin:Password"];
+                var dbSuperAdminExists = await context.Users.AnyAsync(u => u.Role == "SuperAdmin");
+                if (!dbSuperAdminExists && !string.IsNullOrEmpty(superAdminUserName)
+                    && request.UserName == superAdminUserName && request.Password == superAdminPassword)
+                {
+                    await AuditAsync(superAdminUserName, "SuperAdmin", "superadmin-config");
+                    return CreateSuperAdminToken(superAdminUserName);
+                }
+                await AuditAsync(request.UserName ?? "", null, "bad-credentials");
                 return null;
+            }
+
+            if (!user.IsActive)
+            {
+                await AuditAsync(user.UserName, user.Role, "disabled");
+                return null;
+            }
+
             if (new PasswordHasher<User>().VerifyHashedPassword(user, user.PasswordHash, request.Password)
                 == PasswordVerificationResult.Failed)
+            {
+                await AuditAsync(user.UserName, user.Role, "bad-credentials");
                 return null;
+            }
+
+            await AuditAsync(user.UserName, user.Role, "success");
             return CreateToken(user);
         }
 
@@ -118,21 +169,16 @@ namespace RestaurantSystem.Services
             {
                 new Claim(ClaimTypes.NameIdentifier, "0"),
                 new Claim(ClaimTypes.Name, userName),
-                new Claim(ClaimTypes.Role, "SuperAdmin")
+                new Claim(ClaimTypes.Role, "SuperAdmin"),
+                new Claim("node", node.NodeId.ToString())
             };
 
-            var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(configuration["Appsettings:Token"]!)
-            );
-
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
             var token = new JwtSecurityToken(
-                issuer: configuration["Appsettings:Issuer"],
+                issuer: keys.Issuer,                                   // Phase 8
                 audience: configuration["Appsettings:Audience"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddDays(1),
-                signingCredentials: creds
+                signingCredentials: keys.SigningCredentials            // RS256 if configured, else HS256
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
@@ -149,7 +195,9 @@ namespace RestaurantSystem.Services
 
         // ✅ OPTIONAL: custom claims
         new Claim("EmployeeId", user.EmployeeId?.ToString() ?? string.Empty),
-        new Claim("RiderId", user.RiderId?.ToString() ?? string.Empty)
+        new Claim("RiderId", user.RiderId?.ToString() ?? string.Empty),
+        new Claim("stamp", user.SecurityStamp.ToString()),   // Phase 8: token invalidation on disable/pw-change
+        new Claim("node", node.NodeId.ToString())
     };
 
             if (user.Employee != null)
@@ -162,18 +210,12 @@ namespace RestaurantSystem.Services
                 claims.Add(new Claim("RiderName", user.Rider.Name));
             }
 
-            var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(configuration["Appsettings:Token"]!)
-            );
-
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
             var token = new JwtSecurityToken(
-                issuer: configuration["Appsettings:Issuer"],
+                issuer: keys.Issuer,                                  // Phase 8
                 audience: configuration["Appsettings:Audience"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddDays(1),
-                signingCredentials: creds
+                signingCredentials: keys.SigningCredentials
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);

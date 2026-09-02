@@ -23,5 +23,30 @@ namespace RestaurantSystem.Models
         Delivered = 3,
         Rejected = 4
     }
+
+    // ===== Offline-first / cloud-sync (Phase 1) =====
+    // Role of a physical deployment in the branch/cloud topology. Stored as a
+    // string in the DB (see ApplicationDbContext) so it stays human-readable when
+    // rows are inspected across nodes.
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum NodeRole
+    {
+        Cloud = 0,
+        Edge = 1
+    }
+
+    // Phase 4 — immutable inventory ledger movement kinds.
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum StockMovementType
+    {
+        OpeningBalance = 0,
+        Purchase = 1,
+        OrderConsumption = 2,
+        KitchenOut = 3,
+        Waste = 4,
+        Return = 5,
+        ManualAdjustment = 6,
+        SynchronizationCorrection = 7
+    }
 }
 

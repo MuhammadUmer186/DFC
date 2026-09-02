@@ -1,0 +1,6 @@
+{
+  "edgeApiUrl": "https://edge.dfc.lan/api",
+  "cloudApiUrl": "https://dfcfront.aiotstudio.online/api",
+  "edgeHubUrl": "https://edge.dfc.lan/hubs/orders",
+  "cloudHubUrl": "https://dfcfront.aiotstudio.online/hubs/orders"
+}

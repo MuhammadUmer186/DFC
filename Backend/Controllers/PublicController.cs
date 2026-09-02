@@ -15,11 +15,26 @@ namespace RestaurantSystem.Controllers
         private readonly IOrderService _orderService;
         private readonly IAreaService _areaService;
 
-        public PublicController(ApplicationDbContext context, IOrderService orderService, IAreaService areaService)
+        private readonly RestaurantSystem.Sync.EdgeConnectivity _edge;
+
+        public PublicController(ApplicationDbContext context, IOrderService orderService, IAreaService areaService,
+            RestaurantSystem.Sync.EdgeConnectivity edge)
         {
             _context = context;
             _orderService = orderService;
             _areaService = areaService;
+            _edge = edge;
+        }
+
+        // ===============================
+        // PHASE 11 — is the public site accepting orders right now?
+        // ===============================
+        [HttpGet("ordering-status")]
+        public async Task<IActionResult> OrderingStatus(System.Threading.CancellationToken ct)
+        {
+            var (edgeOnline, lastSeen) = await _edge.GetAsync(ct);
+            var (accepting, delayed, message) = await _edge.EvaluateCheckoutAsync(ct);
+            return Ok(new { edgeOnline, lastEdgeSeenUtc = lastSeen, acceptingOrders = accepting, delayed, message });
         }
 
         // ===============================
@@ -168,9 +183,23 @@ namespace RestaurantSystem.Controllers
                 return BadRequest("Order must contain at least one item or deal");
             }
 
+            // Phase 11: gate checkout on edge connectivity per PublicOrdering config.
+            var (accepting, delayed, message) = await _edge.EvaluateCheckoutAsync();
+            if (!accepting)
+                return StatusCode(503, new { message });
+
             try
             {
+                // Delayed online orders still land as PendingApproval with NO inventory
+                // consumption (existing online-order behaviour) and sync to the edge on
+                // reconnect. Response body shape is UNCHANGED (still the order DTO) —
+                // the delayed hint rides on headers so existing clients keep working.
                 var order = await _orderService.CreateOnlineOrderAsync(request);
+                if (delayed)
+                {
+                    Response.Headers["X-Order-Delayed"] = "true";
+                    Response.Headers["X-Order-Message"] = message;
+                }
                 return Ok(order);
             }
             catch (Exception ex)

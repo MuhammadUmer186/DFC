@@ -1,0 +1,12 @@
+{
+  "edgeApiUrl": "http://localhost:7122/api",
+  "cloudApiUrl": "http://localhost:7122/api",
+  "edgeHubUrl": "http://localhost:7122/hubs/orders",
+  "cloudHubUrl": "http://localhost:7122/hubs/orders",
+  "failover": {
+    "edgeProbeTimeoutMs": 1500,
+    "consecutiveFailuresToCloud": 3,
+    "recoveryProbeIntervalMs": 15000,
+    "statusPollMs": 20000
+  }
+}

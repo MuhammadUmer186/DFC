@@ -48,28 +48,29 @@
 }
 
 .brand-panel-logo {
-  width: 84px;
-  height: 84px;
-  border-radius: 20px;
-  object-fit: cover;
+  width: 180px;
+  height: auto;
+  max-width: 60%;
+  border-radius: 18px;
+  object-fit: contain;
+  background: #fff;
+  padding: 14px 18px;
   box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.35), var(--dfc-shadow-lg);
-  margin-bottom: 24px;
-}
-
-.brand-panel-title {
-  font-family: var(--dfc-font-display);
-  font-size: 34px;
-  font-weight: 800;
-  color: #fff;
-  margin: 0 0 6px;
-  letter-spacing: .3px;
+  margin-bottom: 20px;
 }
 
 .brand-panel-tagline {
   font-size: 15px;
   color: var(--dfc-amber-300, #fcd34d);
   font-weight: 600;
-  margin: 0 0 32px;
+  margin: 0 0 4px;
+}
+
+.brand-panel-vendor {
+  font-size: 12.5px;
+  letter-spacing: .3px;
+  color: #94a3b8;
+  margin: 0 0 30px;
 }
 
 .brand-panel-points {
@@ -113,10 +114,10 @@
 
 .login-mobile-logo {
   display: none;
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  margin: 0 auto 16px;
+  width: 132px;
+  height: auto;
+  object-fit: contain;
+  margin: 0 auto 12px;
 }
 
 .login-box-header {
@@ -254,6 +255,8 @@
   color: var(--dfc-gray-400, #94a3b8);
   text-align: center;
 }
+
+.footnote-sep { margin: 0 4px; opacity: .6; }
 
 /* ---- Responsive ---- */
 @media (max-width: 900px) {

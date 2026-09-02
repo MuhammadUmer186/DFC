@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RestaurantSystem.Models;
+using RestaurantSystem.Sync;
 using System;
+using System.Linq;
 
 namespace RestaurantSystem.Data
 {
@@ -56,6 +58,43 @@ namespace RestaurantSystem.Data
         public DbSet<AiToolExecutionRecord> AiToolExecutionRecords { get; set; } = null!;
         public DbSet<Customer> Customers { get; set; } = null!;
 
+        // ===== Offline-first / cloud-sync — Phase 1 (node & branch identity) =====
+        public DbSet<Branch> Branches { get; set; } = null!;
+        public DbSet<SystemNode> SystemNodes { get; set; } = null!;
+        public DbSet<NodeHeartbeat> NodeHeartbeats { get; set; } = null!;
+
+        // ===== Offline-first / cloud-sync — Phase 2 (sync-safe identity) =====
+        public DbSet<SyncTombstone> SyncTombstones { get; set; } = null!;
+
+        // ===== Offline-first / cloud-sync — Phase 14 (controlled migrations). Node-local, not synced. =====
+        public DbSet<SchemaMigrationHistory> SchemaMigrationHistories { get; set; } = null!;
+
+        // ===== Offline-first / cloud-sync — Phase 6 (idempotent commands). Node-local, not synced. =====
+        public DbSet<ProcessedCommand> ProcessedCommands { get; set; } = null!;
+
+        // ===== Offline-first / cloud-sync — Phase 8 (offline auth). Node-local audit. =====
+        public DbSet<AuthAuditLog> AuthAuditLogs { get; set; } = null!;
+
+        // ===== Offline-first / cloud-sync — Phase 13 (local printing). Node-local. =====
+        public DbSet<PrintJob> PrintJobs { get; set; } = null!;
+
+        // ===== Offline-first / cloud-sync — Phase 3 (safe order numbering). Node-local, not synced. =====
+        public DbSet<OrderNumberSequence> OrderNumberSequences { get; set; } = null!;
+
+        // ===== Offline-first / cloud-sync — Phase 4 (immutable inventory ledger). Synchronized append-only. =====
+        public DbSet<StockMovement> StockMovements { get; set; } = null!;
+
+        // ===== Offline-first / cloud-sync — Phase 12 (uploaded-media metadata). Synchronized. =====
+        public DbSet<UploadedFile> UploadedFiles { get; set; } = null!;
+
+        // ===== Offline-first / cloud-sync — Phase 5 (transactional sync engine). Node-local plumbing. =====
+        public DbSet<SyncOutbox> SyncOutbox { get; set; } = null!;
+        public DbSet<SyncInbox> SyncInbox { get; set; } = null!;
+        public DbSet<SyncCheckpoint> SyncCheckpoints { get; set; } = null!;
+        public DbSet<SyncConflict> SyncConflicts { get; set; } = null!;
+        public DbSet<SyncDeadLetter> SyncDeadLetters { get; set; } = null!;
+        public DbSet<SyncNonce> SyncNonces { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -78,9 +117,220 @@ namespace RestaurantSystem.Data
             ConfigureRider(modelBuilder);
             ConfigureArea(modelBuilder);
             ConfigureAiEntities(modelBuilder);
+            ConfigureSyncNodeIdentity(modelBuilder);
+            ApplySyncConventions(modelBuilder);
 
             // Seed Vendors
 
+        }
+
+        // Offline-first / cloud-sync — Phase 2. Applies the sync-identity column
+        // mapping to every entity implementing ISyncableAggregate / ISyncableChild
+        // without per-entity boilerplate.
+        private void ApplySyncConventions(ModelBuilder modelBuilder)
+        {
+            foreach (var et in modelBuilder.Model.GetEntityTypes())
+            {
+                var clr = et.ClrType;
+                bool isRoot = typeof(ISyncableAggregate).IsAssignableFrom(clr);
+                bool isChild = typeof(ISyncableChild).IsAssignableFrom(clr);
+                if (!isRoot && !isChild) continue;
+
+                var b = modelBuilder.Entity(clr);
+
+                // Populate existing rows when these columns are first added, and give
+                // every future insert a safe fallback if the interceptor is bypassed.
+                b.Property(nameof(ISyncableChild.GlobalId)).HasDefaultValueSql("NEWID()");
+                b.Property(nameof(ISyncableChild.CreatedAtUtc)).HasDefaultValueSql("SYSUTCDATETIME()");
+                b.Property(nameof(ISyncableChild.UpdatedAtUtc)).HasDefaultValueSql("SYSUTCDATETIME()");
+                b.HasIndex(nameof(ISyncableChild.GlobalId)).IsUnique();
+
+                if (isRoot)
+                {
+                    b.Property(nameof(ISyncableAggregate.RowVersion)).IsRowVersion();
+                    b.Property(nameof(ISyncableAggregate.OriginNodeId))
+                        .HasDefaultValueSql("'00000000-0000-0000-0000-000000000000'");
+                    b.Property(nameof(ISyncableAggregate.BranchId))
+                        .HasDefaultValueSql("'00000000-0000-0000-0000-000000000000'");
+                    b.Property(nameof(ISyncableAggregate.AggregateVersion))
+                        .HasDefaultValueSql("1");
+                    b.HasIndex(nameof(ISyncableAggregate.BranchId), nameof(ISyncableAggregate.UpdatedAtUtc));
+                    b.HasIndex(nameof(ISyncableAggregate.DeletedAtUtc));
+                }
+            }
+
+            modelBuilder.Entity<SyncTombstone>(entity =>
+            {
+                entity.HasIndex(e => e.GlobalId).IsUnique();
+                entity.HasIndex(e => new { e.Dispatched, e.DeletedAtUtc });
+                entity.Property(e => e.AggregateType).HasMaxLength(128).IsRequired();
+            });
+
+            modelBuilder.Entity<OrderNumberSequence>(entity =>
+            {
+                entity.HasIndex(e => new { e.BranchId, e.SourceCode, e.BusinessDate }).IsUnique();
+                entity.Property(e => e.SourceCode).HasMaxLength(8).IsRequired();
+                entity.Property(e => e.BusinessDate).HasColumnType("date");
+            });
+
+            // ---- Phase 5 sync plumbing ----
+            modelBuilder.Entity<SyncOutbox>(e =>
+            {
+                e.HasIndex(x => x.EventId).IsUnique();
+                e.HasIndex(x => new { x.Dispatched, x.Id });
+                e.Property(x => x.EventType).HasMaxLength(128);
+                e.Property(x => x.AggregateType).HasMaxLength(128);
+            });
+            modelBuilder.Entity<SyncInbox>(e =>
+            {
+                e.HasIndex(x => x.EventId).IsUnique();
+                e.HasIndex(x => new { x.AggregateType, x.AggregateGlobalId });
+                e.Property(x => x.EventType).HasMaxLength(128);
+                e.Property(x => x.AggregateType).HasMaxLength(128);
+                e.Property(x => x.Status).HasMaxLength(16);
+            });
+            modelBuilder.Entity<SyncCheckpoint>(e =>
+            {
+                e.HasIndex(x => new { x.PeerNodeId, x.Direction, x.AggregateType }).IsUnique();
+                e.Property(x => x.Direction).HasMaxLength(8);
+                e.Property(x => x.AggregateType).HasMaxLength(128);
+            });
+            modelBuilder.Entity<SyncConflict>(e =>
+            {
+                e.HasIndex(x => new { x.Resolved, x.CreatedAtUtc });
+                e.HasIndex(x => x.EventId);
+                e.Property(x => x.Kind).HasMaxLength(32);
+                e.Property(x => x.AggregateType).HasMaxLength(128);
+                e.Property(x => x.Resolution).HasMaxLength(16);
+            });
+            modelBuilder.Entity<SyncDeadLetter>(e =>
+            {
+                e.HasIndex(x => new { x.Replayed, x.CreatedAtUtc });
+                e.HasIndex(x => x.EventId);
+                e.Property(x => x.Kind).HasMaxLength(32);
+                e.Property(x => x.AggregateType).HasMaxLength(128);
+            });
+            modelBuilder.Entity<SyncNonce>(e =>
+            {
+                e.HasIndex(x => new { x.NodeId, x.Nonce }).IsUnique();
+                e.HasIndex(x => x.SeenAtUtc);
+                e.Property(x => x.Nonce).HasMaxLength(64).IsRequired();
+            });
+
+            modelBuilder.Entity<PrintJob>(e =>
+            {
+                e.HasIndex(x => x.PrintJobId).IsUnique();
+                e.HasIndex(x => new { x.OrderGlobalId, x.JobType, x.Copy, x.Status });
+                e.Property(x => x.JobType).HasMaxLength(32);
+                e.Property(x => x.Copy).HasMaxLength(32);
+                e.Property(x => x.Status).HasMaxLength(16);
+            });
+
+            // Phase 8: pre-existing users must stay enabled; each gets a distinct stamp.
+            modelBuilder.Entity<User>(e =>
+            {
+                e.Property(x => x.IsActive).HasDefaultValue(true);
+                e.Property(x => x.SecurityStamp).HasDefaultValueSql("NEWID()");
+            });
+
+            modelBuilder.Entity<AuthAuditLog>(e =>
+            {
+                e.HasIndex(x => x.AtUtc);
+                e.HasIndex(x => x.UserName);
+                e.Property(x => x.UserName).HasMaxLength(128);
+                e.Property(x => x.Role).HasMaxLength(32);
+                e.Property(x => x.Result).HasMaxLength(32);
+                e.Property(x => x.Issuer).HasMaxLength(64);
+                e.Property(x => x.IpAddress).HasMaxLength(64);
+            });
+
+            modelBuilder.Entity<UploadedFile>(e =>
+            {
+                e.HasIndex(x => x.Sha256Hash);
+                e.HasIndex(x => x.StorageKey).IsUnique();
+                e.Property(x => x.StorageKey).HasMaxLength(512).IsRequired();
+                e.Property(x => x.Sha256Hash).HasMaxLength(64).IsRequired();
+                e.Property(x => x.ContentType).HasMaxLength(128);
+                e.Property(x => x.Category).HasMaxLength(64);
+                e.Property(x => x.SyncState).HasMaxLength(16);
+            });
+
+            modelBuilder.Entity<StockMovement>(entity =>
+            {
+                // Phase 4: blocks an order / PO / waste / kitchen-out (or a duplicate
+                // sync event) from applying the same movement twice.
+                entity.HasIndex(e => new { e.ReferenceType, e.ReferenceGlobalId, e.MovementType, e.RawItemId })
+                      .IsUnique()
+                      .HasDatabaseName("UX_StockMovements_Reference");
+                entity.HasIndex(e => new { e.RawItemId, e.VendorId });
+                entity.HasIndex(e => e.OccurredAtUtc);
+                entity.Property(e => e.MovementType).HasConversion<string>().HasMaxLength(32);
+                entity.Property(e => e.ReferenceType).HasMaxLength(64).IsRequired();
+                entity.Property(e => e.QuantityDelta).HasColumnType("decimal(18,4)");
+            });
+
+            // Phase 3: new-format order numbers are unique; legacy numbers
+            // (OrderNumberSource IS NULL) are left exactly as they were.
+            modelBuilder.Entity<Order>()
+                .HasIndex(o => o.OrderNumber)
+                .IsUnique()
+                .HasDatabaseName("UX_Orders_OrderNumber_Sequenced")
+                .HasFilter("[OrderNumberSource] IS NOT NULL");
+            modelBuilder.Entity<Order>().HasIndex(o => o.OrderNumberSource);
+
+            modelBuilder.Entity<ProcessedCommand>(entity =>
+            {
+                entity.HasIndex(e => e.CommandId).IsUnique();
+                entity.HasIndex(e => e.StartedAtUtc);
+                entity.Property(e => e.Route).HasMaxLength(400).IsRequired();
+                entity.Property(e => e.RequestHash).HasMaxLength(64).IsRequired();
+                entity.Property(e => e.State).HasMaxLength(16).IsRequired();
+                entity.Property(e => e.ResponseContentType).HasMaxLength(128);
+            });
+
+            modelBuilder.Entity<SchemaMigrationHistory>(entity =>
+            {
+                entity.HasIndex(e => e.StartedAtUtc);
+                entity.Property(e => e.FromMigration).HasMaxLength(200);
+                entity.Property(e => e.ToMigration).HasMaxLength(200);
+                entity.Property(e => e.AppVersion).HasMaxLength(64);
+                entity.Property(e => e.NodeRole).HasMaxLength(16);
+                entity.Property(e => e.BackupPath).HasMaxLength(1024);
+                entity.Property(e => e.Outcome).HasMaxLength(16);
+            });
+        }
+
+        // Offline-first / cloud-sync — Phase 1. Additive: three new tables, no
+        // change to any existing entity mapping.
+        private void ConfigureSyncNodeIdentity(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Branch>(entity =>
+            {
+                entity.HasIndex(e => e.BranchId).IsUnique();
+                entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.Code).HasMaxLength(32);
+            });
+
+            modelBuilder.Entity<SystemNode>(entity =>
+            {
+                entity.HasIndex(e => e.NodeId).IsUnique();
+                entity.HasIndex(e => e.BranchId);
+                // Human-readable across nodes — never compared as an ordinal.
+                entity.Property(e => e.Role).HasConversion<string>().HasMaxLength(16);
+                entity.Property(e => e.DisplayName).HasMaxLength(200);
+                entity.Property(e => e.BaseUrl).HasMaxLength(512);
+                entity.Property(e => e.AppVersion).HasMaxLength(64);
+                entity.Property(e => e.SchemaVersion).HasMaxLength(128);
+            });
+
+            modelBuilder.Entity<NodeHeartbeat>(entity =>
+            {
+                entity.HasIndex(e => new { e.NodeId, e.ReceivedAtUtc });
+                entity.Property(e => e.Role).HasConversion<string>().HasMaxLength(16);
+                entity.Property(e => e.AppVersion).HasMaxLength(64);
+                entity.Property(e => e.SchemaVersion).HasMaxLength(128);
+                entity.Property(e => e.Source).HasMaxLength(64);
+            });
         }
 
         private void ConfigureAiEntities(ModelBuilder modelBuilder)
