@@ -219,8 +219,16 @@ namespace RestaurantSystem.Sync
             }
             catch (Exception ex)
             {
-                _log.LogError(ex, "Migrator: pre-migration BACKUP DATABASE failed. Aborting before applying migrations.");
-                throw;
+                if (_opts.BackupRequired)
+                {
+                    _log.LogCritical(ex, "Migrator: pre-migration BACKUP DATABASE failed and Migrator:BackupRequired=true — aborting.");
+                    throw;
+                }
+                _log.LogWarning(ex,
+                    "Migrator: pre-migration BACKUP DATABASE failed (path '{Path}' not writable / volume not mounted?). " +
+                    "Continuing WITHOUT a checkpoint because Migrator:BackupRequired is not set. " +
+                    "Take a manual backup and/or fix the backup volume.", _opts.BackupPath);
+                return (false, null);
             }
         }
     }

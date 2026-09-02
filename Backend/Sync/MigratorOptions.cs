@@ -37,5 +37,12 @@ namespace RestaurantSystem.Sync
 
         /// <summary>Take a <c>BACKUP DATABASE</c> checkpoint before applying (needs <see cref="BackupPath"/>).</summary>
         public bool BackupBeforeMigrate { get; set; } = true;
+
+        /// <summary>
+        /// When true, a failed pre-migration backup ABORTS the migrator. Default
+        /// false: a failed/unavailable backup logs a warning and migrations still
+        /// apply, so a missing backup volume never blocks a deployment.
+        /// </summary>
+        public bool BackupRequired { get; set; } = false;
     }
 }
