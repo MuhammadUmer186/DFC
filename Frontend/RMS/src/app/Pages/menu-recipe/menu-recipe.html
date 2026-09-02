@@ -1,80 +1,184 @@
-<div class="dfc-page">
+<div class="recipe-module">
 
-  <div class="dfc-page-header">
-    <div class="dfc-page-header-text">
-      <h2 class="dfc-page-title"><i class="pi pi-book"></i> Menu Recipe Management</h2>
-      <p class="dfc-page-subtitle">Define which raw items and quantities go into each menu item</p>
+  <header class="rm-head">
+    <div>
+      <h1>Recipe Module</h1>
+      <p>Define ingredients per dish, then audit what the kitchen used against what was sold.</p>
     </div>
-  </div>
-
-  <div class="dfc-toolbar">
-    <label style="font-size: 13px; font-weight: 700; color: var(--dfc-gray-700);">Menu Item</label>
-    <select
-      class="dfc-input"
-      style="max-width: 280px;"
-      [ngModel]="selectedMenuItemId()"
-      (ngModelChange)="selectedMenuItemId.set($event); loadRecipe()"
-    >
-      <option [ngValue]="null">-- Select Menu Item --</option>
-      @for(item of menuItems(); track item) {
-        <option [ngValue]="item.id">{{ item.name }}</option>
-      }
-    </select>
-  </div>
-
-  @if (loading()) {
-    <div class="dfc-loading"><i class="pi pi-spin pi-spinner"></i> Loading recipe...</div>
-  }
-
-  @if (selectedMenuItemId() && !loading()) {
-    <div class="dfc-page-actions">
-      <button class="dfc-btn dfc-btn-ghost" (click)="addRecipeItem()"><i class="pi pi-plus"></i> Add Raw Item</button>
-      <button class="dfc-btn dfc-btn-primary" (click)="saveRecipe()"><i class="pi pi-check"></i> Save Recipe</button>
-      <button class="dfc-btn dfc-btn-danger" (click)="deleteRecipe()"><i class="pi pi-trash"></i> Delete Recipe</button>
+    <div class="rm-tabs">
+      <button [class.active]="tab() === 'recipes'" (click)="tab.set('recipes')">
+        <i class="pi pi-book"></i> Recipes
+      </button>
+      <button [class.active]="tab() === 'audit'" (click)="tab.set('audit')">
+        <i class="pi pi-chart-bar"></i> Kitchen Audit
+      </button>
     </div>
+  </header>
 
-    @if (recipeItems().length > 0) {
-      <div class="dfc-table-wrap">
-        <table class="dfc-table">
+  <!-- ================= RECIPES ================= -->
+  <section *ngIf="tab() === 'recipes'" class="rm-grid">
+
+    <!-- left: category-wise menu -->
+    <aside class="rm-menu">
+      <div class="rm-coverage">
+        <span>Recipe coverage</span>
+        <div class="bar"><i [style.width.%]="coverage().pct"></i></div>
+        <strong>{{ coverage().withRecipe }}/{{ coverage().total }} dishes ({{ coverage().pct }}%)</strong>
+      </div>
+
+      <div *ngFor="let c of categories()" class="rm-cat">
+        <button class="rm-cat-head" (click)="toggleCat(c.categoryId)">
+          <i class="pi" [ngClass]="isOpen(c.categoryId) ? 'pi-chevron-down' : 'pi-chevron-right'"></i>
+          <span>{{ c.categoryName }}</span>
+          <span class="rm-cat-badge" [class.full]="c.itemsWithRecipe === c.itemCount && c.itemCount > 0">
+            {{ c.itemsWithRecipe }}/{{ c.itemCount }}
+          </span>
+        </button>
+
+        <ul *ngIf="isOpen(c.categoryId)">
+          <li *ngFor="let m of c.items"
+              [class.sel]="selected()?.menuItemId === m.menuItemId"
+              (click)="pick(m)">
+            <span class="name">{{ m.menuItemName }}</span>
+            <span class="tag" [class.has]="m.ingredientCount > 0">
+              {{ m.ingredientCount > 0 ? (m.ingredientCount + ' ing.') : 'no recipe' }}
+            </span>
+          </li>
+        </ul>
+      </div>
+
+      <p *ngIf="categories().length === 0" class="rm-empty">No active categories.</p>
+    </aside>
+
+    <!-- right: ingredient editor -->
+    <main class="rm-editor">
+      <ng-container *ngIf="selected() as item; else pickPrompt">
+        <div class="rm-editor-head">
+          <div>
+            <h2>{{ item.menuItemName }}</h2>
+            <span class="muted">Ingredients used to make one unit</span>
+          </div>
+          <div class="rm-editor-actions">
+            <button class="btn ghost" (click)="clear()" *ngIf="recipeItems().length">Remove recipe</button>
+            <button class="btn primary" [disabled]="saving()" (click)="save()">
+              <i class="pi pi-save"></i> {{ saving() ? 'Saving…' : 'Save recipe' }}
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="loadingRecipe()" class="rm-loading">Loading…</div>
+
+        <table *ngIf="!loadingRecipe()" class="rm-table">
           <thead>
-            <tr>
-              <th>#</th>
-              <th>Raw Item</th>
-              <th>Quantity Required</th>
-              <th>Unit</th>
-              <th>Action</th>
-            </tr>
+            <tr><th style="width:46%">Ingredient</th><th style="width:26%">Quantity</th><th style="width:20%">Unit</th><th></th></tr>
           </thead>
           <tbody>
-            @for(r of recipeItems(); track r; let i = $index) {
-              <tr>
-                <td>{{ i + 1 }}</td>
-                <td>
-                  <select class="dfc-input" [(ngModel)]="r.rawItemId">
-                    <option [ngValue]="0">--Select--</option>
-                    @for(raw of rawItems(); track raw) {
-                      <option [ngValue]="raw.id">{{ raw.name }}</option>
-                    }
-                  </select>
-                </td>
-                <td>
-                  <input type="number" class="dfc-input" style="max-width: 120px;" [(ngModel)]="r.quantityRequired" />
-                </td>
-                <td>{{ getUnit(r.rawItemId) }}</td>
-                <td class="actions">
-                  <button class="dfc-btn dfc-btn-danger dfc-btn-sm" (click)="removeRecipeItem(i)"><i class="pi pi-trash"></i> Remove</button>
-                </td>
-              </tr>
-            }
+            <tr *ngFor="let row of recipeItems(); let i = index">
+              <td>
+                <select [(ngModel)]="row.rawItemId">
+                  <option [ngValue]="0" disabled>Select ingredient…</option>
+                  <option *ngFor="let ri of rawItems()" [ngValue]="ri.id">{{ ri.name }}</option>
+                </select>
+              </td>
+              <td>
+                <input type="number" min="0" step="0.001" [(ngModel)]="row.quantityRequired" placeholder="0" />
+              </td>
+              <td class="unit">{{ unitFor(row.rawItemId) || row.unit || '—' }}</td>
+              <td>
+                <button class="icon-btn" (click)="removeRow(i)" title="Remove"><i class="pi pi-times"></i></button>
+              </td>
+            </tr>
+            <tr *ngIf="recipeItems().length === 0">
+              <td colspan="4" class="rm-empty">No ingredients yet — add the first one.</td>
+            </tr>
           </tbody>
         </table>
-      </div>
-    } @else {
-      <div class="dfc-empty">
-        <i class="pi pi-inbox"></i>
-        <span>No recipe items assigned yet</span>
-      </div>
-    }
-  }
 
+        <button class="btn add" (click)="addRow()"><i class="pi pi-plus"></i> Add ingredient</button>
+      </ng-container>
+
+      <ng-template #pickPrompt>
+        <div class="rm-prompt">
+          <i class="pi pi-arrow-left"></i>
+          <p>Pick a dish from a category to edit its recipe.</p>
+        </div>
+      </ng-template>
+    </main>
+  </section>
+
+  <!-- ================= KITCHEN AUDIT ================= -->
+  <section *ngIf="tab() === 'audit'" class="rm-audit">
+    <div class="rm-audit-bar">
+      <label>From <input type="date" [ngModel]="from()" (ngModelChange)="from.set($event)" [ngModelOptions]="{ standalone: true }" /></label>
+      <label>To <input type="date" [ngModel]="to()" (ngModelChange)="to.set($event)" [ngModelOptions]="{ standalone: true }" /></label>
+      <button class="btn primary" (click)="runAudit()" [disabled]="loadingAudit()">
+        <i class="pi pi-play"></i> {{ loadingAudit() ? 'Running…' : 'Run audit' }}
+      </button>
+      <button class="btn ghost" (click)="exportCsv()" *ngIf="audit()?.totals?.length">
+        <i class="pi pi-download"></i> CSV
+      </button>
+    </div>
+
+    <ng-container *ngIf="audit() as a">
+      <div class="rm-audit-summary">
+        <div><b>{{ a.ordersCounted }}</b><span>orders</span></div>
+        <div><b>{{ a.lineUnitsCounted }}</b><span>units sold</span></div>
+        <div><b>{{ a.totals.length }}</b><span>ingredients used</span></div>
+        <div [class.warn]="a.dishesWithoutRecipe > 0">
+          <b>{{ a.dishesWithoutRecipe }}</b><span>dishes without a recipe</span>
+        </div>
+      </div>
+
+      <h3>Total ingredients utilised</h3>
+      <table class="rm-table wide">
+        <thead>
+          <tr>
+            <th>Ingredient</th><th>Unit</th>
+            <th class="num">Expected (from sales)</th>
+            <th class="num">Actual (kitchen-out)</th>
+            <th class="num">Variance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of a.totals">
+            <td>{{ t.rawItemName }}</td>
+            <td>{{ t.unit }}</td>
+            <td class="num">{{ t.expectedFromSales | number:'1.0-3' }}</td>
+            <td class="num">{{ t.actualConsumed | number:'1.0-3' }}</td>
+            <td class="num" [class.neg]="t.variance < -0.001" [class.pos]="t.variance > 0.001">
+              {{ t.variance | number:'1.0-3' }}
+            </td>
+          </tr>
+          <tr *ngIf="a.totals.length === 0">
+            <td colspan="5" class="rm-empty">
+              No ingredient totals — the dishes sold in this window don't have recipes yet.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>By dish</h3>
+      <div class="rm-dishes">
+        <div *ngFor="let d of a.byDish" class="rm-dish">
+          <button class="rm-dish-head" (click)="toggleDish(d.menuItemId)">
+            <i class="pi" [ngClass]="openDish() === d.menuItemId ? 'pi-chevron-down' : 'pi-chevron-right'"></i>
+            <span class="name">{{ d.menuItemName }}</span>
+            <span class="sold">{{ d.unitsSold | number:'1.0-2' }} sold</span>
+            <span class="tag" *ngIf="!d.hasRecipe">no recipe</span>
+          </button>
+          <table *ngIf="openDish() === d.menuItemId && d.ingredients.length" class="rm-table">
+            <thead><tr><th>Ingredient</th><th>Unit</th><th class="num">Used</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let g of d.ingredients">
+                <td>{{ g.rawItemName }}</td><td>{{ g.unit }}</td>
+                <td class="num">{{ g.expectedFromSales | number:'1.0-3' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </ng-container>
+
+    <p *ngIf="!audit() && !loadingAudit()" class="rm-empty">Pick a date range and run the audit.</p>
+  </section>
 </div>
