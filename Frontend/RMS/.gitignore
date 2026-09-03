@@ -40,3 +40,7 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# QZ Tray signing key — must NOT be committed. Place private-key.pem in
+# src/assets/qz/ on each POS PC manually (see qz-print.service.ts).
+src/assets/qz/private-key.pem

@@ -70,16 +70,71 @@ export class QzPrintService {
     const qz = window.qz;
     if (!qz) throw new Error('QZ Tray library not available');
 
-    // Unsigned mode — no certificate, empty signature. QZ Tray prompts once.
     if (!this.securityConfigured) {
-      qz.security.setCertificatePromise((_resolve: any, reject: any) => reject());
-      qz.security.setSignaturePromise((_toSign: string) => (resolve: any) => resolve());
+      await this.configureSecurity(qz);
       this.securityConfigured = true;
     }
 
     if (qz.websocket.isActive()) return qz;
     await qz.websocket.connect({ retries: 2, delay: 1 });
     return qz;
+  }
+
+  /**
+   * Sign every request with a fixed self-signed certificate (assets/qz/*).
+   * A signed request has a STABLE identity, so QZ Tray's "Allow + Remember"
+   * sticks — unsigned/anonymous requests re-prompt every single time.
+   * Falls back to unsigned if SubtleCrypto isn't available (e.g. the page is
+   * served over plain http on a LAN IP rather than localhost/https).
+   */
+  private async configureSecurity(qz: any): Promise<void> {
+    const subtle: SubtleCrypto | undefined = window.crypto?.subtle;
+
+    let certText = '';
+    let signKey: CryptoKey | undefined;
+    try {
+      certText = await fetch('assets/qz/digital-certificate.txt').then(r => r.text());
+      if (subtle) {
+        const pem = await fetch('assets/qz/private-key.pem').then(r => r.text());
+        const der = this.pemToArrayBuffer(pem);
+        signKey = await subtle.importKey(
+          'pkcs8', der,
+          { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-512' },
+          false, ['sign']
+        );
+      }
+    } catch (e) {
+      console.warn('QZ: could not load signing material, falling back to unsigned', e);
+    }
+
+    if (certText && signKey && subtle) {
+      qz.security.setCertificatePromise((resolve: any) => resolve(certText));
+      qz.security.setSignatureAlgorithm('SHA512');
+      qz.security.setSignaturePromise((toSign: string) => (resolve: any, reject: any) => {
+        subtle.sign('RSASSA-PKCS1-v1_5', signKey!, new TextEncoder().encode(toSign))
+          .then(sig => resolve(this.arrayBufferToBase64(sig)))
+          .catch(reject);
+      });
+    } else {
+      // Unsigned — QZ Tray will prompt on every print.
+      qz.security.setCertificatePromise((_resolve: any, reject: any) => reject());
+      qz.security.setSignaturePromise((_toSign: string) => (resolve: any) => resolve());
+    }
+  }
+
+  private pemToArrayBuffer(pem: string): ArrayBuffer {
+    const b64 = pem.replace(/-----[^-]+-----/g, '').replace(/\s+/g, '');
+    const bin = atob(b64);
+    const buf = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+    return buf.buffer;
+  }
+
+  private arrayBufferToBase64(buf: ArrayBuffer): string {
+    const bytes = new Uint8Array(buf);
+    let bin = '';
+    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin);
   }
 
   /** Port of EscPosReceiptBuilder.Build — keep the two in sync. */
