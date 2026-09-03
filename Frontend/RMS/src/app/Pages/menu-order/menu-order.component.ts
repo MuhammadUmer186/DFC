@@ -2,6 +2,7 @@ import { Component, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { KitchenOrderService } from '../../Services/kitchenorder.service';
 import { PrintService } from '../../Services/printservice';
+import { QzPrintService } from '../../Services/qz-print.service';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { FormsModule } from '@angular/forms';
@@ -77,6 +78,7 @@ export class MenuOrderComponent {
     private orderService: KitchenOrderService,
     private toast: ToastService,
     private printService: PrintService,
+    private qz: QzPrintService,
     private auth:AuthService
   ) {
     this.loadCategories();
@@ -348,28 +350,28 @@ toggleFullscreen() {
           }))
         ];
 
-        // 🖨 CUSTOMER COPY
-        this.printService.printReceipt({
+        // 🖨 CUSTOMER COPY — browser-side via QZ Tray (see QzPrintService)
+        this.qz.printReceipt({
           copyType: 'customer',
           orderNo: order.id,
-          total: itemsTotal + dealsTotal, // subtotal before discount
           discount: discountAmount,
           finalTotal: finalTotal,
           items: receiptItems
-        }, 'usb1').subscribe({
-          error: () => this.toast.error('Customer print failed')
+        }, 'usb1').catch((e: any) => {
+          console.error('QZ customer print', e);
+          this.toast.error('Customer print failed: ' + (e?.message || e));
         });
 
         // 🖨 KITCHEN COPY
-        this.printService.printReceipt({
+        this.qz.printReceipt({
           copyType: 'kitchen',
           orderNo: order.id,
-          total: itemsTotal + dealsTotal,
           discount: 0,                    // kitchen copy ignores discount
           finalTotal: finalTotal,
           items: receiptItems
-        }, 'usb2').subscribe({
-          error: () => this.toast.error('Kitchen print failed')
+        }, 'usb2').catch((e: any) => {
+          console.error('QZ kitchen print', e);
+          this.toast.error('Kitchen print failed: ' + (e?.message || e));
         });
 
         // 🔄 RESET CART
