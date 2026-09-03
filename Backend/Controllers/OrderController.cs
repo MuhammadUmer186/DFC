@@ -21,8 +21,15 @@ namespace RestaurantSystem.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CreateOrderRequest request, [FromQuery] decimal discount)
         {
-            var result = await _service.CreateAsync(request, discount, User,false);
-            return Ok(result);
+            try
+            {
+                var result = await _service.CreateAsync(request, discount, User, false);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
         [Authorize(Roles = "SuperAdmin,Admin,Cashier,MainAdmin")]
         [HttpGet("{id}")]

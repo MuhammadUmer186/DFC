@@ -381,7 +381,7 @@ toggleFullscreen() {
       },
       error: (err) => {
         console.error(err);
-        this.toast.error("Failed to place order!");
+        this.toast.error(err?.error?.message || err?.error || "Failed to place order!");
       }
     });
 }
@@ -424,7 +424,7 @@ sendToQueue() {
       },
       error: (err) => {
         console.error(err);
-        this.toast.error("Failed to send order to queue!");
+        this.toast.error(err?.error?.message || err?.error || "Failed to send order to queue!");
       }
     });
 }
