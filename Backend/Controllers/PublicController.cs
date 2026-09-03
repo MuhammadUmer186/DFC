@@ -198,7 +198,11 @@ namespace RestaurantSystem.Controllers
                 if (delayed)
                 {
                     Response.Headers["X-Order-Delayed"] = "true";
-                    Response.Headers["X-Order-Message"] = message;
+                    // HTTP header values must be ASCII — the message is human-readable prose
+                    // and can contain non-ASCII punctuation (e.g. an em-dash), which makes
+                    // Kestrel throw "Invalid non-ASCII or control character in header".
+                    // Percent-encode it here; clients read it with decodeURIComponent.
+                    Response.Headers["X-Order-Message"] = Uri.EscapeDataString(message);
                 }
                 return Ok(order);
             }
