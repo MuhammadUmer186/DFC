@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { KitchenOrderService } from '../../Services/kitchenorder.service';
 import { PrintService } from '../../Services/printservice';
 import { QzPrintService } from '../../Services/qz-print.service';
+import { PrinterSettingsService } from '../../Services/printer-settings.service';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { FormsModule } from '@angular/forms';
@@ -79,6 +80,7 @@ export class MenuOrderComponent {
     private toast: ToastService,
     private printService: PrintService,
     private qz: QzPrintService,
+    private printerSettings: PrinterSettingsService,
     private auth:AuthService
   ) {
     this.loadCategories();
@@ -357,7 +359,7 @@ toggleFullscreen() {
           discount: discountAmount,
           finalTotal: finalTotal,
           items: receiptItems
-        }, 'usb1').catch((e: any) => {
+        }, this.printerSettings.customerSlot()).catch((e: any) => {
           console.error('QZ customer print', e);
           this.toast.error('Customer print failed: ' + (e?.message || e));
         });
@@ -369,7 +371,7 @@ toggleFullscreen() {
           discount: 0,                    // kitchen copy ignores discount
           finalTotal: finalTotal,
           items: receiptItems
-        }, 'usb2').catch((e: any) => {
+        }, this.printerSettings.kitchenSlot()).catch((e: any) => {
           console.error('QZ kitchen print', e);
           this.toast.error('Kitchen print failed: ' + (e?.message || e));
         });

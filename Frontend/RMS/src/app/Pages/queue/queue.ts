@@ -2,7 +2,9 @@ import { Component, OnDestroy, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { QueueService } from '../../Services/queue';
-import { PrintService, PrinterType } from '../../Services/printservice';
+import { PrintService } from '../../Services/printservice';
+import { QzPrintService } from '../../Services/qz-print.service';
+import { PrinterSettingsService } from '../../Services/printer-settings.service';
 import { ToastService } from '../../Services/toast.service';
 import { OrderQueueDto, OrderSignalRService } from '../../Services/order-signalr';
 import { OnlineOrdersService } from '../../Services/online-orders.service';
@@ -23,12 +25,11 @@ export class QueueComponent implements OnDestroy {
   paymentMethod = signal<string>('Cash');
   busyIds = signal<Set<number>>(new Set());
 
-  customerPrinter = signal<PrinterType>('usb1');
-  kitchenPrinter = signal<PrinterType>('usb2');
-
   constructor(
     private queueService: QueueService,
     private printService: PrintService,
+    private qz: QzPrintService,
+    public printerSettings: PrinterSettingsService,
     private toast: ToastService,
     private orderSignalR: OrderSignalRService,
     private onlineOrdersService: OnlineOrdersService
@@ -141,26 +142,17 @@ export class QueueComponent implements OnDestroy {
           }))
         ];
 
-        // 🖨 Customer receipt
-        // 🖨 Customer receipt
-this.printService.printReceipt({
-  copyType: 'customer',
-  orderNo: dto.id,
-  total: dto.totalAmount + (dto.discount ?? 0), // ❌ was just "discount"
-  discount: dto.discount ?? 0,                  // ❌ was dto.discount
-  finalTotal: dto.totalAmount,
-  items: receiptItems
-}, this.customerPrinter()).subscribe();
-
-// 🖨 Kitchen receipt
-// this.printService.printReceipt({
-//   copyType: 'kitchen',
-//   orderNo: dto.id,
-//   total: dto.totalAmount + (dto.discount ?? 0),
-//   discount: dto.discount ?? 0,
-//   finalTotal: dto.totalAmount,
-//   items: receiptItems
-// }, this.kitchenPrinter()).subscribe();
+        // 🖨 Customer receipt — browser-side via QZ Tray, to the configured slot
+        this.qz.printReceipt({
+          copyType: 'customer',
+          orderNo: dto.id,
+          discount: dto.discount ?? 0,
+          finalTotal: dto.totalAmount,
+          items: receiptItems
+        }, this.printerSettings.customerSlot()).catch((e: any) => {
+          console.error('QZ customer print', e);
+          this.toast.error('Customer print failed: ' + (e?.message || e));
+        });
 
 
         // ✅ Remove from queue

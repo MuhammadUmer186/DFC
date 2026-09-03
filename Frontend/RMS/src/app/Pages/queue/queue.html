@@ -20,7 +20,7 @@
 
     <label class="toolbar-label">
       Customer Printer
-      <select [ngModel]="customerPrinter()" (ngModelChange)="customerPrinter.set($event)">
+      <select [ngModel]="printerSettings.customerSlot()" (ngModelChange)="printerSettings.setCustomer($event)">
         <option value="usb1">USB 1</option>
         <option value="usb2">USB 2</option>
         <option value="ethernet">Ethernet</option>
@@ -30,7 +30,7 @@
 
     <label class="toolbar-label">
       Kitchen Printer
-      <select [ngModel]="kitchenPrinter()" (ngModelChange)="kitchenPrinter.set($event)">
+      <select [ngModel]="printerSettings.kitchenSlot()" (ngModelChange)="printerSettings.setKitchen($event)">
         <option value="usb1">USB 1</option>
         <option value="usb2">USB 2</option>
         <option value="ethernet">Ethernet</option>
