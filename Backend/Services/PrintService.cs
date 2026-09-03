@@ -1,4 +1,5 @@
-﻿using Printing.Helpers;
+﻿using Microsoft.Extensions.Configuration;
+using Printing.Helpers;
 using RestaurantSystem.DTOs;
 using RestaurantSystem.Printing;
 using System.Net.Sockets;
@@ -17,15 +18,28 @@ namespace Printing.Services
 
     public class PrintService
     {
-        // Set this based on your setup
-        private readonly string _usbPrinterName = "POS80Printer";  // Installed USB printer (matches Windows printer name exactly)
-        private readonly string _usbPrinterName2 = "SPEEDX"; // SPEEDX
-        private readonly string _ethernetPrinterIp = "192.168.0.100";
-        private readonly int _ethernetPrinterPort = 9100;
+        // All values come from the "Printing" section of appsettings.json so a new
+        // machine can be pointed at its own Windows printer names / logo without a
+        // rebuild. The fallbacks match the current shop-floor PC.
+        private readonly string _usbPrinterName;   // customer copy  (Windows printer name — must match EXACTLY)
+        private readonly string _usbPrinterName2;  // kitchen copy
+        private readonly string _ethernetPrinterIp;
+        private readonly int _ethernetPrinterPort;
+        private readonly string _logoPath;
 
         // COM port for Bluetooth printer
         private readonly string _bluetoothComPort = "COM10";  // Adjust to your paired printer
         private readonly int _bluetoothBaudRate = 9600;
+
+        public PrintService(IConfiguration config)
+        {
+            var p = config.GetSection("Printing");
+            _usbPrinterName    = p["Usb1PrinterName"]  ?? "POS80Printer";
+            _usbPrinterName2   = p["Usb2PrinterName"]  ?? "Black Copper 80";
+            _ethernetPrinterIp = p["EthernetPrinterIp"] ?? "192.168.0.100";
+            _ethernetPrinterPort = int.TryParse(p["EthernetPrinterPort"], out var port) ? port : 9100;
+            _logoPath          = p["LogoPath"] ?? @"C:\Logo\Logo DFC.png";
+        }
 
         public bool PrintReceipt(PrintReceiptDto dto, PrinterType type = PrinterType.Usb1)
         {
@@ -35,9 +49,7 @@ namespace Printing.Services
             {
                 if (type == PrinterType.Usb1)
                 {
-                    byte[] logoBytes = EscPosImageHelper.GetLogoBytes(
-    @"C:\Logo\Logo DFC.png"
-);
+                    byte[] logoBytes = EscPosImageHelper.GetLogoBytes(_logoPath);
 
                     byte[] textBytes = Encoding.UTF8.GetBytes(escPosText);
 
@@ -68,9 +80,7 @@ namespace Printing.Services
                 }
                 else if (type == PrinterType.Usb2)
                 {
-                    byte[] logoBytes = EscPosImageHelper.GetLogoBytes(
-    @"C:\Logo\Logo DFC.png"
-);
+                    byte[] logoBytes = EscPosImageHelper.GetLogoBytes(_logoPath);
 
                     byte[] textBytes = Encoding.UTF8.GetBytes(escPosText);
 
